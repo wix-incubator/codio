@@ -2,7 +2,7 @@
   <img src="./assets/black_small.png" alt="Codio logo"/>
 </p>
 <h3 align="center">
-Codio
+Codio (Alpha)
 </h3>
 <h4 align="center">
   A media format to record and replay the process of programming
