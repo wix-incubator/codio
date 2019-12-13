@@ -1,0 +1,169 @@
+{
+    "name": "interactive-tutorial",
+    "displayName": "Codio",
+    "description": "Interactive tutorials in your editor",
+    "version": "0.0.42",
+    "publisher": "bogo",
+    "engines": {
+        "vscode": "^1.30.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onView:codioMessages",
+        "onCommand:codio.recordCodio",
+        "onCommand:codio.finishRecording",
+        "onCommand:codio.playCodio",
+        "onCommand:codio.pauseRecording",
+        "onCommand:codio.resumeTutorial",
+        "onCommand:codio.playFrom",
+        "onCommand:codio.createTutorial",
+        "onCommand:codio.executeFile",
+        "onCommand:codio.addCodioToTutorial"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "codio.recordCodio",
+                "title": "Codio: Record Codio"
+            },
+            {
+                "command": "codio.addCodioToTutorial",
+                "title": "Codio: Add Codio To Tutorial"
+            },
+            {
+                "command": "codio.downloadTutorial",
+                "title": "Codio: DownloadTutorial"
+            },
+            {
+                "command": "codio.finishRecording",
+                "title": "Codio: Finish and Save Tutorial"
+            },
+            {
+                "command": "codio.playCodio",
+                "title": "Codio: Play Codio"
+            },
+            {
+                "command": "codio.pauseTutorial",
+                "title": "Codio: Pause Tutorial",
+                "icon": {
+                    "light": "./media/pause.svg",
+                    "dark": "./media/pause.svg"
+                }
+            },
+            {
+                "command": "codio.resumeTutorial",
+                "title": "Codio: Resume Tutorial"
+            },
+            {
+                "command": "codio.playFrom",
+                "title": "Codio: Play from.."
+            },
+            {
+                "command": "codio.pauseOrResume",
+                "title": "Codio: Pause/Resume",
+                "icon": {
+                    "light": "./media/pauseOrResume.svg",
+                    "dark": "./media/pauseOrResume.svg"
+                }
+            },
+            {
+                "command": "codio.forward",
+                "title": "Codio: forward",
+                "icon": {
+                    "light": "./media/forward.svg",
+                    "dark": "./media/forward.svg"
+                }
+            },
+            {
+                "command": "codio.rewind",
+                "title": "Codio: rewind",
+                "icon": {
+                    "light": "./media/rewind.svg",
+                    "dark": "./media/rewind.svg"
+                }
+            },
+            {
+                "command": "codio.executeFile",
+                "title": "Codio: Execute FIle"
+            },
+            {
+                "command": "codio.createTutorial",
+                "title": "Codio: Create Tutorial"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "codio.rewind",
+                    "when": "resourceFilename =~ /codio/",
+                    "alt": "codio.rewind",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "codio.pauseOrResume",
+                    "when": "resourceFilename =~ /codio/",
+                    "alt": "codio.pauseOrResume",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "codio.forward",
+                    "when": "resourceFilename =~ /codio/",
+                    "alt": "codio.forward",
+                    "group": "navigation@3"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "codio.createTutorial",
+                    "when": "view == codioTutorials",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "codio.pauseOrResume",
+                    "when": "viewItem == codio",
+                    "group": "navigation"
+                }
+            ]
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "codioClient",
+                    "title": "Codio",
+                    "icon": "./media/icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "codioClient": [
+                {
+                    "id": "codioMessages",
+                    "name": "All codios"
+                },
+                {
+                    "id": "codioTutorials",
+                    "name": "Tutorials"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^3.1.4",
+        "vscode": "^1.1.25",
+        "tslint": "^5.8.0",
+        "@types/node": "^8.10.25",
+        "@types/mocha": "^2.2.42"
+    }
+}

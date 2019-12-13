@@ -1,0 +1,25 @@
+
+export const PLAY_CODIO = 'codio.playCodio';
+export const RECORD_CODIO = 'codio.recordCodio';
+export const FINISH_RECORDING = 'codio.finishRecording';
+export const PAUSE_TUTORIAL = 'codio.pauseTutorial';
+export const RESUME_TUTORIAL = 'codio.resumeTutorial';
+export const PLAY_FROM = 'codio.playFrom';
+export const UPLOAD_CODIO = 'codio.uploadCodio';
+export const DOWNLOAD_CODIO = 'codio.downloadCodio';
+export const SEND_MESSAGE = 'codio.sendMessage';
+export const RECORD_MESSAGE = 'codio.recordMessage';
+export const PLAY_MESSAGE = 'codio.playMessage';
+export const CREATE_TUTORIAL = 'codio.createTutorial';
+export const ADD_CODIO_TO_TUTORIAL = 'codio.addCodioToTutorial';
+export const REMOVE_CODIO_FROM_TUTORIAL = 'codio.removeCodioFromTutorial';
+export const EXECUTE_FILE = 'codio.executeFile';
+export const REWIND = 'codio.rewind';
+export const FORWARD = 'codio.forward';
+export const PAUSE_OR_RESUME = 'codio.pauseOrResume';
+export const UPLOAD_TUTORIAL = 'codio.uploadTutorial';
+export const SEND_TUTORIAL = 'codio.sendTutorial';
+export const DOWNLOAD_TUTORIAL = 'codio.downloadTutorial';
+export const SIGN_IN = 'codio.signIn';
+export const SIGN_UP = 'codio.signUp';
+export const SIGNUP_CODE = 'codio.signUpCode';

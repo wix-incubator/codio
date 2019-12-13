@@ -1,0 +1,34 @@
+<idea-plugin>
+    <id>com.wix.codio.codio-intellij</id>
+    <name>wix-codio</name>
+    <vendor email="support@wix.com" url="http://www.wix.com">WIX</vendor>
+    <idea-version since-build="191.*" until-build="193.*"></idea-version>
+    <description><![CDATA[
+    What if you could run a tutorial... inside your IDE?
+    ]]></description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    -->
+    <version>0.2.0</version>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <!--<idea-version until-build="194.*" since-build="190"/>-->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="codio" icon="/ui/pluginIcon.svg" anchor="right" factoryClass="com.wix.codio.toolwindow.CodioToolWindowFactory"/>
+    </extensions>
+
+    <actions>
+        <group id="com.wix.codio.Toolbar" text="Codio" description="Codio menu">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+            <action id="codio.actions.rewind" class="com.wix.codio.actions.CodioRewindAction" icon="/ui/rewind.svg" text="Rewind" description="rewind codio"/>
+            <action id="codio.actions.playOrPause" class="com.wix.codio.actions.CodioPlayOrPauseAction" icon="/ui/play.svg" text="Play/Pause" description="play/pause recording"/>
+            <action id="codio.actions.forward" class="com.wix.codio.actions.CodioForwardAction" icon="/ui/forward.svg" text="Forward" description="forward codio"/>
+            <separator></separator>
+            <action id="codio.actions.recordOrSave" class="com.wix.codio.actions.CodioRecordOrSaveAction" icon="/ui/record.svg" text="Record" description="start recording"/>
+<!--            <action id="codio.actions.save" class="com.wix.codio.actions.CodioSaveAction" icon="/ui/save.svg" text="Finish And Save Recording" description="Stops and saves recording"/>-->
+<!--            <action id="codio.actions.pauseOrResume" class="com.wix.codio.actions.CodioPauseOrResumeAction" icon="/ui/record.svg" text="Pause or Resume" description="Stops and saves recording"/>-->
+        </group>
+    </actions>
+</idea-plugin>
