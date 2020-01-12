@@ -1,11 +1,6 @@
 package com.wix.codio.codioEvents
 
 
-import com.wix.codio.fileSystem.KlaxonRectangle
-import com.wix.codio.fileSystem.KlaxonTextRanges
-import com.intellij.openapi.util.TextRange
-import java.awt.Rectangle
-
 abstract class CodioEvent {
     abstract val time: Long
     abstract val path: String
@@ -51,6 +46,19 @@ data class CodioTextChangedEvent(override val time: Long,
         return this.copy(time = time)
     }
     override fun copyEventWithModifiedPath(path: String): CodioTextChangedEvent{
+        return this.copy(path = path)
+    }
+}
+
+data class CodioExecutionEvent(override val time: Long,
+                               override val path: String,
+                               val executorId: String,
+                               val configurationId: String
+                                ): CodioEvent() {
+    override fun copyEventWithModifiedTime(time: Long): CodioExecutionEvent {
+        return this.copy(time = time)
+    }
+    override fun copyEventWithModifiedPath(path: String): CodioExecutionEvent{
         return this.copy(path = path)
     }
 }

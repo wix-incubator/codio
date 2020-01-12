@@ -1,12 +1,13 @@
 package com.wix.codio.recorder
 
+import com.intellij.execution.ExecutionListener
+import com.intellij.execution.ExecutionManager
+import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.event.EditorEventMulticaster
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.Project
@@ -94,6 +95,14 @@ open class Recorder {
             FileEditorManagerListener {
             override fun selectionChanged(event: FileEditorManagerEvent) {
                 val codioEvent = codioEventsCreator?.createEditorChangedEvent(event, initialFrame)
+                if (codioEvent != null) {
+                    codioTimeline.addToCodioList(codioEvent)
+                }
+            }
+        })
+        messageBusConnection!!.subscribe(ExecutionManager.EXECUTION_TOPIC, object : ExecutionListener {
+            override fun processStarting(executorId: String, executionEnv: ExecutionEnvironment) {
+                val codioEvent = codioEventsCreator?.createExecutionEvent(initialPath!!, executorId, executionEnv)
                 if (codioEvent != null) {
                     codioTimeline.addToCodioList(codioEvent)
                 }

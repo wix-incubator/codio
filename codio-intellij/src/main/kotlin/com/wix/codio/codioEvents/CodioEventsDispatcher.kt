@@ -1,10 +1,12 @@
 package com.wix.codio.codioEvents
 
+import com.intellij.execution.ExecutorRegistry
+import com.intellij.execution.ProgramRunnerUtil
+import com.intellij.execution.RunManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.LogicalPosition
-import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
@@ -22,6 +24,7 @@ class CodioEventsDispatcher(val project: Project) {
             is CodioSelectionChangedEvent -> dispatchSelectionChangedEvent(event)
             is CodioVisibleRangeChangedEvent -> dispatchVisibleRangeChangedEvent(event)
             is CodioEditorChangedEvent -> dispatchEditorChangedEvent(event)
+            is CodioExecutionEvent -> dispatchCodioExecutionEvent(event)
         }
     }
 
@@ -36,6 +39,20 @@ class CodioEventsDispatcher(val project: Project) {
             val startOffset = getPositionOffset(startPosition, document!!)
             val endOffset = getPositionOffset(endPosition, document!!)
             return TextRange(startOffset, endOffset)
+    }
+
+    fun dispatchCodioExecutionEvent(codioEvent: CodioExecutionEvent) {
+        try {
+            val runConfigurations = RunManager.getInstance(project!!).allSettings;
+            val matchingConfig = runConfigurations.find { config -> config.uniqueID == codioEvent.configurationId}
+            val executor = ExecutorRegistry.getInstance().getExecutorById(codioEvent.executorId)
+            val codioAction = Runnable {
+                ProgramRunnerUtil.executeConfiguration(matchingConfig!!, executor);
+            }
+            WriteCommandAction.runWriteCommandAction(project, codioAction)
+        } catch (e: Error) {
+            println(e)
+        }
     }
 
     fun dispatchTextChangedEvent(codioEvent: CodioTextChangedEvent) {

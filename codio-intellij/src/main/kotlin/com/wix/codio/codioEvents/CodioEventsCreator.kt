@@ -1,5 +1,6 @@
 package com.wix.codio.codioEvents
 
+import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -58,7 +59,7 @@ class CodioEventsCreator() {
 
     fun createSelectionChangedEvent (editor: Editor) : CodioSelectionChangedEvent?{
         val time = Instant.now().toEpochMilli()
-        val path = FileDocumentManager.getInstance().getFile(editor.document)!!.path
+        val path = FileDocumentManager.getInstance().getFile(editor.document)?.path ?: return null;
         try {
             val selection: List<CodioRange> = editor.caretModel.caretsAndSelections.map { caretState -> listOf(
                 CodioPosition(caretState.selectionStart!!.line, caretState.selectionStart!!.column),
@@ -68,6 +69,16 @@ class CodioEventsCreator() {
             val codioEvent = CodioSelectionChangedEvent(time, path, selection)
             println(codioEvent.toString())
             return codioEvent
+        } catch (e: Exception) {
+            return null
+        }
+    }
+
+    fun createExecutionEvent (path: String, executorId: String, executionEnvironment: ExecutionEnvironment) : CodioExecutionEvent?{
+        val time = Instant.now().toEpochMilli()
+        try {
+            val configurationId = executionEnvironment.runnerAndConfigurationSettings?.uniqueID ?: return null
+            return CodioExecutionEvent(time, path, executorId, configurationId)
         } catch (e: Exception) {
             return null
         }

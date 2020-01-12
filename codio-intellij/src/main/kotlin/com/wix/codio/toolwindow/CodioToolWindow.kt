@@ -147,7 +147,7 @@ class CodioToolWindow(private val project: Project) {
             wrapper.add(scrollPane, BorderLayout.CENTER)
 
             mySplitter.firstComponent = wrapper
-            mySplitter.secondComponent = consoleView.component
+//            mySplitter.secondComponent = consoleView.component
 
             content.add(playSlider, BorderLayout.NORTH)
 

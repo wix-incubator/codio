@@ -19,6 +19,7 @@ class CodioEventTypeAdapter : TypeAdapter<CodioEvent> {
         "selection" -> CodioSelectionChangedEvent::class
         "visibleRange" -> CodioVisibleRangeChangedEvent::class
         "text" -> CodioSerializedTextEvent::class
+        "execution" -> CodioExecutionEvent::class
         "caret" -> CodioCaretChangedEvent::class
         else -> throw IllegalArgumentException("Unknown type: $type")
     }
@@ -105,6 +106,10 @@ class CodioTimelineKlaxon {
         )
         is CodioVisibleRangeChangedEvent -> CodioEventWithType(
             "visibleRange",
+            event
+        )
+        is CodioExecutionEvent -> CodioEventWithType(
+            "execution",
             event
         )
         is CodioTextChangedEvent -> serializeTextEvent(event)
