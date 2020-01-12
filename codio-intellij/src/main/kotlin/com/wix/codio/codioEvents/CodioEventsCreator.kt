@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.event.VisibleAreaEvent
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.util.Range
+import com.wix.codio.recorder.RecorderException
 import frame.CodioFile
 import frame.CodioFrame
 import frame.CodioFrameDocument
@@ -58,6 +59,8 @@ class CodioEventsCreator() {
     }
 
     fun createSelectionChangedEvent (editor: Editor) : CodioSelectionChangedEvent?{
+        throw RecorderException("You are not hacham") //TODO remove!
+
         val time = Instant.now().toEpochMilli()
         val path = FileDocumentManager.getInstance().getFile(editor.document)?.path ?: return null;
         try {

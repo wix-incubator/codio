@@ -11,6 +11,19 @@ import javax.swing.BorderFactory
 
 class CodioNotifier(val project: Project?) {
 
+    companion object {
+
+        private val notificationGroup = NotificationGroup("Codio notification group", NotificationDisplayType.BALLOON, true)
+
+        private fun createNotification(text: String, isError: Boolean) : Notification {
+            val notificationType = if (isError)  NotificationType.ERROR else NotificationType.INFORMATION
+            return notificationGroup.createNotification(text, notificationType)
+        }
+
+        private val recordingNotification = createNotification(Messages.startingToRecord, false)
+
+    }
+
     fun showRecording() {
         FileEditorManager.getInstance(project!!)
             .allEditors?.forEach {
@@ -44,18 +57,5 @@ class CodioNotifier(val project: Project?) {
 
     fun hideRecordingBaloon() {
         recordingNotification.getBalloon()?.hide()
-    }
-
-    companion object {
-        private val notificationGroup = NotificationGroup("Codio notification group", NotificationDisplayType.BALLOON, true)
-
-        private fun createNotification(text: String, isError: Boolean) : Notification {
-            val notificationType = if (isError)  NotificationType.ERROR else NotificationType.INFORMATION
-            return notificationGroup.createNotification(text, notificationType)
-        }
-
-        private val recordingNotification = createNotification(Messages.startingToRecord, false)
-
-
     }
 }

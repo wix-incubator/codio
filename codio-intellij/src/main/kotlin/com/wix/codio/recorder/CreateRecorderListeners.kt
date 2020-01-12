@@ -2,11 +2,21 @@ package com.wix.codio.recorder
 
 import com.intellij.openapi.editor.event.*
 import com.wix.codio.CodioTimeline
+import com.wix.codio.actions.CodioNotifier
 import com.wix.codio.codioEvents.CodioEventsCreator
 
 class CreateRecorderListeners(var listeners: Listeners,
                               var codioEventsCreator: CodioEventsCreator,
-                              var codioTimeline: CodioTimeline) {
+                              var codioTimeline: CodioTimeline,
+                              var onError: (String) -> Unit) {
+
+    fun listenerWrapper(listener: () -> Unit) {
+        try {
+            listener()
+        } catch (ex: Exception) {
+            onError(ex.toString())
+        }
+    }
 
     fun initListeners() {
         listeners.docListener = object : DocumentListener {
@@ -28,9 +38,11 @@ class CreateRecorderListeners(var listeners: Listeners,
 
         listeners.caretListener = object : CaretListener {
             override fun caretPositionChanged(event: CaretEvent) {
-                val codioEvent = codioEventsCreator!!.createSelectionChangedEvent(event.editor)
-                if (codioEvent != null) {
-                    codioTimeline.addToCodioList(codioEvent)
+                listenerWrapper {
+                    val codioEvent = codioEventsCreator!!.createSelectionChangedEvent(event.editor)
+                    if (codioEvent != null) {
+                        codioTimeline.addToCodioList(codioEvent)
+                    }
                 }
             }
 
@@ -48,9 +60,12 @@ class CreateRecorderListeners(var listeners: Listeners,
 
         listeners.selectionListener = object: SelectionListener {
             override fun selectionChanged(event: SelectionEvent) {
-                val codioEvent = codioEventsCreator!!.createSelectionChangedEvent(event.editor) ?: return
-                println(codioEvent.toString())
-                codioTimeline.addToCodioList(codioEvent)
+
+                listenerWrapper {
+                    val codioEvent = codioEventsCreator!!.createSelectionChangedEvent(event.editor) ?: return@listenerWrapper
+                    println(codioEvent.toString())
+                    codioTimeline.addToCodioList(codioEvent)
+                }
             }
         }
 
