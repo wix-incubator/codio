@@ -21,7 +21,7 @@ import frame.CodioFrameDocument
 import java.time.Instant
 
 
-open class Recorder {
+class Recorder {
 
     var isRecording = false
 
@@ -42,43 +42,65 @@ open class Recorder {
     private var initialFrame = ArrayList<CodioFrameDocument>()
     private var fileSystemHandler: CodioFileSystemHandler? = null
     private var codioTimeline = CodioTimeline.instance
+
     fun record(e: AnActionEvent, fileSystemHandler: CodioFileSystemHandler, codioId: String, codioName: String, doc: Document) {
-        try{
+        recordingErrorWrapper {
             resetState()
             this.fileSystemHandler = fileSystemHandler
             this.codioId = codioId
             this.codioName = codioName
             this.eventMulticaster = initMultiCaster(e)
             this.absoluteStartTime = Instant.now().toEpochMilli()
-
             codioTimeline.clearTimeline()
-            project = e.project ?: return
+            project = e.project
             isRecording = true
             codioEventsCreator = CodioEventsCreator()
             connectMessageBus()
             initialContent = doc.text
             initialPath = FileDocumentManager.getInstance().getFile(doc)?.path
             initialFrame.add(CodioFrameDocument(initialContent!!, initialPath!!, 1, 0))
-            CreateRecorderListeners(this.listeners, codioEventsCreator!!, codioTimeline) { str -> CodioNotifier(project).showTempBaloon("Recording failed with error: $str", 5000) }.initListeners()
-            recorderObserver = RecorderObserver(listeners,eventMulticaster,messageBusConnection, codioEventsCreator, codioTimeline, initialFrame)
+            CreateRecorderListeners(
+                this.listeners,
+                codioEventsCreator!!,
+                codioTimeline,
+                { recordingErrorWrapper(it) }).initListeners()
+            recorderObserver = RecorderObserver(
+                listeners,
+                eventMulticaster,
+                messageBusConnection,
+                codioEventsCreator,
+                codioTimeline,
+                initialFrame
+            )
             recorderObserver?.attach()
             Audio.instance.record(fileSystemHandler.getCodioAudioPath(codioId))
+        }
+    }
+
+    fun recordingErrorWrapper(func: () -> Unit) {
+        try {
+            func()
         } catch (ex: Exception) {
-            fileSystemHandler.getCodioInHomeProjectFolder(codioId).deleteRecursively()
+            endRecording()
+            fileSystemHandler?.getCodioInHomeProjectFolder(codioId!!)?.deleteRecursively()
             CodioNotifier(project).showTempBaloon("Recording failed with error: $ex", 5000)
         }
     }
 
     private var recorderObserver: RecorderObserver? = null
 
-    fun finishRecordingAndSave() {
-        Audio.instance.finishRecording()
+    fun endRecording() {
+        Audio.instance.endRecording()
         recorderObserver?.detach()
+        disconnectMessageBus()
+        isRecording = false
+    }
+
+    fun saveRecording() {
         codioTimeline.changeTimesToRelative(absoluteStartTime)
         codioTimeline.recordingLength = Instant.now().toEpochMilli() - absoluteStartTime
         moveFirstFileToEndOfInitialFrameOrder()
         codioTimeline.initialFrame = initialFrame
-        isRecording = false
         val codioTimelineDataWithRelativePath = CodioTimeline.transformTimelineToRelativePath(
             project!!.basePath!!,
             codioTimeline.getTimelineData()
@@ -100,20 +122,29 @@ open class Recorder {
         messageBusConnection!!.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, object :
             FileEditorManagerListener {
             override fun selectionChanged(event: FileEditorManagerEvent) {
-                val codioEvent = codioEventsCreator?.createEditorChangedEvent(event, initialFrame)
-                if (codioEvent != null) {
-                    codioTimeline.addToCodioList(codioEvent)
+                recordingErrorWrapper {
+                    val codioEvent = codioEventsCreator?.createEditorChangedEvent(event, initialFrame)
+                    if (codioEvent != null) {
+                        codioTimeline.addToCodioList(codioEvent)
+                    }
                 }
+
             }
         })
         messageBusConnection!!.subscribe(ExecutionManager.EXECUTION_TOPIC, object : ExecutionListener {
             override fun processStarting(executorId: String, executionEnv: ExecutionEnvironment) {
-                val codioEvent = codioEventsCreator?.createExecutionEvent(initialPath!!, executorId, executionEnv)
-                if (codioEvent != null) {
-                    codioTimeline.addToCodioList(codioEvent)
+                recordingErrorWrapper {
+                    val codioEvent = codioEventsCreator?.createExecutionEvent(initialPath!!, executorId, executionEnv)
+                    if (codioEvent != null) {
+                        codioTimeline.addToCodioList(codioEvent)
+                    }
                 }
             }
         })
+    }
+
+    private fun disconnectMessageBus() {
+        messageBusConnection?.disconnect()
     }
 
     private fun moveFirstFileToEndOfInitialFrameOrder() {

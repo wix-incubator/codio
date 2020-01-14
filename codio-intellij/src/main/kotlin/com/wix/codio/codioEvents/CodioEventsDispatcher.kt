@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.wix.codio.Utils
+import com.wix.codio.exceptions.CodioEventDispatchException
 import userInterface.SelectionRenderer
 
 class CodioEventsDispatcher(val project: Project) {
@@ -33,21 +34,20 @@ class CodioEventsDispatcher(val project: Project) {
         return lineOffset + position.character
     }
 
-    private fun getOffsets(range: CodioRange, document: Document?) : TextRange? {
-            document ?: null;
+    private fun getOffsets(range: CodioRange, document: Document) : TextRange? {
             val (startPosition, endPosition) = range
-            val startOffset = getPositionOffset(startPosition, document!!)
-            val endOffset = getPositionOffset(endPosition, document!!)
+            val startOffset = getPositionOffset(startPosition, document)
+            val endOffset = getPositionOffset(endPosition, document)
             return TextRange(startOffset, endOffset)
     }
 
     fun dispatchCodioExecutionEvent(codioEvent: CodioExecutionEvent) {
         try {
-            val runConfigurations = RunManager.getInstance(project!!).allSettings;
-            val matchingConfig = runConfigurations.find { config -> config.uniqueID == codioEvent.configurationId}
-            val executor = ExecutorRegistry.getInstance().getExecutorById(codioEvent.executorId)
+            val runConfigurations = RunManager.getInstance(project).allSettings;
+            val matchingConfig = runConfigurations.find { config -> config.uniqueID == codioEvent.configurationId} ?: return
+            val executor = ExecutorRegistry.getInstance().getExecutorById(codioEvent.executorId) ?: return
             val codioAction = Runnable {
-                ProgramRunnerUtil.executeConfiguration(matchingConfig!!, executor);
+                ProgramRunnerUtil.executeConfiguration(matchingConfig, executor);
             }
             WriteCommandAction.runWriteCommandAction(project, codioAction)
         } catch (e: Error) {
@@ -58,19 +58,21 @@ class CodioEventsDispatcher(val project: Project) {
     fun dispatchTextChangedEvent(codioEvent: CodioTextChangedEvent) {
         try {
             var currentDoc: Document? = null
-            val file = LocalFileSystem.getInstance().findFileByPath(codioEvent.path)
+            val file = LocalFileSystem.getInstance().findFileByPath(codioEvent.path) ?: throw CodioEventDispatchException("Could not find file: ${codioEvent.path}")
             ApplicationManager.getApplication()
-                .runReadAction { currentDoc = FileDocumentManager.getInstance().getDocument(file!!) }
-            val textRange: TextRange = getOffsets(codioEvent.range, currentDoc) ?: return
-            val codioAction: Runnable
-            codioAction = Runnable {
-                currentDoc!!.replaceString(
-                    textRange.startOffset,
-                    textRange.endOffset,
-                    codioEvent.value
-                )
+                .runReadAction { currentDoc = FileDocumentManager.getInstance().getDocument(file) }
+            currentDoc?.let { document ->
+                val textRange: TextRange = getOffsets(codioEvent.range, document) ?: return
+                val codioAction: Runnable
+                codioAction = Runnable {
+                    document.replaceString(
+                        textRange.startOffset,
+                        textRange.endOffset,
+                        codioEvent.value
+                    )
+                }
+                WriteCommandAction.runWriteCommandAction(project, codioAction)
             }
-            WriteCommandAction.runWriteCommandAction(project, codioAction)
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
@@ -79,16 +81,19 @@ class CodioEventsDispatcher(val project: Project) {
 
     fun dispatchSelectionChangedEvent(codioEvent: CodioSelectionChangedEvent) {
         var currentDoc: Document? = null
-        val file = LocalFileSystem.getInstance().findFileByPath(codioEvent.path)
+        val file = LocalFileSystem.getInstance().findFileByPath(codioEvent.path) ?: throw CodioEventDispatchException("Could not find file: ${codioEvent.path}")
         ApplicationManager.getApplication()
-            .runReadAction { currentDoc = FileDocumentManager.getInstance().getDocument(file!!) }
-        val selections: List<TextRange> = codioEvent.selection.map { getOffsets(it, currentDoc) ?: return }
-        val cursorRenderer = SelectionRenderer(selections)
-        val currentEditor = Utils.getCurrentEditor(project, codioEvent)
+            .runReadAction { currentDoc = FileDocumentManager.getInstance().getDocument(file) }
+        currentDoc?.let { document ->
+            val selections: List<TextRange> = codioEvent.selection.map { getOffsets(it, document) ?: return }
+            val cursorRenderer = SelectionRenderer(selections)
+            val currentEditor = Utils.getCurrentEditor(project, codioEvent)
+            currentEditor?.let {
+                val codioAction = Runnable { cursorRenderer.renderCursor(it) }
+                WriteCommandAction.runWriteCommandAction(project, codioAction)
+            }
+        }
 
-        val codioAction = Runnable { cursorRenderer.renderCursor(currentEditor!!) }
-        if (currentEditor != null)
-            WriteCommandAction.runWriteCommandAction(project, codioAction)
     }
 
     fun dispatchVisibleRangeChangedEvent(codioEvent: CodioVisibleRangeChangedEvent) {
@@ -105,9 +110,9 @@ class CodioEventsDispatcher(val project: Project) {
     fun dispatchEditorChangedEvent(codioEvent: CodioEditorChangedEvent) {
         val codioAction: Runnable
         val path = codioEvent.path
-        val file = LocalFileSystem.getInstance().findFileByPath(path)
-        val fileDescriptor = OpenFileDescriptor(project!!, file!!)
-        codioAction = Runnable { FileEditorManager.getInstance(project!!).openEditor(fileDescriptor, true) }
+        val file = LocalFileSystem.getInstance().findFileByPath(path) ?: throw CodioEventDispatchException("Could not find file: $path")
+        val fileDescriptor = OpenFileDescriptor(project, file)
+        codioAction = Runnable { FileEditorManager.getInstance(project).openEditor(fileDescriptor, true) }
         WriteCommandAction.runWriteCommandAction(project, codioAction)
     }
 }

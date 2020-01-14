@@ -40,7 +40,7 @@ open class Audio {
         }
     }
 
-    fun finishRecording() {
+    fun endRecording() {
         recordingProcess!!.destroy()
     }
 }

@@ -25,7 +25,8 @@ class CodioRecordOrSaveAction : AnAction() {
 
         if (Recorder.instance.isRecording) {
             CodioNotifier(e.project).hideRecording()
-            Recorder.instance.finishRecordingAndSave()
+            Recorder.instance.endRecording()
+            Recorder.instance.saveRecording()
             CodioNotifier(project).showTempBaloon(Messages.recordingSaved, 2000)
         } else if (!Recorder.instance.isRecording) {
             try {
