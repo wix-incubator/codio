@@ -10,7 +10,8 @@ open class CodioSaveAction : AnAction() {
     override fun actionPerformed(@NotNull e: AnActionEvent) {
         if (Recorder.instance.isRecording) {
             CodioNotifier(e.project).hideRecording()
-            Recorder.instance.finishRecordingAndSave()
+            Recorder.instance.endRecording()
+            Recorder.instance.saveRecording()
         }
     }
 }

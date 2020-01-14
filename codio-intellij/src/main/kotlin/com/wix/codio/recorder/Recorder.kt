@@ -43,7 +43,7 @@ class Recorder {
     private var fileSystemHandler: CodioProjectFileSystemHandler? = null
     private var codioTimeline = CodioTimeline.instance
     fun record(e: AnActionEvent, fileSystemHandler: CodioProjectFileSystemHandler, codioId: String, codioName: String, doc: Document) {
-        try{
+         recordingErrorWrapper {
             resetState()
             this.fileSystemHandler = fileSystemHandler
             this.codioId = codioId
