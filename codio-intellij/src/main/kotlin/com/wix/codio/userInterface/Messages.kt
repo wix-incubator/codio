@@ -13,6 +13,6 @@ class Messages {
         val codioStart = "Codio is about to start.."
         val stopTutorial = "Stopping current codio.."
         val tutorialPause = "Paused codio."
-
+        val ffmpegNotInstalled = "Seems like you don't have ffmpeg. run `brew install ffmpeg` from your terminal and try again"
     }
 }

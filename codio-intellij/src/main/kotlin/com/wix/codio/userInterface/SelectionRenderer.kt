@@ -13,7 +13,7 @@ class SelectionRenderer constructor( internal var ranges: List<TextRange>) {
 
     internal fun renderCursor(editor: EditorEx) {
         val textAttributes = TextAttributes()
-        textAttributes.backgroundColor = Color(0, 255, 0)
+        textAttributes.backgroundColor = Color(230,230,250)
         val model = editor.markupModel
         model.removeAllHighlighters()
 
@@ -29,7 +29,7 @@ class SelectionRenderer constructor( internal var ranges: List<TextRange>) {
                 HighlighterTargetArea.EXACT_RANGE
             )
             val renderer = CustomHighlighterRenderer { editorToRender, highlighter, g ->
-                g.color = JBColor.GREEN;
+                g.color = JBColor.BLUE;
                 val point = editorToRender.logicalPositionToXY(editorToRender.offsetToLogicalPosition(highlighter.startOffset))
                 val pointEnd = editorToRender.logicalPositionToXY(editorToRender.offsetToLogicalPosition(highlighter.endOffset))
                 g.drawRect(point.x, point.y, pointEnd.x - point.x, editorToRender.lineHeight + 1)
