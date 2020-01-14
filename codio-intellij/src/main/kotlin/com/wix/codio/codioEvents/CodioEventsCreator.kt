@@ -12,6 +12,7 @@ import com.intellij.openapi.editor.event.VisibleAreaEvent
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.util.Range
+import com.wix.codio.recorder.RecorderException
 import frame.CodioFile
 import frame.CodioFrame
 import frame.CodioFrameDocument
@@ -57,7 +58,7 @@ class CodioEventsCreator() {
         return null
     }
 
-    fun createSelectionChangedEvent (editor: Editor) : CodioSelectionChangedEvent?{
+    fun createSelectionChangedEvent (editor: Editor) : CodioSelectionChangedEvent? {
         val time = Instant.now().toEpochMilli()
         val path = FileDocumentManager.getInstance().getFile(editor.document)?.path ?: return null;
         try {
@@ -107,15 +108,15 @@ class CodioEventsCreator() {
         // x is horizontal scroll, y is vertical, both start at 0
     }
 
-    fun createEditorChangedEvent (event: FileEditorManagerEvent, recordedFiles: ArrayList<CodioFrameDocument>) : CodioEditorChangedEvent {
+    fun createEditorChangedEvent (event: FileEditorManagerEvent, recordedFiles: ArrayList<CodioFrameDocument>) : CodioEditorChangedEvent? {
         val time = Instant.now().toEpochMilli()
-        val path = event.newFile!!.path
+        val path = event.newFile?.path ?: return null
         var isInitial = false
         var initialContent = ""
         if (recordedFiles.find { codioFile -> codioFile.path == path } == null) {
             var document: Document? = null;
             ApplicationManager.getApplication()
-                .runReadAction { document = FileDocumentManager.getInstance().getDocument(event.newFile!!) }
+                .runReadAction { event.newFile?.let { file -> document = FileDocumentManager.getInstance().getDocument(file)}}
 
             if (document != null) {
                 if (FileDocumentManager.getInstance().getFile(document!!)!!.isInLocalFileSystem) {

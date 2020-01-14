@@ -18,8 +18,8 @@ import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.treeStructure.Tree
 import com.wix.codio.CodioProgressTimer
 import com.wix.codio.fileSystem.CodioDescriptor
-import com.wix.codio.fileSystem.CodioFileSystemHandler
 import com.wix.codio.fileSystem.CodioFileSystemListener
+import com.wix.codio.fileSystem.FileSystemManager
 import java.awt.BorderLayout
 import java.util.*
 import javax.swing.JComponent
@@ -36,7 +36,7 @@ class CodioToolWindowFactory : ToolWindowFactory, DumbAware {
         val tab = ContentFactory.SERVICE.getInstance().createContent(toolwindowPanel, "", false)
         toolWindow.contentManager.addContent(tab)
 
-        CodioFileSystemHandler.addNewCodioListener( object: CodioFileSystemListener {
+        FileSystemManager.getProjectFileSystemHandler(project).addNewCodioListener( object: CodioFileSystemListener {
             override fun run(codioDescriptor: CodioDescriptor) {
                 val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("codio") ?: return
                 val content = toolWindow.getContentManager().getContent(0) ?: return
@@ -105,7 +105,7 @@ class CodioToolWindow(private val project: Project) {
         val model = codiosTree.model as DefaultTreeModel
         val root = model.root as DefaultMutableTreeNode
         root.removeAllChildren()
-        val codioFileSystemHandler = CodioFileSystemHandler(project)
+        val codioFileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
         codioFileSystemHandler.unzipAllCodios()
         val codioList = codioFileSystemHandler.listCodios()
 
@@ -123,7 +123,7 @@ class CodioToolWindow(private val project: Project) {
     private fun getTree(): JTree {
         val root = DefaultMutableTreeNode(CodioItem("", "codios", 0))
 
-        val codioFileSystemHandler = CodioFileSystemHandler(project)
+        val codioFileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
         codioFileSystemHandler.unzipAllCodios()
         val codioList = codioFileSystemHandler.listCodios()
 

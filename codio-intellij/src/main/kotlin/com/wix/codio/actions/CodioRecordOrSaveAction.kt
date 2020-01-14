@@ -10,7 +10,7 @@ import com.intellij.openapi.util.IconLoader
 import com.wix.codio.Audio
 import com.wix.codio.Player
 import com.wix.codio.recorder.Recorder
-import com.wix.codio.fileSystem.CodioFileSystemHandler
+import com.wix.codio.fileSystem.FileSystemManager
 import com.wix.codio.recorder.RecorderException
 import com.wix.codio.toolwindow.CodioNameDialog
 import com.wix.codio.userInterface.Messages
@@ -25,7 +25,8 @@ class CodioRecordOrSaveAction : AnAction() {
 
         if (Recorder.instance.isRecording) {
             CodioNotifier(e.project).hideRecording()
-            Recorder.instance.finishRecordingAndSave()
+            Recorder.instance.endRecording()
+            Recorder.instance.saveRecording()
             CodioNotifier(project).showTempBaloon(Messages.recordingSaved, 2000)
         } else if (!Recorder.instance.isRecording) {
             try {
@@ -37,7 +38,7 @@ class CodioRecordOrSaveAction : AnAction() {
                     return
                 }
                 val codioId = UUID.randomUUID().toString()
-                val fileSystemHandler = CodioFileSystemHandler(project)
+                val fileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
                 fileSystemHandler.createCodioProjectFolderInHomeDirIfNeeded(codioId)
                 Recorder.instance.record(e, fileSystemHandler, codioId, codioName, doc)
                 CodioNotifier(project).showRecording()
