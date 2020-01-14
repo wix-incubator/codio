@@ -16,7 +16,7 @@ import com.wix.codio.Audio
 import com.wix.codio.CodioTimeline
 import com.wix.codio.actions.CodioNotifier
 import com.wix.codio.codioEvents.CodioEventsCreator
-import com.wix.codio.fileSystem.CodioFileSystemHandler
+import com.wix.codio.fileSystem.CodioProjectFileSystemHandler
 import frame.CodioFrameDocument
 import java.time.Instant
 
@@ -40,11 +40,10 @@ class Recorder {
     private var initialContent: String? = null
     private var initialPath: String? = null
     private var initialFrame = ArrayList<CodioFrameDocument>()
-    private var fileSystemHandler: CodioFileSystemHandler? = null
+    private var fileSystemHandler: CodioProjectFileSystemHandler? = null
     private var codioTimeline = CodioTimeline.instance
-
-    fun record(e: AnActionEvent, fileSystemHandler: CodioFileSystemHandler, codioId: String, codioName: String, doc: Document) {
-        recordingErrorWrapper {
+    fun record(e: AnActionEvent, fileSystemHandler: CodioProjectFileSystemHandler, codioId: String, codioName: String, doc: Document) {
+        try{
             resetState()
             this.fileSystemHandler = fileSystemHandler
             this.codioId = codioId

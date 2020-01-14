@@ -29,7 +29,7 @@
             <action id="codio.actions.recordOrSave" class="com.wix.codio.actions.CodioRecordOrSaveAction" icon="/ui/record.svg" text="Record" description="start recording"/>
 <!--            <action id="codio.actions.save" class="com.wix.codio.actions.CodioSaveAction" icon="/ui/save.svg" text="Finish And Save Recording" description="Stops and saves recording"/>-->
 <!--            <action id="codio.actions.pauseOrResume" class="com.wix.codio.actions.CodioPauseOrResumeAction" icon="/ui/record.svg" text="Pause or Resume" description="Stops and saves recording"/>-->
-            <action id="codio.actions.debug" class="com.wix.codio.actions.CodioDebuggingAction" icon="/ui/save.svg" text="Debug" description="forward codio"/>
+<!--            <action id="codio.actions.debug" class="com.wix.codio.actions.CodioDebuggingAction" icon="/ui/save.svg" text="Debug" description="forward codio"/>-->
         </group>
     </actions>
 </idea-plugin>

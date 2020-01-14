@@ -6,7 +6,8 @@ import com.wix.codio.CodioProgressTimerOnFinishObserver
 import com.wix.codio.CodioTimeline
 import com.wix.codio.codioEvents.CodioEvent
 import com.wix.codio.codioEvents.CodioEventsDispatcher
-import com.wix.codio.fileSystem.CodioFileSystemHandler
+import com.wix.codio.fileSystem.CodioProjectFileSystemHandler
+import com.wix.codio.fileSystem.FileSystemManager
 import frame.CodioFrame
 import frame.CodioFrameDocument
 import java.time.Instant
@@ -23,7 +24,7 @@ open class Player {
     private var codioTimeline: CodioTimeline? = null
     var codioId: String? = null
     private var codioEventDispatcher: CodioEventsDispatcher? = null
-    private var codioFileSystemHandler: CodioFileSystemHandler? = null
+    private var codioFileSystemHandler: CodioProjectFileSystemHandler? = null
     private var audioPath: String? = null
     private var initialFrame: ArrayList<CodioFrameDocument>? = null
     internal var absoluteStartTime: Long = 0
@@ -35,7 +36,7 @@ open class Player {
     private var currentTimerTask: TimerTask? = null;
 
     fun loadCodio(codioId: String, project: Project) {
-        codioFileSystemHandler = CodioFileSystemHandler(project)
+        codioFileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
         this.codioId = codioId
         this.codioTimeline = codioFileSystemHandler!!.loadCodioTimeline(codioId, project.basePath!!)
         this.initialFrame = codioTimeline!!.initialFrame

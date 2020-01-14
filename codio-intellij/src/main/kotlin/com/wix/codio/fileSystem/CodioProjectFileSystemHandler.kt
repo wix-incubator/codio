@@ -15,25 +15,20 @@ interface CodioFileSystemListener {
     }
 }
 
-class CodioFileSystemHandler {
+class CodioProjectFileSystemHandler {
     private var project: Project
-    private var projectHash: String
     private var projectWorkHomeFolder: File
 
-    companion object {
-        private var listeners = ArrayList<CodioFileSystemListener>()
-        fun addNewCodioListener(listener: CodioFileSystemListener) {
-            listeners.add(listener)
-        }
-        private fun runThroughNewCodioListeners(codioDescriptor: CodioDescriptor) {
-            listeners.forEach { it.run(codioDescriptor)}
-        }
+    private var listeners = ArrayList<CodioFileSystemListener>()
+    fun addNewCodioListener(listener: CodioFileSystemListener) {
+        listeners.add(listener)
+    }
+    private fun runThroughNewCodioListeners(codioDescriptor: CodioDescriptor) {
+        listeners.forEach { it.run(codioDescriptor)}
     }
     constructor (project: Project) {
         this.project = project
-        this.projectHash = project.locationHash
-        this.projectWorkHomeFolder = File(codioHomeProjectsFolder, projectHash)
-
+        this.projectWorkHomeFolder = createTempDir("codio-", null, null)
     }
 
     private fun isMac(os: String) : Boolean {
@@ -112,7 +107,7 @@ class CodioFileSystemHandler {
         saveTimeline(codioId, codioTimelineData)
         saveCodioMeta(codioId!!, CodioMeta(name))
         zipCodioAndSaveInProject(codioId!!)
-        CodioFileSystemHandler.runThroughNewCodioListeners(CodioDescriptor(codioId, name, CodioOriginDir(projectWorkHomeFolder), 128)) //TODO: set actual duration
+        runThroughNewCodioListeners(CodioDescriptor(codioId, name, CodioOriginDir(projectWorkHomeFolder), 128)) //TODO: set actual duration
     }
 
     fun zipCodioAndSaveInProject(codioId: String) {
