@@ -87,17 +87,16 @@ class CodioEventsDispatcher(val project: Project) {
         currentDoc?.let { document ->
             val selections: List<TextRange> = codioEvent.selection.map { getOffsets(it, document) ?: return }
             val cursorRenderer = SelectionRenderer(selections)
-            val currentEditor = Utils.getCurrentEditor(project, codioEvent)
+            val currentEditor = Utils.getCurrentEditor(project, codioEvent.path)
             currentEditor?.let {
                 val codioAction = Runnable { cursorRenderer.renderCursor(it) }
                 WriteCommandAction.runWriteCommandAction(project, codioAction)
             }
         }
-
     }
 
     fun dispatchVisibleRangeChangedEvent(codioEvent: CodioVisibleRangeChangedEvent) {
-        val currentEditor = Utils.getCurrentEditor(project, codioEvent) ?: return
+        val currentEditor = Utils.getCurrentEditor(project, codioEvent.path) ?: return
 
         val codioAction = Runnable {
             val point = currentEditor.logicalPositionToXY(LogicalPosition(codioEvent.visibleRange[CodioRangeStartIndex].line, codioEvent.visibleRange[CodioRangeStartIndex].character))

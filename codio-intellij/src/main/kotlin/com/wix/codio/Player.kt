@@ -10,6 +10,7 @@ import com.wix.codio.fileSystem.CodioProjectFileSystemHandler
 import com.wix.codio.fileSystem.FileSystemManager
 import frame.CodioFrame
 import frame.CodioFrameDocument
+import userInterface.SelectionRenderer
 import java.time.Instant
 import java.util.*
 
@@ -82,7 +83,7 @@ open class Player {
             Audio.instance.pause()
             currentTimerTask?.cancel()
             codioRelativeActiveTime += (lastStoppedTime - absoluteStartTime);
-            // remove selection
+            SelectionRenderer.removeAllCursorRenderings(project!!, codioTimeline!!.initialFrame)
             progressTimer?.stop()
         }
     }

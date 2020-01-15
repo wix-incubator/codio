@@ -31,12 +31,12 @@ class Utils {
             WriteCommandAction.runWriteCommandAction(project, overrideEditorText)
         }
 
-        fun getCurrentEditor(project: Project, codioEvent: CodioEvent): EditorEx? {
+        fun getCurrentEditor(project: Project, path: String): EditorEx? {
             var currentEditor: EditorEx? = null
             ApplicationManager.getApplication()
                 .invokeAndWait {
                     val fileEditor = FileEditorManager.getInstance(project)
-                        .selectedEditors.find { it.file!!.path == codioEvent.path }
+                        .selectedEditors.find { it.file!!.path == path }
                     currentEditor = EditorUtil.getEditorEx(fileEditor)
 
                 }
