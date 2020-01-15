@@ -83,6 +83,10 @@ class CodioToolWindow(private val project: Project) {
     private val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 
 
+    fun setSliderEnabled(isEnabled: Boolean) {
+        playSlider.setIsEnabled(isEnabled)
+    }
+
     init {
         consoleView.print("Log....\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
