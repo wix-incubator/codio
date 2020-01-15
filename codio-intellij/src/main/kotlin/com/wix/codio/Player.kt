@@ -1,6 +1,7 @@
 package com.wix.codio
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 import com.sun.org.apache.xpath.internal.operations.Bool
 import com.wix.codio.CodioProgressTimer
 import com.wix.codio.CodioProgressTimerOnFinishObserver
@@ -10,6 +11,7 @@ import com.wix.codio.codioEvents.CodioEvent
 import com.wix.codio.codioEvents.CodioEventsDispatcher
 import com.wix.codio.fileSystem.CodioProjectFileSystemHandler
 import com.wix.codio.fileSystem.FileSystemManager
+import com.wix.codio.toolwindow.CodioToolWindowPanel
 import com.wix.codio.userInterface.Messages
 import frame.CodioFrame
 import frame.CodioFrameDocument
@@ -50,6 +52,11 @@ open class Player {
 
         this.absoluteStartTime = 0
         this.isPlaying = false
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("codio") ?: return
+        val content = toolWindow.contentManager.getContent(0) ?: return
+        val codioToolWindowPanel = content.component as CodioToolWindowPanel
+        codioToolWindowPanel.codioToolWindow.setSliderEnabled(true)
+
         this.progressTimer = CodioProgressTimer(this.recordingLength);
         CodioProgressTimer.onFinish(object : CodioProgressTimerOnFinishObserver() {
             override fun run() {
