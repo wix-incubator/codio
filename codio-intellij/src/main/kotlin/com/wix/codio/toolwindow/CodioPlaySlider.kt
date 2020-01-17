@@ -23,6 +23,10 @@ class CodioPlaySlider {
     }
 
 
+    fun setIsEnabled(isEnabled: Boolean) {
+        slider.isEnabled = isEnabled
+    }
+
     fun setSliderRange(min: Int, max: Int, value: Int) {
         slider.minimum = min
         slider.maximum = max
@@ -48,7 +52,8 @@ class CodioPlaySlider {
                 slider.value = current
             }
         })
-        slider.isEnabled = true
+
+        setIsEnabled(false)
 
         // Add change listener to the slider
         slider.addChangeListener {
@@ -58,9 +63,11 @@ class CodioPlaySlider {
 
         slider.addMouseListener(object : MouseListener {
             override fun mouseReleased(e: MouseEvent?) {
-                println("mouse release")
-                println(slider.value)
-                Player.instance.playFrom((slider.value * 1000).toLong())
+                if (slider.isEnabled) {
+                    println("mouse release")
+                    println(slider.value)
+                    Player.instance.playFrom((slider.value * 1000).toLong())
+                }
             }
 
             override fun mouseEntered(e: MouseEvent?) {

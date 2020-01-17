@@ -1,13 +1,18 @@
 package com.wix.codio
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
+import com.sun.org.apache.xpath.internal.operations.Bool
 import com.wix.codio.CodioProgressTimer
 import com.wix.codio.CodioProgressTimerOnFinishObserver
 import com.wix.codio.CodioTimeline
+import com.wix.codio.actions.CodioNotifier
 import com.wix.codio.codioEvents.CodioEvent
 import com.wix.codio.codioEvents.CodioEventsDispatcher
 import com.wix.codio.fileSystem.CodioProjectFileSystemHandler
 import com.wix.codio.fileSystem.FileSystemManager
+import com.wix.codio.toolwindow.CodioToolWindowPanel
+import com.wix.codio.userInterface.Messages
 import frame.CodioFrame
 import frame.CodioFrameDocument
 import userInterface.SelectionRenderer
@@ -48,6 +53,11 @@ open class Player {
 
         this.absoluteStartTime = 0
         this.isPlaying = false
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("codio") ?: return
+        val content = toolWindow.contentManager.getContent(0) ?: return
+        val codioToolWindowPanel = content.component as CodioToolWindowPanel
+        codioToolWindowPanel.codioToolWindow.setSliderEnabled(true)
+
         this.progressTimer = CodioProgressTimer(this.recordingLength);
         CodioProgressTimer.onFinish(object : CodioProgressTimerOnFinishObserver() {
             override fun run() {
@@ -65,14 +75,26 @@ open class Player {
         return milis / 1000
     }
 
+    fun checkIfFfmpegExist() : Boolean{
+        try {
+            Runtime.getRuntime().exec("/usr/local/bin/ffmpeg -version")
+            return true;
+        } catch(ex: Exception) {
+            return false;
+        }
+    }
+
     private fun play(timeline: ArrayList<CodioEvent>, relativeTimeToStart: Long) {
-        isPlaying = true
-        absoluteStartTime = Instant.now().toEpochMilli()
-        val timeline = CodioTimeline.createTimelineWithAbsoluteTime(timeline, absoluteStartTime)
-        this.runThroughCodioEvents(timeline)
-        val timeInSeconds = timeInSeconds(relativeTimeToStart).toInt()
-        Audio.instance.play(audioPath!!, timeInSeconds)
-        progressTimer?.run(timeInSeconds)
+        val isFfmpegExist = checkIfFfmpegExist();
+        if (isFfmpegExist) {
+            isPlaying = true
+            absoluteStartTime = Instant.now().toEpochMilli()
+            val timeline = CodioTimeline.createTimelineWithAbsoluteTime(timeline, absoluteStartTime)
+            this.runThroughCodioEvents(timeline)
+            val timeInSeconds = timeInSeconds(relativeTimeToStart).toInt()
+            Audio.instance.play(audioPath!!, timeInSeconds)
+            progressTimer?.run(timeInSeconds)
+        } else CodioNotifier(project).showTempBaloon(Messages.ffmpegNotInstalled, 8000)
     }
 
     fun pause() {
