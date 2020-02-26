@@ -5,7 +5,7 @@
 Codio (WIP)
 </h3>
 <h4 align="center">
-  A media format to record and replay the process of programming
+  A media format to record and play the process of programming
 </h4>
 
 
