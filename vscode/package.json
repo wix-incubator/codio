@@ -1,7 +1,7 @@
 {
-    "name": "interactive-tutorial",
-    "displayName": "Codio",
-    "description": "Interactive tutorials in your editor",
+    "name": "codio-format",
+    "displayName": "Codio Format",
+    "description": "Record and replay the process of programming",
     "version": "0.0.42",
     "publisher": "bogo",
     "engines": {
