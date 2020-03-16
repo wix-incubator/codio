@@ -11,9 +11,9 @@ export default async function playCodio(fsManager: FSManager, player: Player, re
       return;
     }
     if (player && player.isPlaying) {
-      showMessage(MESSAGES.stopTutorial);
+      showMessage(MESSAGES.stopCodio);
       player.pause();
-      player.closeTutorial();
+      player.closeCodio();
     }
     if (path) {
       await loadAndPlay(player, path);
@@ -31,9 +31,9 @@ export default async function playCodio(fsManager: FSManager, player: Player, re
 }
 
 async function loadAndPlay(player: Player, path) {
-  showMessage(MESSAGES.tutorialStart);
+  showMessage(MESSAGES.codioStart);
   await player.loadCodio(path);
-  await player.startTutorial();
+  await player.startCodio();
   showPlayerProgressBar(player, false);
 
 }

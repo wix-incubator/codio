@@ -8,7 +8,7 @@ export default async function playFrom(player: Player, time? : number) {
         } else {
             const timeInSecondsInput: string = await showPlayFromInputBox(player);
             const timeInSeconds = Number(timeInSecondsInput);
-            if (timeInSeconds && timeInSeconds > 0 && timeInSeconds < (player.tutorialLength / 1000)) {
+            if (timeInSeconds && timeInSeconds > 0 && timeInSeconds < (player.codioLength / 1000)) {
                 const timeInMilliseconds = Number(timeInSeconds) * 1000;
                 player.playFrom(timeInMilliseconds);
             } else {
@@ -16,6 +16,6 @@ export default async function playFrom(player: Player, time? : number) {
             }
         }
     } else {
-        showMessage(MESSAGES.noActiveTutorial);
+        showMessage(MESSAGES.noActiveCodio);
     }
 }

@@ -14,14 +14,14 @@ export default class CodeEditorRecorder {
     onDidChangeTextEditorVisibleRangesListener: Disposable;
 
     initialFrame: Array<CodioFile> = [];
-    tutorialEditors: Array<any>;
+    codioEditors: Array<any>;
     records: Array<any> = [];
 
     record() {
         const editor = window.activeTextEditor;
         if (editor) {
             this.addCodioFileToInitialFrame(new ShadowDocument(editor.document.getText()), 1, editor.document.uri, 0);
-            this.tutorialEditors = [editor.document.uri.path];
+            this.codioEditors = [editor.document.uri.path];
             this.onDidChangeActiveTextEditorListener = window.onDidChangeActiveTextEditor(this.onDidChangeActiveTextEditor);
             this.onDidChangeTextEditorSelectionListener = window.onDidChangeTextEditorSelection(this.onDidChangeTextEditorSelection);
             this.onDocumentTextChangedListener = workspace.onDidChangeTextDocument(this.onDocumentTextChanged);
@@ -47,12 +47,12 @@ export default class CodeEditorRecorder {
     }
 
     getTimelineContent(recordingStartTime) {
-        const {files, rootPath} = FSManager.normalizeFilesPath(this.tutorialEditors);
+        const {files, rootPath} = FSManager.normalizeFilesPath(this.codioEditors);
         const events = serializeEvents(this.records, rootPath);
         const initialFrame = serializeFrame(this.initialFrame, rootPath);
         const eventsTimeline = createRelativeTimeline(events, recordingStartTime);
-        // change ctions to events, change tutorialEditors initialFilePath and initialContent to initialFrame.
-        return {events: eventsTimeline, initialFrame, tutorialEditors: files};
+        // change ctions to events, change codioEditors initialFilePath and initialContent to initialFrame.
+        return {events: eventsTimeline, initialFrame, codioEditors: files};
     }
 
     onDocumentTextChanged = (e: TextDocumentChangeEvent) => {
@@ -66,8 +66,8 @@ export default class CodeEditorRecorder {
         try {
             const editorPath = e.document.uri.path;
             const editorContent = e.document.getText();
-            if (this.tutorialEditors.indexOf(editorPath) === -1) {
-                this.tutorialEditors.push(editorPath);
+            if (this.codioEditors.indexOf(editorPath) === -1) {
+                this.codioEditors.push(editorPath);
                 const record = eventCreators.createCodioEditorEvent(e, editorContent, true);
                 this.records.push(record);
                 this.addCodioFileToInitialFrame(new ShadowDocument(record.data.content), record.data.viewColumn, record.data.uri, 1);

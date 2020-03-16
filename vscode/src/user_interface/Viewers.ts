@@ -100,7 +100,7 @@ export function showPlayerProgressBar(player: Player, isMessage) {
         }, async (progress, token) => {
             token.onCancellationRequested(() => {
                 player.pause();
-                player.closeTutorial();
+                player.closeCodio();
             });
             let lastPercentage = 0;
             player.onTimerUpdate(async (currentTime, totalTime) => {

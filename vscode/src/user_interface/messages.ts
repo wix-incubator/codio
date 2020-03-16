@@ -10,20 +10,20 @@ export async function doYouWantToOverridePrompt() {
 }
 export const showTutorialNameInputBox = async () => await window.showInputBox({prompt: "Give your tutorial a name:"});
 export const showCodioNameInputBox = async () => await window.showInputBox({prompt: "Give your codio a name:"});
-export const showPlayFromInputBox = async (player) => await window.showInputBox({prompt: `Choose when to start from in seconds. Full Length is ${player.tutorialLength / 1000}`});
+export const showPlayFromInputBox = async (player) => await window.showInputBox({prompt: `Choose when to start from in seconds. Full Length is ${player.codioLength / 1000}`});
 
 export const MESSAGES = {
     startingToRecord : 'Starting to record',
     abortRecording : 'Aborted Recording.',
     savingRecording : 'Saving recording...',
     recordingSaved : 'Recording saved.',
-    cantPlayWhileRecording : 'Cant play tutorial while recording',
-    tutorialStart : 'Tutorial is about to start..',
-    stopTutorial : 'Stopping current tutorial..',
-    tutorialPause : 'Paused tutorial.',
-    alreadyPlaying : 'You already have a tutorial playing.',
+    cantPlayWhileRecording : 'Cant play Codio while recording',
+    codioStart : 'Codio is about to start..',
+    stopCodio : 'Stopping current codio..',
+    codioPaused : 'Paused Paused.',
+    alreadyPlaying : 'You already have a Codio playing.',
     invalidNumber : `Number is invalid`,
-    noActiveTutorial : "You don't have an active tutorial",
+    noActiveCodio : "You don't have an active Codio",
     tutorialCreated : `Tutorial Created`,
     signUpCodeSucces : 'Sign up successful!',
     signUpCodeFail : "Sign up unsuccesful...",

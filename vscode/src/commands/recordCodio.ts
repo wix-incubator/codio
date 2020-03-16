@@ -6,7 +6,7 @@ import { showRecorderProgressBar } from '../user_interface/Viewers';
 
 export default async function recordCodio(fsManager: FSManager, player: Player, recorder: Recorder) {
     if (player.isPlaying) {
-        player.closeTutorial();
+        player.closeCodio();
     }
     const codioName = await showCodioNameInputBox();
     if (codioName) {
