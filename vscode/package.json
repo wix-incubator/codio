@@ -1,7 +1,7 @@
 {
     "name": "codio-format",
     "displayName": "Codio Format",
-    "description": "Record and replay the process of programming",
+    "description": "Record and playback the process of programming",
     "version": "0.0.42",
     "publisher": "bogo",
     "engines": {
@@ -16,7 +16,7 @@
         "onCommand:codio.finishRecording",
         "onCommand:codio.playCodio",
         "onCommand:codio.pauseRecording",
-        "onCommand:codio.resumeTutorial",
+        "onCommand:codio.resumeCodio",
         "onCommand:codio.playFrom",
         "onCommand:codio.createTutorial",
         "onCommand:codio.executeFile",
@@ -39,23 +39,23 @@
             },
             {
                 "command": "codio.finishRecording",
-                "title": "Codio: Finish and Save Tutorial"
+                "title": "Codio: Finish and Save Codio"
             },
             {
                 "command": "codio.playCodio",
                 "title": "Codio: Play Codio"
             },
             {
-                "command": "codio.pauseTutorial",
-                "title": "Codio: Pause Tutorial",
+                "command": "codio.pauseCodio",
+                "title": "Codio: Pause Codio",
                 "icon": {
                     "light": "./media/pause.svg",
                     "dark": "./media/pause.svg"
                 }
             },
             {
-                "command": "codio.resumeTutorial",
-                "title": "Codio: Resume Tutorial"
+                "command": "codio.resumeCodio",
+                "title": "Codio: Resume Codio"
             },
             {
                 "command": "codio.playFrom",

@@ -7,16 +7,16 @@ export default class Player {
     isPlaying: boolean = false;
     codioPath: string;
 
-    tutorialLength: number;
-    tutorialStartTime: number;
-    tutorialRelativeActiveTime: number = 0;
+    codioLength: number;
+    codioStartTime: number;
+    relativeActiveTime: number = 0;
     lastStoppedTime: number = 0;
 
     codeEditorPlayer: CodeEditorPlayer;
     audioPlayer: AudioPlayer;
     timer: Timer;
 
-    closeTutorialResolver: any;
+    closeCodioResolver: any;
     process: any;
 
     async loadCodio(codioPath) {
@@ -24,40 +24,40 @@ export default class Player {
             this.setInitialState();
             this.codioPath = codioPath;
             const timeline = await FSManager.loadTimeline(this.codioPath);
-            this.tutorialLength = timeline.tutorialLength;
+            this.codioLength = timeline.codioLength;
             this.codeEditorPlayer = new CodeEditorPlayer(FSManager.workspacePath(this.codioPath), timeline);
             this.audioPlayer = new AudioPlayer(FSManager.audioPath(this.codioPath));
-            this.timer = new Timer(this.tutorialLength);
+            this.timer = new Timer(this.codioLength);
             this.timer.onFinish(() => this.pause());
         } catch (e) {
-            console.log('load tutorial failed', e);
+            console.log('loadCodio failed', e);
         }
     }
 
     setInitialState() {
-        this.tutorialRelativeActiveTime = 0;
+        this.relativeActiveTime = 0;
         this.lastStoppedTime = 0;
-        this.tutorialStartTime = undefined;
-        this.tutorialLength = undefined;
-        this.closeTutorialResolver = undefined;
+        this.codioStartTime = undefined;
+        this.codioLength = undefined;
+        this.closeCodioResolver = undefined;
         this.process = undefined;
     }
 
-    async startTutorial() {
+    async startCodio() {
         try {
-            this.process = new Promise((resolve) => this.closeTutorialResolver = resolve);
+            this.process = new Promise((resolve) => this.closeCodioResolver = resolve);
             await this.codeEditorPlayer.moveToFrame(0);
-            this.play(this.codeEditorPlayer.events, this.tutorialRelativeActiveTime);
+            this.play(this.codeEditorPlayer.events, this.relativeActiveTime);
         } catch(e) {
-            console.log('startTutorial failed', e);
+            console.log('startCodio failed', e);
         }
     }
 
-    play(actions: Array<any>, tutorialTime: number) {
-        this.tutorialStartTime = Date.now();
-        this.codeEditorPlayer.play(actions, this.tutorialStartTime);
-        this.audioPlayer.play(tutorialTime);
-        this.timer.run(tutorialTime);
+    play(actions: Array<any>, timeToStart: number) {
+        this.codioStartTime = Date.now();
+        this.codeEditorPlayer.play(actions, this.codioStartTime);
+        this.audioPlayer.play(timeToStart);
+        this.timer.run(timeToStart);
         this.isPlaying = true;
     }
 
@@ -66,18 +66,19 @@ export default class Player {
         this.codeEditorPlayer.pause();
         this.audioPlayer.pause();
         this.timer.stop();
-        this.tutorialRelativeActiveTime = this.tutorialRelativeActiveTime + (this.lastStoppedTime - this.tutorialStartTime);
+        this.relativeActiveTime = this.relativeActiveTime + (this.lastStoppedTime - this.codioStartTime);
         this.isPlaying = false;
     }
 
     resume() {
-        this.playFrom(this.tutorialRelativeActiveTime);
+        this.playFrom(this.relativeActiveTime);
     }
 
-    closeTutorial() {
+    //@TODO: should closeCodio just call pause? sometime it is called with pause before and sometime it doesn't. Probably a mistake
+    closeCodio() {
         this.timer.stop();
         this.audioPlayer.pause();
-        this.closeTutorialResolver();
+        this.closeCodioResolver();
     }
 
     onTimerUpdate(observer) {
@@ -88,7 +89,7 @@ export default class Player {
         if (this.isPlaying) {
             this.pause();
         }
-        let timeToRewind = this.tutorialRelativeActiveTime - (s * 1000);
+        let timeToRewind = this.relativeActiveTime - (s * 1000);
         if (timeToRewind < 0) {
             timeToRewind = 0;
         }
@@ -96,11 +97,11 @@ export default class Player {
     }
 
     forward(s) {
-        //todo: when tutorial is less then 10 seconds bbefore end finish.
+        //@TODO: Handle case when Codio is less then 10 seconds before the end.
         if (this.isPlaying) {
             this.pause();
         }
-        this.playFrom(this.tutorialRelativeActiveTime + (s * 1000));
+        this.playFrom(this.relativeActiveTime + (s * 1000));
     }
 
     async playFrom(relativeTimeToStart: number) {
@@ -111,7 +112,7 @@ export default class Player {
                 this.timer.stop();
             }
             await this.codeEditorPlayer.moveToFrame(relativeTimeToStart);
-            this.tutorialRelativeActiveTime = relativeTimeToStart;
+            this.relativeActiveTime = relativeTimeToStart;
             const relevantRelativeActions = this.codeEditorPlayer.getTimeline(relativeTimeToStart);
             const timeToStartInSeconds = relativeTimeToStart / 1000;
             this.play(relevantRelativeActions, timeToStartInSeconds);

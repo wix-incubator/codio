@@ -7,9 +7,9 @@ import FSManager from './filesystem/FSManager';
 import * as COMMAND_NAMES from './consts/command_names';
 import {
     finishRecording,
-    pauseTutorial,
+    pauseCodio,
     pauseOrResume,
-    resumeTutorial,
+    resumeCodio,
     playFrom,
     rewind,
     forward,
@@ -40,16 +40,16 @@ export async function activate(context: ExtensionContext) {
         playCodio(fsManager, player, recorder, path);
     });
 
-    const pauseTutorialDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_TUTORIAL, () => {
-        pauseTutorial(player);
+    const pauseCodioDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_CODIO, () => {
+        pauseCodio(player);
     });
 
     const pauseOrResumeDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_OR_RESUME, () => {
         pauseOrResume(player);
     });
 
-    const resumeTutorialDisposable = commands.registerCommand(COMMAND_NAMES.RESUME_TUTORIAL, () => {
-        resumeTutorial(player);
+    const resumeCodioDisposable = commands.registerCommand(COMMAND_NAMES.RESUME_CODIO, () => {
+        resumeCodio(player);
     });
 
     const playFromDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_FROM, async (time?: number) => {
@@ -80,8 +80,8 @@ export async function activate(context: ExtensionContext) {
     context.subscriptions.push(recordCodioDisposable);
     context.subscriptions.push(finishRecordingDisposable);
     context.subscriptions.push(playCodioDisposable);
-    context.subscriptions.push(pauseTutorialDisposable);
-    context.subscriptions.push(resumeTutorialDisposable);
+    context.subscriptions.push(pauseCodioDisposable);
+    context.subscriptions.push(resumeCodioDisposable);
     context.subscriptions.push(playFromDisposable);
     context.subscriptions.push(createTutorialDisposable);
     context.subscriptions.push(executeFileDisposabble);

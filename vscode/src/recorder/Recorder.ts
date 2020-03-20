@@ -69,10 +69,10 @@ export default class Recorder {
 
     async saveRecording() {
         try {
-            const tutorialTimelineContent = this.codeEditorRecorder.getTimelineContent(this.recordingStartTime);
-            const tutorialJsonContent = {...tutorialTimelineContent, tutorialLength: this.recordingLength };
+            const codioTimelineContent = this.codeEditorRecorder.getTimelineContent(this.recordingStartTime);
+            const codioJsonContent = {...codioTimelineContent, codioLength: this.recordingLength };
             const metadataJsonContent = {length: this.recordingLength, name: this.codioName};
-            await FSManager.saveRecordingToFile(tutorialJsonContent, metadataJsonContent, tutorialJsonContent.tutorialEditors,  this.codioPath);
+            await FSManager.saveRecordingToFile(codioJsonContent, metadataJsonContent, codioJsonContent.codioEditors,  this.codioPath);
             this.recordingSavedObservers.forEach(obs => obs());
         } catch(e) {
             console.log('Saving recording failed', e);
