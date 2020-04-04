@@ -39,7 +39,7 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
             const codios = await this.fsManager.getCodiosMetadata();
             return codios.map(codio => {
                 const codioItem = new vscode.TreeItem(codio.name);
-                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [this.fsManager.codioPath(codio.id)]};
+                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [vscode.Uri.file(this.fsManager.codioPath(codio.id))]};
                 codioItem.contextValue = "codio";
                 return codioItem;
             });
@@ -74,7 +74,7 @@ export class TutorialDataProvider implements vscode.TreeDataProvider<vscode.Tree
                 const codioId = codio.id;
                 const codioMetadata = await this.fsManager.getCodioMetaDataContent(codioId);
                 const codioItem = new vscode.TreeItem(codioMetadata.name);
-                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [this.fsManager.codioPath(codioId)]};
+                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [vscode.Uri.file(this.fsManager.codioPath(codioId))]};
                 codioItem.contextValue = "codio";
                 return codioItem;
             });

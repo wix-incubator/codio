@@ -3,8 +3,9 @@ import {showPlayerProgressBar} from '../user_interface/Viewers';
 import Player from '../player/Player';
 import Recorder from '../recorder/Recorder';
 import FSManager from '../filesystem/FSManager';
+import { Uri } from 'vscode';
 
-export default async function playCodio(fsManager: FSManager, player: Player, recorder: Recorder, path? : string) {
+export default async function playCodio(fsManager: FSManager, player: Player, recorder: Recorder, codioUri? : Uri) {
   try {
     if (recorder && recorder.isRecording) {
       showMessage(MESSAGES.cantPlayWhileRecording);
@@ -15,8 +16,9 @@ export default async function playCodio(fsManager: FSManager, player: Player, re
       player.pause();
       player.closeCodio();
     }
-    if (path) {
-      await loadAndPlay(player, path);
+    if (codioUri) {
+      const codioUnzippedFolder = await fsManager.getCodioUnzipped(codioUri);
+      await loadAndPlay(player, codioUnzippedFolder);
     } else {
       const codioId = await fsManager.chooseCodio();
       if (codioId) {

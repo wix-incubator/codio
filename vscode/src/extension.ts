@@ -1,4 +1,4 @@
-import {commands, ExtensionContext} from 'vscode';
+import {commands, ExtensionContext, Uri} from 'vscode';
 
 import Player from './player/Player';
 import Recorder from './recorder/Recorder';
@@ -28,16 +28,16 @@ export async function activate(context: ExtensionContext) {
     registerTreeViews(fsManager);
     await fsManager.createExtensionFolders();
 
-    const recordCodioDisposable = commands.registerCommand(COMMAND_NAMES.RECORD_CODIO, async () => {
-        recordCodio(fsManager, player, recorder);
+    const recordCodioDisposable = commands.registerCommand(COMMAND_NAMES.RECORD_CODIO, async (uri) => {
+        recordCodio(fsManager, player, recorder, uri);
     });
 
     const finishRecordingDisposable = commands.registerCommand(COMMAND_NAMES.FINISH_RECORDING, () => {
         finishRecording(recorder);
     });
 
-    const playCodioDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_CODIO, async (path) => {
-        playCodio(fsManager, player, recorder, path);
+    const playCodioDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_CODIO, async (uri: Uri) => {
+        playCodio(fsManager, player, recorder, uri);
     });
 
     const pauseCodioDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_CODIO, () => {
