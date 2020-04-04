@@ -2,12 +2,15 @@ import CodeEditorRecorder from './Editor';
 import AudioRecorder from './Audio';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
+import { Uri } from 'vscode';
 
+const CODIO_FORMAT_VERSION = 0.1;
 export default class Recorder {
     audioRecorder: AudioRecorder;
     codeEditorRecorder: CodeEditorRecorder;
     timer: Timer;
     codioPath: string;
+    destinationFolder: Uri | undefined;
     codioName: string;
 
     recordingStartTime: number;
@@ -19,17 +22,18 @@ export default class Recorder {
     stopRecordingResolver: Function;
 
 
-    loadCodio(codioPath: string, codioName: string) {
+    loadCodio(codioPath: string, codioName: string, destinationFolder: Uri | undefined) {
         if (this.isRecording) {
             this.stopRecording();
             this.saveRecording();
         }
-        this.setInitialState(codioPath, codioName);
+        this.setInitialState(codioPath, codioName, destinationFolder);
     }
 
-    setInitialState = (codioPath, codioName) => {
+    setInitialState = (codioPath, codioName, destinationFolder) => {
         this.codioPath = codioPath;
         this.codioName = codioName;
+        this.destinationFolder = destinationFolder;
         this.audioRecorder = new AudioRecorder(FSManager.audioPath(this.codioPath));
         this.codeEditorRecorder = new CodeEditorRecorder();
         this.timer = new Timer();
@@ -72,7 +76,7 @@ export default class Recorder {
             const codioTimelineContent = this.codeEditorRecorder.getTimelineContent(this.recordingStartTime);
             const codioJsonContent = {...codioTimelineContent, codioLength: this.recordingLength };
             const metadataJsonContent = {length: this.recordingLength, name: this.codioName};
-            await FSManager.saveRecordingToFile(codioJsonContent, metadataJsonContent, codioJsonContent.codioEditors,  this.codioPath);
+            await FSManager.saveRecordingToFile(codioJsonContent, metadataJsonContent, codioJsonContent.codioEditors,  this.codioPath, this.destinationFolder);
             this.recordingSavedObservers.forEach(obs => obs());
         } catch(e) {
             console.log('Saving recording failed', e);

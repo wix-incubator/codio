@@ -16,6 +16,7 @@ const CREDENTIALS_FILE = join(EXTENSION_FOLDER, "/cred.json");
 
 export default class FSManager {
     extensionFolder: string;
+    tempFolder: string;
     codiosFolder: string;
     tutorialsFolder: string;
 
@@ -33,6 +34,7 @@ export default class FSManager {
 
     constructor() {
         const userOS = os.platform();
+        this.tempFolder = os.tmpdir();
         if (userOS === "darwin") {
             this.extensionFolder = EXTENSION_FOLDER;
         } else if (userOS === "win32") {
@@ -40,6 +42,7 @@ export default class FSManager {
         }
         this.codiosFolder = join(this.extensionFolder, "/codios");
         this.tutorialsFolder = join(this.extensionFolder, "/tutorials");
+
     }
 
     static async saveCredentials(email, cookie = '', uid = '') {
@@ -109,13 +112,16 @@ export default class FSManager {
         return codifiedPath;
     }
 
-    static async saveRecordingToFile(codioContent: Object, metaData: Object, files: Array<any>, codioPath: string) {
+    static async saveRecordingToFile(codioContent: Object, metaData: Object, files: Array<any>, codioPath: string, destinationFolder: vscode.Uri | undefined) {
         const codioContentJson = JSON.stringify(codioContent);
         const metaDataJson = JSON.stringify(metaData);
         FSManager.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
         FSManager.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
         const codioWorkspaceFolderPath = join(codioPath, CODIO_WORKSPACE_FOLDER);
         await saveProjectFiles(codioWorkspaceFolderPath, files);
+        if (destinationFolder) {
+            this.zip(codioPath, destinationFolder.fsPath);
+        }
         onCodiosChangedSubscribers.forEach(func => func());
     }
 
@@ -171,21 +177,42 @@ export default class FSManager {
         }
     }
 
-    async zip(folderPath) {
+    async createTempCodioFolder(codioId) {
         try {
-            await promiseExec(`zip -r -j ${folderPath}.zip ${folderPath}`);
-            return `${folderPath}.zip`;
-        } catch(e) {
-            console.log(`zip for folder ${folderPath} failed`, e);
+            const path = join(this.tempFolder, codioId);
+            await mkdir(path);
+            return path;
+        }  catch(e) {
+            console.log('Problem creating folder', e);
         }
     }
 
-    async unzipCodio(codioId) {
+    getCodioUnzipped(uri: vscode.Uri) {
+        if (fs.lstatSync(uri.fsPath).isDirectory()) {
+            return uri.fsPath;
+        } else {
+            return this.unzipCodio(uri.fsPath);
+        }
+    }
+
+    static async zip(srcPath, distPath) {
         try {
-            await mkdir(join(this.codiosFolder, codioId));
-            await promiseExec(`unzip ${join(this.codiosFolder, codioId)}.zip -d ${join(this.codiosFolder, codioId)}`);
+            await promiseExec(`cd ${srcPath} && zip -r ${distPath}.codio .`);
+            return `${distPath}.zip`;
         } catch(e) {
-            console.log(`unzipping codio with id: ${codioId} failed`, e);
+            console.log(`zip for folder ${srcPath} failed`, e);
+        }
+    }
+
+    async unzipCodio(srcPath) {
+        const uuid = require('uuid');
+        const codioId = uuid.v4();
+        const codioTempFolder = join(this.tempFolder, codioId);
+        try {
+            await promiseExec(`unzip ${srcPath} -d ${codioTempFolder}`);
+            return codioTempFolder;
+        } catch(e) {
+            console.log(`unzipping codio with path: ${srcPath} failed`, e);
         }
     }
 
