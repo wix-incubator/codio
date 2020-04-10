@@ -29,7 +29,7 @@
             },
             {
                 "command": "codio.finishRecording",
-                "title": "Codio: Stop Recording and Save"
+                "title": "Codio: Save Recording"
             },
             {
                 "command": "codio.playCodio",
