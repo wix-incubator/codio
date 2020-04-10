@@ -46,8 +46,8 @@ export default class CodeEditorRecorder {
         this.onDocumentTextChangedListener.dispose();
     }
 
-    getTimelineContent(recordingStartTime) {
-        const {files, rootPath} = FSManager.normalizeFilesPath(this.codioEditors);
+    getTimelineContent(recordingStartTime, workspaceRoot?: Uri) {
+        const {files, rootPath} = FSManager.normalizeFilesPath(this.codioEditors, workspaceRoot);
         const events = serializeEvents(this.records, rootPath);
         const initialFrame = serializeFrame(this.initialFrame, rootPath);
         const eventsTimeline = createRelativeTimeline(events, recordingStartTime);

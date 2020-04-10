@@ -33,7 +33,7 @@ function serializeTextEvent(event : CodioTextEvent, rootPath) : CodioSerializedT
         ...event,
         data: {
             ...eventData,
-            path: FSManager.codifyPath(uri, rootPath),
+            path: FSManager.toRelativePath(uri, rootPath),
             changes: []
         }
     };
@@ -55,7 +55,7 @@ function serializeFilePath(event: CodioEvent, rootPath) : CodioSerializedEvent {
         const {uri, ...eventData } = event.data;
         const newEvent = {...event, data: {
             ...eventData,
-            path: FSManager.codifyPath(event.data.uri, rootPath)
+            path: FSManager.toRelativePath(event.data.uri, rootPath)
         }};
         return newEvent;
       }

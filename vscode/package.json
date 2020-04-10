@@ -18,9 +18,7 @@
         "onCommand:codio.pauseRecording",
         "onCommand:codio.resumeCodio",
         "onCommand:codio.playFrom",
-        "onCommand:codio.createTutorial",
-        "onCommand:codio.executeFile",
-        "onCommand:codio.addCodioToTutorial"
+        "onCommand:codio.executeFile"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -30,16 +28,8 @@
                 "title": "Codio: Record Codio"
             },
             {
-                "command": "codio.addCodioToTutorial",
-                "title": "Codio: Add Codio To Tutorial"
-            },
-            {
-                "command": "codio.downloadTutorial",
-                "title": "Codio: DownloadTutorial"
-            },
-            {
                 "command": "codio.finishRecording",
-                "title": "Codio: Finish and Save Codio"
+                "title": "Codio: Stop Recording and Save"
             },
             {
                 "command": "codio.playCodio",
@@ -88,38 +78,27 @@
             {
                 "command": "codio.executeFile",
                 "title": "Codio: Execute FIle"
-            },
-            {
-                "command": "codio.createTutorial",
-                "title": "Codio: Create Tutorial"
             }
         ],
         "menus": {
             "editor/title": [
                 {
                     "command": "codio.rewind",
-                    "when": "resourceFilename =~ /codio/",
+                    "when": "inCodioSession",
                     "alt": "codio.rewind",
                     "group": "navigation@1"
                 },
                 {
                     "command": "codio.pauseOrResume",
-                    "when": "resourceFilename =~ /codio/",
+                    "when": "inCodioSession",
                     "alt": "codio.pauseOrResume",
                     "group": "navigation@2"
                 },
                 {
                     "command": "codio.forward",
-                    "when": "resourceFilename =~ /codio/",
+                    "when": "inCodioSession",
                     "alt": "codio.forward",
                     "group": "navigation@3"
-                }
-            ],
-            "view/title": [
-                {
-                    "command": "codio.createTutorial",
-                    "when": "view == codioTutorials",
-                    "group": "navigation"
                 }
             ],
             "view/item/context": [
@@ -144,10 +123,6 @@
                 {
                     "id": "codioMessages",
                     "name": "All codios"
-                },
-                {
-                    "id": "codioTutorials",
-                    "name": "Tutorials"
                 }
             ]
         }

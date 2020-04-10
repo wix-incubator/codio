@@ -1,48 +1,35 @@
 import {mkdir, readFile, unlink, readdir, exists, promiseExec, writeFile} from '../utils';
 import * as vscode from 'vscode';
 import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
-const os = require("os");
-const fs = require("fs");
-const { join } = require('path');
-const homedir = require('os').homedir();
-const onCodiosChangedSubscribers = [];
+import * as os from "os";
+import * as fs from "fs";
+import { join, sep } from 'path';
+import { v4 as uuid } from 'uuid';
 
-const TUTORIAL_META_FILE = 'meta.json';
+const homedir = require('os').homedir();
+const userOS = os.platform();
+const onCodiosChangedSubscribers = [];
+const EXTENSION_FOLDER = userOS === "darwin" ? join(homedir,"Library", "codio") : join(homedir, "codio");
+const codiosFolder = join(EXTENSION_FOLDER, "codios");
+
 const CODIO_META_FILE = 'meta.json';
 const CODIO_CONTENT_FILE = 'codio.json';
 const CODIO_WORKSPACE_FOLDER = 'workspace';
-const EXTENSION_FOLDER = join(homedir,"/Library/codio/");
-const CREDENTIALS_FILE = join(EXTENSION_FOLDER, "/cred.json");
+const CREDENTIALS_FILE = join(EXTENSION_FOLDER, "cred.json");
 
 export default class FSManager {
-    extensionFolder: string;
     tempFolder: string;
-    codiosFolder: string;
-    tutorialsFolder: string;
 
     onCodiosChanged(func: Function) {
         onCodiosChangedSubscribers.push(func);
     }
 
     codioPath(codioId) {
-        return join(this.codiosFolder, codioId);
-    }
-
-    tutorialPath(tutorialId) {
-        return join(this.tutorialsFolder, tutorialId);
+        return join(codiosFolder, codioId);
     }
 
     constructor() {
-        const userOS = os.platform();
         this.tempFolder = os.tmpdir();
-        if (userOS === "darwin") {
-            this.extensionFolder = EXTENSION_FOLDER;
-        } else if (userOS === "win32") {
-            this.extensionFolder = join(homedir, "/codio/");
-        }
-        this.codiosFolder = join(this.extensionFolder, "/codios");
-        this.tutorialsFolder = join(this.extensionFolder, "/tutorials");
-
     }
 
     static async saveCredentials(email, cookie = '', uid = '') {
@@ -72,19 +59,15 @@ export default class FSManager {
     }
 
     static timelinePath(codioPath) {
-        return join(codioPath, '/codio.json');
+        return join(codioPath, 'codio.json');
     }
 
     static audioPath(codioPath) {
-        return join(codioPath, '/audio.mp3');
+        return join(codioPath, 'audio.mp3');
     }
 
     static workspacePath(codioPath) {
-        return join(codioPath, '/workspace');
-    }
-
-    static codioPrefix(fileName) {
-        return `codio.${fileName}`;
+        return join(codioPath, 'workspace');
     }
 
     static async loadTimeline(codioPath) {
@@ -92,51 +75,42 @@ export default class FSManager {
         const parsedTimeline = JSON.parse(timelineContent);
         return parsedTimeline;
     }
+
     static toRelativePath(uri: vscode.Uri, rootPath: string) {
-        const pathSplit = uri.path.split('/');
-        const rootPathSplit = rootPath.split('/');
-        const relativePath = pathSplit.slice(rootPathSplit.length).join('/');
+        const pathSplit = uri.path.split(sep);
+        const rootPathSplit = rootPath.split(sep);
+        const relativePath = pathSplit.slice(rootPathSplit.length).join(sep);
         return relativePath;
     }
 
-    static addCodioPreifx(path: string) {
-        const splitPath =  path.split('/');
-        splitPath[splitPath.length -1] = `codio.${splitPath[splitPath.length -1]}`;
-        const codifiedPath = splitPath.join('/');
-        return codifiedPath;
-    }
-
-    static codifyPath(path: vscode.Uri, rootPath: string) : string {
-        const relativePath = this.toRelativePath(path, rootPath);
-        const codifiedPath = this.addCodioPreifx(relativePath);
-        return codifiedPath;
-    }
-
-    static async saveRecordingToFile(codioContent: Object, metaData: Object, files: Array<any>, codioPath: string, destinationFolder: vscode.Uri | undefined) {
+    static async saveRecordingToFile(codioContent: Object, metaData: Object, files: Array<string>, codioPath: string, destinationFolder?: vscode.Uri) {
         const codioContentJson = JSON.stringify(codioContent);
         const metaDataJson = JSON.stringify(metaData);
-        FSManager.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
-        FSManager.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
+        this.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
+        this.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
         const codioWorkspaceFolderPath = join(codioPath, CODIO_WORKSPACE_FOLDER);
         await saveProjectFiles(codioWorkspaceFolderPath, files);
         if (destinationFolder) {
             this.zip(codioPath, destinationFolder.fsPath);
+        } else {
+            fs.renameSync(codioPath, join(codiosFolder, uuid()));
         }
         onCodiosChangedSubscribers.forEach(func => func());
     }
 
-    static normalizeFilesPath(fullPathFiles) {
-        if (fullPathFiles.length > 1) {
-            const splitFiles = fullPathFiles.map(file => file.split('/').slice(1));
+    static normalizeFilesPath(fullPathFiles: Array<string> , root?: vscode.Uri) : {rootPath: string, files: string[]} {
+        if (root) {
+            const normalizedFiles = fullPathFiles.map(fsPath => this.toRelativePath(vscode.Uri.file(fsPath), root.fsPath));
+            return { rootPath: root.fsPath, files: normalizedFiles};
+        } else if (fullPathFiles.length > 1) {
+            const splitFiles = fullPathFiles.map(file => file.split(sep).slice(1));
             const {rootPath, files} = reduceToRoot(splitFiles);
-            const filesWithCodioPrefix = files.map(file => [...file.slice(0, -1), this.codioPrefix(file[file.length - 1])]);
-            return {rootPath, files: filesWithCodioPrefix};
+            return {rootPath, files};
         } else {
-            const fullPathSplit = fullPathFiles[0].split('/');
-            const rootPath = fullPathSplit.slice(0, -1).join('/');
+            const fullPathSplit = fullPathFiles[0].split(sep);
+            const rootPath = fullPathSplit.slice(0, -1).join(sep);
             const file = fullPathSplit[fullPathSplit.length-1];
-            const fileWithCodioPrefix = this.codioPrefix(file);
-            return { rootPath, files: [fileWithCodioPrefix]};
+            return { rootPath: rootPath, files: [file]};
         }
     }
 
@@ -145,31 +119,27 @@ export default class FSManager {
     }
 
     async folderNameExists(folderName): Promise<boolean> {
-        return await exists(`${this.extensionFolder}/${folderName}`);
+        return await exists(join(EXTENSION_FOLDER, folderName));
     }
 
     async createExtensionFolders() {
         try {
-            const extensionFolderExists = await exists(this.extensionFolder);
+            const extensionFolderExists = await exists(EXTENSION_FOLDER);
             if (!extensionFolderExists) {
-                await mkdir(this.extensionFolder);
+                await mkdir(EXTENSION_FOLDER);
             }
-            const codiosFolderExists = await exists(this.codiosFolder);
+            const codiosFolderExists = await exists(codiosFolder);
             if (!codiosFolderExists) {
-                await mkdir(this.codiosFolder);
-            }
-            const tutorialsFolderExists = await exists(this.tutorialsFolder);
-            if (!tutorialsFolderExists) {
-                await mkdir(this.tutorialsFolder);
+                await mkdir(codiosFolder);
             }
         } catch(e) {
-            console.log('Problem creating your tutorial folder', e);
+            console.log('Problem creating your extension folders', e);
         }
     }
 
     async createCodioFolder(folderName) {
         try {
-            const path = join(this.codiosFolder, folderName);
+            const path = join(codiosFolder, folderName);
             await mkdir(path);
             return path;
         }  catch(e) {
@@ -216,17 +186,8 @@ export default class FSManager {
         }
     }
 
-    async unzipTutorial(tutorialId) {
-        try {
-            await mkdir(join(this.tutorialsFolder, tutorialId));
-            await promiseExec(`unzip ${join(this.tutorialsFolder, tutorialId)}.zip -d ${join(this.tutorialsFolder, tutorialId)}`);
-        } catch(e) {
-            console.log(`unzipping tutorial with id: ${tutorialId} failed`, e);
-        }
-    }
-
     async deleteFilesInCodio(codioId) {
-        const path = join(this.codiosFolder, codioId);
+        const path = join(codiosFolder, codioId);
         const files = await readdir(path);
         // currently I am assuming there won't be directories inside the directory
         await Promise.all(files.map(f => unlink(join(path, f))));
@@ -237,8 +198,8 @@ export default class FSManager {
     async getCodiosMetadata() : Promise<Array<any>> {
         try {
             let codiosMetaData = [];
-            const folderContents = await readdir(this.codiosFolder);
-            const directories = folderContents.filter(file => fs.statSync(join(this.codiosFolder, file)).isDirectory());
+            const folderContents = await readdir(codiosFolder);
+            const directories = folderContents.filter(file => fs.statSync(join(codiosFolder, file)).isDirectory());
             await Promise.all(directories.map(async dir => {
                 const metaData = await this.getCodioMetaDataContent(dir);
                 codiosMetaData.push({...metaData, id: dir});
@@ -251,34 +212,10 @@ export default class FSManager {
 
     async getCodioMetaDataContent(codioId) {
         try {
-            const metaData = await readFile(join(this.codiosFolder, codioId, CODIO_META_FILE));
+            const metaData = await readFile(join(codiosFolder, codioId, CODIO_META_FILE));
             return JSON.parse(metaData);
         } catch(e) {
             console.log(`Problem getting codio ${codioId} meta data`, e);
-        }
-    }
-
-    async getTutorialMetaDataContent(tutorialId) {
-        try {
-            const metaData = await readFile(join(this.tutorialsFolder, tutorialId, TUTORIAL_META_FILE));
-            return JSON.parse(metaData);
-        } catch(e) {
-            console.log(`Problem getting tutorial ${tutorialId} meta data`, e);
-        }
-    }
-
-    async getTutorialsMetadata() : Promise<Array<any>> {
-        try {
-            let tutorialsMetadata = [];
-            const folderContents = await readdir(this.tutorialsFolder);
-            const directories = folderContents.filter(file => fs.statSync(join(this.tutorialsFolder, file)).isDirectory());
-            await Promise.all(directories.map(async dir => {
-                const metaData = await this.getTutorialMetaDataContent(dir);
-                tutorialsMetadata.push({...metaData, id: dir});
-            }));
-            return tutorialsMetadata;
-        } catch(e) {
-            console.log(`getTutorialsMetadata failed`, e);
         }
     }
 
@@ -310,36 +247,5 @@ export default class FSManager {
 
     async chooseCodio() {
         return this.choose(this.getCodiosMetadata.bind(this));
-    }
-
-    async chooseTutorial() {
-       return this.choose(this.getTutorialsMetadata.bind(this));
-    }
-
-    async createTutorial(tutorialName) {
-        const uuid = require('uuid');
-        const tutorialId = uuid.v4();
-        const tutorialInitialMetadata = {name: tutorialName, codios: [], id: tutorialId};
-        const tutorialPath = join(this.tutorialsFolder, tutorialId);
-        await mkdir(tutorialPath);
-
-        FSManager.saveFile(join(tutorialPath, TUTORIAL_META_FILE), JSON.stringify(tutorialInitialMetadata));
-        onCodiosChangedSubscribers.forEach(func => func());
-    }
-
-    async addCodioToTutorial(tutorialId, codioId) {
-        const tutorialPath = join(this.tutorialsFolder, tutorialId);
-        const metaDataRaw = await readFile(join(tutorialPath, TUTORIAL_META_FILE));
-        const metaData = JSON.parse(metaDataRaw);
-        metaData.codios.push({id: codioId});
-        FSManager.saveFile(join(tutorialPath, TUTORIAL_META_FILE), JSON.stringify(metaData));
-    }
-
-    async removeCodioFromTutorial(tutorialId, codioId) {
-        const tutorialPath = join(this.tutorialsFolder, tutorialId);
-        const metaDataRaw = await readFile(join(tutorialPath, TUTORIAL_META_FILE));
-        const metaData = JSON.parse(metaDataRaw);
-        metaData.codios = metaData.codios.filter(codio => codio.id !== codioId);
-        FSManager.saveFile(join(tutorialPath, TUTORIAL_META_FILE), JSON.stringify(metaData));
     }
 }

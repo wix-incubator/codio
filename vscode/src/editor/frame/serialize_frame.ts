@@ -11,7 +11,7 @@ function serializeFile(file: CodioFile, rootPath) : CodioSerializedFile {
     return {
         column: file.column,
         lastActionCount: file.lastAction,
-        path: FSManager.codifyPath(file.uri, rootPath),
+        path: FSManager.toRelativePath(file.uri, rootPath),
         text: file.document.text,
     };
 }
