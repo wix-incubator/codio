@@ -2,7 +2,7 @@ import CodeEditorRecorder from './Editor';
 import AudioRecorder from './Audio';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
-import { Uri } from 'vscode';
+import { Uri, workspace } from 'vscode';
 
 const CODIO_FORMAT_VERSION = 0.1;
 export default class Recorder {
@@ -10,7 +10,8 @@ export default class Recorder {
     codeEditorRecorder: CodeEditorRecorder;
     timer: Timer;
     codioPath: string;
-    destinationFolder: Uri | undefined;
+    destinationFolder?: Uri;
+    workspaceRoot?: Uri;
     codioName: string;
 
     recordingStartTime: number;
@@ -22,18 +23,19 @@ export default class Recorder {
     stopRecordingResolver: Function;
 
 
-    loadCodio(codioPath: string, codioName: string, destinationFolder: Uri | undefined) {
+    loadCodio(codioPath: string, codioName: string, destinationFolder?: Uri, workspaceRoot?: Uri) {
         if (this.isRecording) {
             this.stopRecording();
             this.saveRecording();
         }
-        this.setInitialState(codioPath, codioName, destinationFolder);
+        this.setInitialState(codioPath, codioName, destinationFolder, workspaceRoot);
     }
 
-    setInitialState = (codioPath, codioName, destinationFolder) => {
+    setInitialState = (codioPath, codioName, destinationFolder, workspaceRoot) => {
         this.codioPath = codioPath;
         this.codioName = codioName;
         this.destinationFolder = destinationFolder;
+        this.workspaceRoot = workspaceRoot;
         this.audioRecorder = new AudioRecorder(FSManager.audioPath(this.codioPath));
         this.codeEditorRecorder = new CodeEditorRecorder();
         this.timer = new Timer();
@@ -73,7 +75,7 @@ export default class Recorder {
 
     async saveRecording() {
         try {
-            const codioTimelineContent = this.codeEditorRecorder.getTimelineContent(this.recordingStartTime);
+            const codioTimelineContent = this.codeEditorRecorder.getTimelineContent(this.recordingStartTime, this.workspaceRoot);
             const codioJsonContent = {...codioTimelineContent, codioLength: this.recordingLength };
             const metadataJsonContent = {length: this.recordingLength, name: this.codioName};
             await FSManager.saveRecordingToFile(codioJsonContent, metadataJsonContent, codioJsonContent.codioEditors,  this.codioPath, this.destinationFolder);

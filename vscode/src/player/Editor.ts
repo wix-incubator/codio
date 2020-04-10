@@ -15,7 +15,6 @@ export default class CodeEditorPlayer {
 
     constructor(workspacePath, timeline) {
         this.events = deserializeEvents(timeline.events, workspacePath);
-
         this.initialFrame = deserializeFrame(timeline.initialFrame, workspacePath);
     }
 

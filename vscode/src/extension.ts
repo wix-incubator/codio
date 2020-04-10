@@ -16,28 +16,26 @@ import {
     executeFile,
     playCodio,
     recordCodio,
-    createTutorial,
-    addCodioToTutorial } from './commands/index';
+    } from './commands/index';
 
 export async function activate(context: ExtensionContext) {
     const fsManager = new FSManager();
 
     const player =  new Player();
     const recorder = new Recorder();
-
     registerTreeViews(fsManager);
     await fsManager.createExtensionFolders();
 
-    const recordCodioDisposable = commands.registerCommand(COMMAND_NAMES.RECORD_CODIO, async (uri) => {
-        recordCodio(fsManager, player, recorder, uri);
+    const recordCodioDisposable = commands.registerCommand(COMMAND_NAMES.RECORD_CODIO, async (uri: Uri, workspaceRoot: Uri) => {
+        recordCodio(fsManager, player, recorder, uri, workspaceRoot);
     });
 
     const finishRecordingDisposable = commands.registerCommand(COMMAND_NAMES.FINISH_RECORDING, () => {
         finishRecording(recorder);
     });
 
-    const playCodioDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_CODIO, async (uri: Uri) => {
-        playCodio(fsManager, player, recorder, uri);
+    const playCodioDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_CODIO, async (uri: Uri, workspaceUri: Uri) => {
+        playCodio(fsManager, player, recorder, uri, workspaceUri);
     });
 
     const pauseCodioDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_CODIO, () => {
@@ -68,28 +66,18 @@ export async function activate(context: ExtensionContext) {
         executeFile(recorder);
     });
 
-    const createTutorialDisposable = commands.registerCommand(COMMAND_NAMES.CREATE_TUTORIAL, async () => {
-        createTutorial(fsManager);
-    });
-
-    const addCodioToTutorialDisposable = commands.registerCommand(COMMAND_NAMES.ADD_CODIO_TO_TUTORIAL, async () => {
-        addCodioToTutorial(fsManager);
-     });
-
-
     context.subscriptions.push(recordCodioDisposable);
     context.subscriptions.push(finishRecordingDisposable);
     context.subscriptions.push(playCodioDisposable);
     context.subscriptions.push(pauseCodioDisposable);
     context.subscriptions.push(resumeCodioDisposable);
     context.subscriptions.push(playFromDisposable);
-    context.subscriptions.push(createTutorialDisposable);
     context.subscriptions.push(executeFileDisposabble);
     context.subscriptions.push(rewindDisposable);
     context.subscriptions.push(forwardDisposable);
     context.subscriptions.push(pauseOrResumeDisposable);
-    context.subscriptions.push(addCodioToTutorialDisposable);
 }
+
 export function deactivate() {
     //@TODO
 }

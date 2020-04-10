@@ -5,7 +5,7 @@ import FSManager from '../filesystem/FSManager';
 import { showRecorderProgressBar } from '../user_interface/Viewers';
 import { Uri } from 'vscode';
 
-export default async function recordCodio(fsManager: FSManager, player: Player, recorder: Recorder, destPath: Uri | undefined) {
+export default async function recordCodio(fsManager: FSManager, player: Player, recorder: Recorder, destPath?: Uri, workspaceRoot?: Uri ) {
     if (player.isPlaying) {
         player.closeCodio();
     }
@@ -15,7 +15,7 @@ export default async function recordCodio(fsManager: FSManager, player: Player, 
         const codioId = uuid.v4();
         const path = await fsManager.createTempCodioFolder(codioId);
         console.log({path});
-        recorder.loadCodio(path, codioName, destPath);
+        recorder.loadCodio(path, codioName, destPath, workspaceRoot);
         showMessage(MESSAGES.startingToRecord);
         recorder.startRecording();
         showRecorderProgressBar(recorder, false);

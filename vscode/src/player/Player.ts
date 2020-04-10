@@ -2,6 +2,7 @@ import AudioPlayer from './Audio';
 import CodeEditorPlayer from './Editor';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
+import { commands } from 'vscode';
 
 export default class Player {
     isPlaying: boolean = false;
@@ -19,13 +20,13 @@ export default class Player {
     closeCodioResolver: any;
     process: any;
 
-    async loadCodio(codioPath) {
+    async loadCodio(codioPath, workspaceToPlayOn?: string) {
         try {
             this.setInitialState();
             this.codioPath = codioPath;
             const timeline = await FSManager.loadTimeline(this.codioPath);
             this.codioLength = timeline.codioLength;
-            this.codeEditorPlayer = new CodeEditorPlayer(FSManager.workspacePath(this.codioPath), timeline);
+            this.codeEditorPlayer = new CodeEditorPlayer(workspaceToPlayOn ? workspaceToPlayOn : FSManager.workspacePath(this.codioPath), timeline);
             this.audioPlayer = new AudioPlayer(FSManager.audioPath(this.codioPath));
             this.timer = new Timer(this.codioLength);
             this.timer.onFinish(() => this.pause());
@@ -48,6 +49,7 @@ export default class Player {
             this.process = new Promise((resolve) => this.closeCodioResolver = resolve);
             await this.codeEditorPlayer.moveToFrame(0);
             this.play(this.codeEditorPlayer.events, this.relativeActiveTime);
+            commands.executeCommand('setContext', 'inCodioSession', true);
         } catch(e) {
             console.log('startCodio failed', e);
         }
@@ -79,6 +81,7 @@ export default class Player {
         this.timer.stop();
         this.audioPlayer.pause();
         this.closeCodioResolver();
+        commands.executeCommand('setContext', 'inCodioSession', false);
     }
 
     onTimerUpdate(observer) {
