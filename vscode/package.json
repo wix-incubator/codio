@@ -109,20 +109,11 @@
                 }
             ]
         },
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "codioClient",
-                    "title": "Codio",
-                    "icon": "./media/icon.svg"
-                }
-            ]
-        },
         "views": {
-            "codioClient": [
+            "explorer": [
                 {
                     "id": "codioMessages",
-                    "name": "All codios"
+                    "name": "My Codios"
                 }
             ]
         }
