@@ -1,14 +1,29 @@
 {
-    "name": "codio-format",
+    "name": "codio",
     "displayName": "Codio Format",
     "description": "Record and playback the process of programming",
-    "version": "0.0.42",
-    "publisher": "bogo",
+    "repository": {
+        "url": "https://github.com/wix-incubator/codio",
+        "directory": "vscode",
+        "type": "git"
+    },
+    "bugs": {
+        "url": "https://github.com/wix-incubator/codio"
+    },
+    "version": "0.1.0",
+    "license": "MIT",
+    "publisher": "Wix",
     "engines": {
         "vscode": "^1.30.0"
     },
+    "preview": true,
     "categories": [
         "Other"
+    ],
+    "keywords": [
+        "Collaboration",
+        "Record",
+        "Share"
     ],
     "activationEvents": [
         "onView:codioMessages",
@@ -131,5 +146,8 @@
         "tslint": "^5.8.0",
         "@types/node": "^8.10.25",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "uuid": "^7.0.3"
     }
 }
