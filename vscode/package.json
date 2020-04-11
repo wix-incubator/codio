@@ -13,6 +13,7 @@
     "version": "0.1.0",
     "license": "MIT",
     "publisher": "Wix",
+    "icon": "media/icon.png",
     "engines": {
         "vscode": "^1.30.0"
     },
