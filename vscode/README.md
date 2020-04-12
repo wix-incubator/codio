@@ -11,9 +11,10 @@ Codio Format is an open source media format for developers to record and replay 
     FFMPEG is how we record and and play audio files. You can read more about it [here](https://www.ffmpeg.org/).
 2) Get the Codio Format extension from the market place:
 
-That's it!
+That's it! Follow along for instructions or see the [video link placeholder]
 >Note: Codio Currently does not support Windows but we are working on it!
 ### Recording a Codio
+[gif placeholder]
 
 You can record a codio through the command palette using the `Codio: Record Codio` command.
 
@@ -21,24 +22,28 @@ Codio will then prompt you to name your recording. When you are done, the codio 
 
 You can finish the recording session through the command palette using the `Codio: Save Recording` command or by pressing cancel on the recording progress message.
 
-If a Uri is not specified (see [API](#api)) codios will be saved in the codio library, located at `~/Library/codio/codios`
-
-gif:
+By default (can change through the [API](#api)) codios will be saved in the codio library, located at `~/Library/codio/codios`
 
 ### Playing a Codio
-You can play a codio through the command palette or the explorer tree viewer:
+[gif placeholder]
+
+You can play a codio through the command palette or the Explorer tree viewer:
 -  Use the `Codio: Play Codio` command from the command palette.
--  Browse the Codio Tree Viewer under the Explorer tab. It will show all codios it can find in your codio library, which is located at `~/Library/codio/codios`.
+-  Browse the Codio Tree Viewer under the Explorer tab. It will show all codios it can find in your codio library, which is located at `~/Library/codio/codios`. Press on one of the codios and a session will start.
 
-When playing a codio a progress message will be displayed and three additional buttons will show on the top right of your file: rewind 10 seconds, pause/resume and forward 10 seconds. You can control the codio session by using any one of those buttons. You can end the Codio session by closing the progress message - that will also remove the buttons.
 
-gif:
+#### Controlling a Codio Session - Pause Rewind and Forward
+When playing a codio a progress indicator will be displayed as well as three additional buttons will show in the editor navigation menu at the top right of a file: rewind 10 seconds, pause/resume and forward 10 seconds.
+
+You can control the codio session by using any one of those buttons. You can end the Codio session by closing the progress message - that will also remove the buttons.
 
 ## API - 0.1.0
 
-At its core, Codio is a project meant to be used as infrastructure for other projects. It exposes the following API for other extensions to use:
+At its core, Codio is a project meant to be used as infrastructure for other projects.
 
-`recordCodio(destination?: Uri, workspaceRoot?: Uri): void` - Records a Codio. `destionation` specifices where the codio should be saved. `workspaceRoot` lets codio know what is the relative root path. This is required if you want to replay the recording on the same project.
+It exposes the following API for other extensions to use:
+
+`recordCodio(destination: Uri, workspaceRoot?: Uri): void` - Records a Codio. `destination` specifices where the codio should be saved. `workspaceRoot` is required if you want to replay the recording on a project with the same file structure.
 
 `finishRecording(): void` - Finish and save the current ongoing Codio recording. Note that a recording can be halted by the user, either by calling the `Codio: Save Recording` command from the command or through recording progress UI.
 
