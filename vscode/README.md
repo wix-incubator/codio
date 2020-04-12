@@ -12,10 +12,8 @@ Codio Format is an open source media format for developers to record and playbac
 
 2) Get the Codio Format extension from the marketplace:
 
-That's it! Follow along for instructions or see the [video link placeholder]
 >Note: Currently Codio does not support Windows, but we are working on it!
 ### Recording a Codio
-[gif placeholder]
 
 You can record a codio through the command palette using the `Codio: Record Codio` command.
 
@@ -26,8 +24,6 @@ You can finish the recording session through the command palette using the `Codi
 By default (that can be changeed via [API](#api)) codio files will be saved in the codio library, located at `~/Library/codio/codios`.
 
 ### Playing a Codio
-[gif placeholder]
-
 You can play a codio recording through the command palette or the Explorer tree viewer:
 -  Use the `Codio: Play Codio` command from the command palette.
 -  Browse the Codio Tree Viewer under the Explorer tab. It will show all codios it can find in your codio library, which is located at `~/Library/codio/codios`. Press on one of the codios and a session will start.
