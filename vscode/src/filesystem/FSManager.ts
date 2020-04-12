@@ -167,7 +167,7 @@ export default class FSManager {
 
     static async zip(srcPath, distPath) {
         try {
-            await promiseExec(`cd ${srcPath} && zip -r ${distPath}.codio .`);
+            await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
             return `${distPath}.zip`;
         } catch(e) {
             console.log(`zip for folder ${srcPath} failed`, e);
