@@ -59,8 +59,8 @@ Codio could be used to enhance code by appending codio tutorials to specific fun
 
 ***
 ## Continue Reading
-1) [Codio in Intellij](./docs/intellij-docs.md)
-2) [Codio in VSCode](./docs/vscode-docs.md)
+1) [Getting Started with Codio in VSCode](./vscode/README.md)
+2) [Codio in Intellij](./docs/intellij-docs.md)
 3) [The Format Spec](./docs/spec.md)
 4) [Contributing](./docs/contributing.md)
 5) [Roadmap](./docs/roadmap.md)
