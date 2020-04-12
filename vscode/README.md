@@ -1,7 +1,7 @@
 # Codio Format
 
 ## About
-Codio Format is an open source media format for developers to record and replay the process of programming. It combines operations on a code editor and audio.
+Codio Format is an open source media format for developers to record and playback the process of programming. It combines code editor operations and audio.
 
 ## Getting Started With Codio Format in VSCode
 
