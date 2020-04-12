@@ -3,6 +3,7 @@ import Player from '../player/Player';
 import FSManager from '../filesystem/FSManager';
 import {PLAY_CODIO, RECORD_MESSAGE} from '../consts/command_names';
 import Recorder from '../recorder/Recorder';
+import { showMessage, MESSAGES } from './messages';
 
 export async function registerTreeViews(fsManager: FSManager) {
     const codioTreeDataProvider = new CodiosDataProvider(fsManager);
@@ -45,7 +46,7 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
     }
 }
 
-export function showPlayerProgressBar(player: Player, isMessage) {
+export function showPlayerProgressBar(player: Player) {
     vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "Playing Codio",
@@ -58,12 +59,6 @@ export function showPlayerProgressBar(player: Player, isMessage) {
             let lastPercentage = 0;
             player.onTimerUpdate(async (currentTime, totalTime) => {
                 const percentage = ((currentTime * 100) / totalTime);
-                if (percentage >= 100 && isMessage) {
-                    const response = await vscode.window.showInformationMessage("Would you like to reply?", "No", "Yes");
-                    if (response === "Yes") {
-                        vscode.commands.executeCommand(RECORD_MESSAGE);
-                    }
-                }
                 const increment = percentage - lastPercentage;
                 progress.report({ increment, message: `${currentTime}/${totalTime}` });
                 lastPercentage = percentage;
@@ -72,15 +67,17 @@ export function showPlayerProgressBar(player: Player, isMessage) {
         });
 }
 
-export function showRecorderProgressBar(recorder: Recorder, isMessage) {
+export function showRecorderProgressBar(recorder: Recorder) {
     vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: "Recording Codio",
+        title: "Recording Codio. ",
         cancellable: true
         }, async (progress, token) => {
         token.onCancellationRequested(() => {
             recorder.stopRecording();
+            showMessage(MESSAGES.savingRecording);
             recorder.saveRecording();
+            showMessage(MESSAGES.recordingSaved);
         });
         recorder.onTimerUpdate(async (currentTime) => {
             progress.report({message: `${currentTime}` });

@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
-
+import * as fs from  "fs";
+import * as util from  "util";
+import { platform } from "os";
 //filesystem
-const fs = require("fs");
-const util = require("util");
-
 export const createReadStream = fs.createReadStream;
 export const promiseExec = util.promisify(exec);
 export const readFile = util.promisify(fs.readFile);
@@ -13,6 +12,8 @@ export const readdir = util.promisify(fs.readdir);
 export const unlink = util.promisify(fs.unlink);
 export const mkdir = util.promisify(fs.mkdir);
 export const exists = util.promisify(fs.exists);
+
+export const isWindows = platform() === 'win32';
 
 //editor
 export async function overrideEditorText(editor: vscode.TextEditor, newText: string) {
