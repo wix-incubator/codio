@@ -50,7 +50,7 @@ It also means he can use his own tools and environment immediately.
 
 ### Messaging
 
-Codio opens a completely new way of async communication between programmers. Recording codio messages is effortless the the messages contain dynamic information.
+Codio opens a completely new way of async communication between programmers. Recording codio messages is effortless and the messages contain dynamic information that is otherwise hard to convey.
 
 ### Documentation
 Codio could be used to enhance code by appending codios to specific functions or libraries as help.
