@@ -26,16 +26,16 @@ export async function activate(context: ExtensionContext) {
     registerTreeViews(fsManager);
     await fsManager.createExtensionFolders();
 
-    const recordCodioDisposable = commands.registerCommand(COMMAND_NAMES.RECORD_CODIO, async (uri: Uri, workspaceRoot: Uri) => {
-        recordCodio(fsManager, player, recorder, uri, workspaceRoot);
+    const recordCodioDisposable = commands.registerCommand(COMMAND_NAMES.RECORD_CODIO, async (destination?: Uri, workspaceRoot?: Uri) => {
+        recordCodio(fsManager, player, recorder, destination, workspaceRoot);
     });
 
     const finishRecordingDisposable = commands.registerCommand(COMMAND_NAMES.FINISH_RECORDING, () => {
         finishRecording(recorder);
     });
 
-    const playCodioDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_CODIO, async (uri: Uri, workspaceUri: Uri) => {
-        playCodio(fsManager, player, recorder, uri, workspaceUri);
+    const playCodioDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_CODIO, async (source: Uri, workspaceUri?: Uri) => {
+        playCodio(fsManager, player, recorder, source, workspaceUri);
     });
 
     const pauseCodioDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_CODIO, () => {
