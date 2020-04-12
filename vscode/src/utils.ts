@@ -15,6 +15,14 @@ export const exists = util.promisify(fs.exists);
 
 export const isWindows = platform() === 'win32';
 
+export const checkForFfmpeg = async () => {
+    return new Promise(res => {
+        exec('ffmpeg -h', (error, stdout, stderr) => {
+            console.log({error,stdout, stderr});
+            res(!error);
+        });
+    });
+};
 //editor
 export async function overrideEditorText(editor: vscode.TextEditor, newText: string) {
     let invalidRange = new vscode.Range(0, 0, editor.document.lineCount /*intentionally missing the '-1' */, 0);

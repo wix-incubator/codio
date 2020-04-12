@@ -14,7 +14,9 @@ export const MESSAGES = {
     alreadyPlaying : 'You already have a Codio playing.',
     invalidNumber : `Number is invalid`,
     noActiveCodio : "You don't have an active Codio",
-    windowsNotSupported: "Unfortunately, Codio Format does not work on Windows."
+    windowsNotSupported: "Unfortunately, Codio Format does not work on Windows.",
+    ffmpegNotAvailable: `Looks like you haven't installed ffmpeg, which is required for Codio to work.
+     You can install it with brew: "brew install ffmpeg"`
 };
 
 export const showMessage = window.showInformationMessage;
