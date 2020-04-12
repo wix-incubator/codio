@@ -15,7 +15,6 @@ const codiosFolder = join(EXTENSION_FOLDER, "codios");
 const CODIO_META_FILE = 'meta.json';
 const CODIO_CONTENT_FILE = 'codio.json';
 const CODIO_WORKSPACE_FOLDER = 'workspace';
-const CREDENTIALS_FILE = join(EXTENSION_FOLDER, "cred.json");
 
 export default class FSManager {
     tempFolder: string;
@@ -30,23 +29,6 @@ export default class FSManager {
 
     constructor() {
         this.tempFolder = os.tmpdir();
-    }
-
-    static async saveCredentials(email, cookie = '', uid = '') {
-        try {
-            this.saveFile(CREDENTIALS_FILE, JSON.stringify({email, cookie, uid}));
-        } catch(e) {
-            console.log("save credentials error:", e);
-        }
-    }
-
-    static async loadCredentials() {
-        try {
-            const credentials = await readFile(CREDENTIALS_FILE);
-            return JSON.parse(credentials);
-        } catch(e) {
-            console.log("save credentials error:", e);
-        }
     }
 
     static async saveFile(path, content) {
@@ -72,7 +54,7 @@ export default class FSManager {
 
     static async loadTimeline(codioPath) {
         const timelineContent = await readFile(this.timelinePath(codioPath));
-        const parsedTimeline = JSON.parse(timelineContent);
+        const parsedTimeline = JSON.parse(timelineContent.toString());
         return parsedTimeline;
     }
 
@@ -213,7 +195,7 @@ export default class FSManager {
     async getCodioMetaDataContent(codioId) {
         try {
             const metaData = await readFile(join(codiosFolder, codioId, CODIO_META_FILE));
-            return JSON.parse(metaData);
+            return JSON.parse(metaData.toString());
         } catch(e) {
             console.log(`Problem getting codio ${codioId} meta data`, e);
         }
