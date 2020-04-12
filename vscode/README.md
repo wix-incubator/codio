@@ -36,7 +36,7 @@ gif:
 
 ## API - 0.1.0
 
-At its core, Codio is a project meant to be used as infrastructure for other projects. As such it exposes the following API for other extensions to use:
+At its core, Codio is a project meant to be used as infrastructure for other projects. It exposes the following API for other extensions to use:
 
 `recordCodio(destination?: Uri, workspaceRoot?: Uri): void` - Records a Codio. `destionation` specifices where the codio should be saved. `workspaceRoot` lets codio know what is the relative root path. This is required if you want to replay the recording on the same project.
 
