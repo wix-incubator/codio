@@ -36,7 +36,7 @@ Codio aims to be a medium for effortless creation of explorable and interactive 
 
 ## Use cases
 
-Codio is a new media format. A new media format enables a new medium of communication. As with every new medium, it is hard to predict which use cases will have the greatest benefit.
+Codio is a new media format and as such enables a new medium of communication. As with every new medium, it is hard to predict which use cases will have the greatest benefit.
 
 Here are a few that seem reasonable:
 
