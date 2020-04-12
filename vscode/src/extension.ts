@@ -79,5 +79,5 @@ export async function activate(context: ExtensionContext) {
 }
 
 export function deactivate() {
-    //@TODO
+    //@TODO: kill any active FFMPEG proccess
 }

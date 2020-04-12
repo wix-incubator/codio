@@ -2,9 +2,9 @@ import CodeEditorRecorder from './Editor';
 import AudioRecorder from './Audio';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
-import { Uri, workspace } from 'vscode';
+import { Uri } from 'vscode';
 
-const CODIO_FORMAT_VERSION = 0.1;
+const CODIO_FORMAT_VERSION = '0.1.0';
 export default class Recorder {
     audioRecorder: AudioRecorder;
     codeEditorRecorder: CodeEditorRecorder;
@@ -77,7 +77,7 @@ export default class Recorder {
         try {
             const codioTimelineContent = this.codeEditorRecorder.getTimelineContent(this.recordingStartTime, this.workspaceRoot);
             const codioJsonContent = {...codioTimelineContent, codioLength: this.recordingLength };
-            const metadataJsonContent = {length: this.recordingLength, name: this.codioName};
+            const metadataJsonContent = {length: this.recordingLength, name: this.codioName, version: CODIO_FORMAT_VERSION};
             await FSManager.saveRecordingToFile(codioJsonContent, metadataJsonContent, codioJsonContent.codioEditors,  this.codioPath, this.destinationFolder);
             this.recordingSavedObservers.forEach(obs => obs());
         } catch(e) {
