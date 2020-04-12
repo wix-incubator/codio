@@ -10,7 +10,7 @@ Codio Format is an open source media format for developers to record and playbac
 1) Install FFMPEG: `brew install ffmpeg`.
     FFMPEG is how we record and and play audio files. You can read more about it [here](https://www.ffmpeg.org/).
 
-2) Get the Codio Format extension from the marketplace:
+2) Get the Codio Format extension from [the marketplace](https://marketplace.visualstudio.com/items?itemName=wix.codio)
 
 >Note: Currently Codio does not support Windows, but we are working on it!
 ### Recording a Codio
@@ -48,5 +48,7 @@ It exposes the following API for other extensions to use:
 `finishRecording(): void` - Finish and save the current ongoing codio recording. Note that a recording can be halted by the user, either by calling the `Codio: Save Recording` command from the command palette or through the recording progress UI.
 
 `playCodio(source: Uri, workspaceRoot?: Uri): void` - Plays a codio. If `workspaceRoot` is passed, the codio will be played on the files of that workspace, otherwise it will use temporary files. For this to work, you will have to pass `workspaceRoot` when recording.
+
+`pauseOrResume(): void` - Pauses or resumes the current codio session.
 
 > Note: Currently Codio exposes only three methods, but we aim to expose more functionality in the future - such as dealing with user input mid-recording, support for execution and more. Please feel free to open an issue!
