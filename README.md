@@ -16,17 +16,17 @@ Codio
     - [Messaging](#messaging)
     - [Documentation](#documentation)
   - [Continue Reading](#continue-reading)
-  
-Note: Codio currently supports only MacOS, but we hope to add windows support soon
+
+>Note: Codio currently supports only MacOS, but we hope to add Windows support soon.
 
 ## About
 Codio is a media format for recording the process of programming.
 
-The format is composed of operations on a code editor and audio/video.
+The format is composed of code editor operations and audio/video.
 
 A codio recorder allows you to record the proccess of programming inside an IDE.
 
-A codio player will play that recording inside another IDE.
+A codio player will playback that recording inside another IDE.
 
 ## Why?
 
