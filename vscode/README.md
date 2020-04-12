@@ -9,10 +9,10 @@ Codio Format is an open source media format for developers to record and playbac
 
 1) Install FFMPEG: `brew install ffmpeg`.
     FFMPEG is how we record and and play audio files. You can read more about it [here](https://www.ffmpeg.org/).
-2) Get the Codio Format extension from the market place:
+2) Get the Codio Format extension from the marketplace:
 
 That's it! Follow along for instructions or see the [video link placeholder]
->Note: Codio Currently does not support Windows but we are working on it!
+>Note: Currently Codio does not support Windows, but we are working on it!
 ### Recording a Codio
 [gif placeholder]
 
