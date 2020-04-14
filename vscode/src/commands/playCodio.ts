@@ -1,11 +1,9 @@
 import { Uri } from "vscode";
-import { showMessage, MESSAGES } from "../user_interface/messages";
-import { showPlayerProgressBar } from "../user_interface/Viewers";
+import { UI, MESSAGES } from "../user_interface/messages";
 import Player from "../player/Player";
 import Recorder from "../recorder/Recorder";
 import FSManager from "../filesystem/FSManager";
 import { isWindows, checkForFfmpeg } from "../utils";
-
 
 export default async function playCodio(
   fsManager: FSManager,
@@ -16,24 +14,26 @@ export default async function playCodio(
 ) {
   try {
     if (isWindows) {
-      showMessage(MESSAGES.windowsNotSupported);
+      UI.showMessage(MESSAGES.windowsNotSupported);
     } else {
       const hasFfmpeg = await checkForFfmpeg();
       if (!hasFfmpeg) {
-        showMessage(MESSAGES.ffmpegNotAvailable);
+        UI.showMessage(MESSAGES.ffmpegNotAvailable);
       } else {
         const workspacePath = workspaceUri?.fsPath;
         if (recorder && recorder.isRecording) {
-          showMessage(MESSAGES.cantPlayWhileRecording);
+          UI.showMessage(MESSAGES.cantPlayWhileRecording);
           return;
         }
         if (player && player.isPlaying) {
-          showMessage(MESSAGES.stopCodio);
+          UI.showMessage(MESSAGES.stopCodio);
           player.pause();
           player.closeCodio();
         }
         if (codioUri) {
-          const codioUnzippedFolder = await fsManager.getCodioUnzipped(codioUri);
+          const codioUnzippedFolder = await fsManager.getCodioUnzipped(
+            codioUri
+          );
           await loadAndPlay(player, codioUnzippedFolder, workspacePath);
         } else {
           const codioId = await fsManager.chooseCodio();
@@ -51,8 +51,8 @@ export default async function playCodio(
 }
 
 async function loadAndPlay(player: Player, path, workspacePath) {
-  showMessage(MESSAGES.codioStart);
+  UI.showMessage(MESSAGES.codioStart);
   await player.loadCodio(path, workspacePath);
   await player.startCodio();
-  showPlayerProgressBar(player);
+  UI.showPlayerProgressBar(player);
 }
