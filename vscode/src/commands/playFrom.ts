@@ -1,5 +1,5 @@
 import Player from "../player/Player";
-import { showPlayFromInputBox, showMessage, MESSAGES } from "../user_interface/messages";
+import { showPlayFromInputBox, UI, MESSAGES } from "../user_interface/messages";
 
 export default async function playFrom(player: Player, time? : number) {
     if (player && player.isPlaying) {
@@ -12,10 +12,10 @@ export default async function playFrom(player: Player, time? : number) {
                 const timeInMilliseconds = Number(timeInSeconds) * 1000;
                 player.playFrom(timeInMilliseconds);
             } else {
-                showMessage(MESSAGES.invalidNumber);
+                UI.showMessage(MESSAGES.invalidNumber);
             }
         }
     } else {
-        showMessage(MESSAGES.noActiveCodio);
+        UI.showMessage(MESSAGES.noActiveCodio);
     }
 }

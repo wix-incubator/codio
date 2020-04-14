@@ -1,9 +1,6 @@
 import * as vscode from 'vscode';
-import Player from '../player/Player';
 import FSManager from '../filesystem/FSManager';
-import {PLAY_CODIO, RECORD_MESSAGE} from '../consts/command_names';
-import Recorder from '../recorder/Recorder';
-import { showMessage, MESSAGES } from './messages';
+import {PLAY_CODIO} from '../consts/command_names';
 
 export async function registerTreeViews(fsManager: FSManager) {
     const codioTreeDataProvider = new CodiosDataProvider(fsManager);
@@ -44,46 +41,6 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
 
         }
     }
-}
-
-export function showPlayerProgressBar(player: Player) {
-    vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: "Playing Codio",
-            cancellable: true
-        }, async (progress, token) => {
-            token.onCancellationRequested(() => {
-                player.pause();
-                player.closeCodio();
-            });
-            let lastPercentage = 0;
-            player.onTimerUpdate(async (currentTime, totalTime) => {
-                const percentage = ((currentTime * 100) / totalTime);
-                const increment = percentage - lastPercentage;
-                progress.report({ increment, message: `${currentTime}/${totalTime}` });
-                lastPercentage = percentage;
-            });
-            await player.process;
-        });
-}
-
-export function showRecorderProgressBar(recorder: Recorder) {
-    vscode.window.withProgress({
-        location: vscode.ProgressLocation.Notification,
-        title: "Recording Codio. ",
-        cancellable: true
-        }, async (progress, token) => {
-        token.onCancellationRequested(() => {
-            recorder.stopRecording();
-            showMessage(MESSAGES.savingRecording);
-            recorder.saveRecording();
-            showMessage(MESSAGES.recordingSaved);
-        });
-        recorder.onTimerUpdate(async (currentTime) => {
-            progress.report({message: `${currentTime}` });
-        });
-        await recorder.process;
-    });
 }
 
 

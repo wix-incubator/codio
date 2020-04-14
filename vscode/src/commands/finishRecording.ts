@@ -1,15 +1,14 @@
-import {showMessage, MESSAGES} from '../user_interface/messages'
+import {UI, MESSAGES} from '../user_interface/messages';
 
 export default function finishRecording(recorder) {
-    console.log('hi');
     try {
         if (recorder && recorder.isRecording) {
             recorder.stopRecording();
-            showMessage(MESSAGES.savingRecording);
+            UI.showMessage(MESSAGES.savingRecording);
             recorder.saveRecording();
-            showMessage(MESSAGES.recordingSaved);
+            UI.showMessage(MESSAGES.recordingSaved);
         }
     } catch(e) {
-        console.log('finish recording failed', e)
+        console.log('finish recording failed', e);
     }
 }
