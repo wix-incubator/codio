@@ -149,6 +149,7 @@
         "@types/mocha": "^2.2.42"
     },
     "dependencies": {
+        "cross-zip": "^3.0.0",
         "uuid": "^7.0.3"
     }
 }

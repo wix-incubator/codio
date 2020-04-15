@@ -1,6 +1,6 @@
 import FSManager from "./FSManager";
-import { asyncForEach } from "../utils";
-import {sep, join} from 'path';
+import { asyncForEach, osRootPath} from "../utils";
+import {sep, join, } from 'path';
 
 export async function saveProjectFiles(codioWorkspacePath, files: Array<string>) {
   try {
@@ -12,7 +12,8 @@ export async function saveProjectFiles(codioWorkspacePath, files: Array<string>)
   }
 }
 
-export function reduceToRoot(files: string[][], rootPath = '/') : {files: string[], rootPath: string}{
+//@TODO: windows support
+export function reduceToRoot(files: string[][], rootPath = osRootPath) : {files: string[], rootPath: string}{
     if (!files || files[0].length === 0) {
       throw new Error('There is no common root, something is wrong');
     }
@@ -54,6 +55,6 @@ async function saveFolderIfDoesNotExist(path) {
     await ensureDir(path);
     console.log('Directory created', path);
   } catch (err) {
-    console.error('ensure dir errrrr', err);
+    console.error('ensure dir error', err);
   }
 }

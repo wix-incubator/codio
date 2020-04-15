@@ -1,5 +1,6 @@
-import {mkdir, readFile, unlink, readdir, exists, promiseExec, writeFile} from '../utils';
 import * as vscode from 'vscode';
+import {zip, unzip} from 'cross-zip';
+import {mkdir, readFile, unlink, readdir, exists, writeFile} from '../utils';
 import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
 import * as os from "os";
 import * as fs from "fs";
@@ -149,8 +150,9 @@ export default class FSManager {
 
     static async zip(srcPath, distPath) {
         try {
-            await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
-            return `${distPath}.zip`;
+            // await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
+            await new Promise((res, rej) => zip(srcPath, distPath, (error: Error) => error ? rej(error) : res()));
+            return `${distPath}`;
         } catch(e) {
             console.log(`zip for folder ${srcPath} failed`, e);
         }
@@ -161,7 +163,8 @@ export default class FSManager {
         const codioId = uuid.v4();
         const codioTempFolder = join(this.tempFolder, codioId);
         try {
-            await promiseExec(`unzip ${srcPath} -d ${codioTempFolder}`);
+            // await promiseExec(`unzip ${srcPath} -d ${codioTempFolder}`);
+            await new Promise((res, rej) => unzip(srcPath, codioTempFolder, (error: Error) => error ? rej(error) : res()));
             return codioTempFolder;
         } catch(e) {
             console.log(`unzipping codio with path: ${srcPath} failed`, e);

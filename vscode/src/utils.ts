@@ -14,7 +14,7 @@ export const mkdir = util.promisify(fs.mkdir);
 export const exists = util.promisify(fs.exists);
 
 export const isWindows = platform() === 'win32';
-
+export const osRootPath = platform() === 'win32' ? "C:\\" : "/";
 export const checkForFfmpeg = async () => {
     return new Promise(res => {
         exec('ffmpeg -h', (error, stdout, stderr) => {
