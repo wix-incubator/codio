@@ -8,7 +8,7 @@ Codio Format is an open source media format for developers to record and playbac
 ### Setup
 
 1) Install FFMPEG: `brew install ffmpeg`.
-    FFMPEG is how we record and and play audio files. You can read more about it [here](https://www.ffmpeg.org/).
+    FFMPEG is how we record and play audio files. You can read more about it [here](https://www.ffmpeg.org/).
 
 2) Get the Codio Format extension from [the marketplace](https://marketplace.visualstudio.com/items?itemName=wix.codio)
 
