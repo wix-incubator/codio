@@ -3,7 +3,7 @@ import { UI, MESSAGES } from "../user_interface/messages";
 import Player from "../player/Player";
 import Recorder from "../recorder/Recorder";
 import FSManager from "../filesystem/FSManager";
-import { isWindows, checkForFfmpeg } from "../utils";
+import { isWindows, checkForFfmpeg } from "../utils/utils";
 
 export default async function playCodio(
   fsManager: FSManager,
@@ -13,9 +13,6 @@ export default async function playCodio(
   workspaceUri?: Uri
 ) {
   try {
-    if (isWindows) {
-      UI.showMessage(MESSAGES.windowsNotSupported);
-    } else {
       const hasFfmpeg = await checkForFfmpeg();
       if (!hasFfmpeg) {
         UI.showMessage(MESSAGES.ffmpegNotAvailable);
@@ -44,7 +41,6 @@ export default async function playCodio(
           }
         }
       }
-    }
   } catch (e) {
     console.log("Play codio failed", e);
   }

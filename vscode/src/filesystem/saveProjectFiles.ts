@@ -1,11 +1,11 @@
 import FSManager from "./FSManager";
-import { asyncForEach, osRootPath} from "../utils";
-import {sep, join, } from 'path';
+import { asyncForEach } from "../utils";
+import { join } from 'path';
 
 export async function saveProjectFiles(codioWorkspacePath, files: Array<string>) {
   try {
     await saveFolderIfDoesNotExist(codioWorkspacePath);
-    const filesWithSplittedPath: Array<string[]> = files.map(file => file.split(sep));
+    const filesWithSplittedPath: Array<string[]> = files.map(file => file.split("/"));
     await saveFiles(codioWorkspacePath, filesWithSplittedPath);
   } catch (e) {
     console.log('save project files error', e);
@@ -13,14 +13,15 @@ export async function saveProjectFiles(codioWorkspacePath, files: Array<string>)
 }
 
 //@TODO: windows support
-export function reduceToRoot(files: string[][], rootPath = osRootPath) : {files: string[], rootPath: string}{
+export function reduceToRoot(files: string[][], rootPath = "/") : {files: string[], rootPath: string}{
     if (!files || files[0].length === 0) {
       throw new Error('There is no common root, something is wrong');
     }
+    console.log('reduceToRoot', {files, rootPath});
     const currentFolder = files[0][0];
     const isSame = files.every(file => file[0] === currentFolder);
     if (!isSame) {
-      return {files: files.map(file => join(...file)), rootPath};
+      return {files: files.map(file => file.join("/")), rootPath};
     } else {
       return reduceToRoot(files.map(file => file.slice(1)), join(rootPath, currentFolder) );
     }
@@ -31,7 +32,7 @@ async function saveFiles(root: string, filesWithSplittedPath: string[][]) {
     let currentFolder = root;
     await asyncForEach(filePathSplitted, async (partOfPath, idx) => {
       if (idx === filePathSplitted.length - 1) {
-        FSManager.saveFile(join(currentFolder, filePathSplitted[idx]), '');
+        await FSManager.saveFile(join(currentFolder, filePathSplitted[idx]), '');
       } else {
         currentFolder = join(currentFolder, partOfPath);
         await saveFolderIfDoesNotExist(currentFolder);

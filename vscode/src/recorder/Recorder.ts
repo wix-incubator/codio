@@ -23,9 +23,9 @@ export default class Recorder {
     stopRecordingResolver: Function;
 
 
-    loadCodio(codioPath: string, codioName: string, destinationFolder?: Uri, workspaceRoot?: Uri) {
+    async loadCodio(codioPath: string, codioName: string, destinationFolder?: Uri, workspaceRoot?: Uri) {
         if (this.isRecording) {
-            this.stopRecording();
+            await this.stopRecording();
             this.saveRecording();
         }
         this.setInitialState(codioPath, codioName, destinationFolder, workspaceRoot);
@@ -64,9 +64,13 @@ export default class Recorder {
         this.recordingStartTime = Date.now() + 300;
     }
 
-    stopRecording() {
+    async setRecordingDevice() : Promise<boolean> {
+        return this.audioRecorder.setDevice();
+    }
+
+    async stopRecording() {
         this.isRecording = false;
-        this.audioRecorder.stopRecording();
+        await this.audioRecorder.stopRecording();
         this.codeEditorRecorder.stopRecording();
         this.timer.stop();
         this.recordingLength = Date.now() - this.recordingStartTime;

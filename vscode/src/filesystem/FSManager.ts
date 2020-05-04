@@ -4,9 +4,10 @@ import {mkdir, readFile, unlink, readdir, exists, writeFile} from '../utils';
 import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
 import * as os from "os";
 import * as fs from "fs";
-import { join, sep } from 'path';
+import { join } from 'path';
 import { v4 as uuid } from 'uuid';
 
+const uriSeperator = '/';
 const homedir = require('os').homedir();
 const userOS = os.platform();
 const onCodiosChangedSubscribers = [];
@@ -60,38 +61,40 @@ export default class FSManager {
     }
 
     static toRelativePath(uri: vscode.Uri, rootPath: string) {
-        const pathSplit = uri.path.split(sep);
-        const rootPathSplit = rootPath.split(sep);
-        const relativePath = pathSplit.slice(rootPathSplit.length).join(sep);
+        const pathSplit = uri.path.split(uriSeperator);
+        const rootPathSplit = rootPath.split(uriSeperator);
+        const relativePath = pathSplit.slice(rootPathSplit.length).join(uriSeperator);
         return relativePath;
     }
 
     static async saveRecordingToFile(codioContent: Object, metaData: Object, files: Array<string>, codioPath: string, destinationFolder?: vscode.Uri) {
         const codioContentJson = JSON.stringify(codioContent);
         const metaDataJson = JSON.stringify(metaData);
-        this.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
-        this.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
+        await this.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
+        await this.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
         const codioWorkspaceFolderPath = join(codioPath, CODIO_WORKSPACE_FOLDER);
         await saveProjectFiles(codioWorkspaceFolderPath, files);
         if (destinationFolder) {
             this.zip(codioPath, destinationFolder.fsPath);
         } else {
-            fs.renameSync(codioPath, join(codiosFolder, uuid()));
+            await new Promise((res, rej) => fs.rename(codioPath, join(codiosFolder, uuid()), (err) => err ? rej(err) : res()));
         }
         onCodiosChangedSubscribers.forEach(func => func());
     }
 
     static normalizeFilesPath(fullPathFiles: Array<string> , root?: vscode.Uri) : {rootPath: string, files: string[]} {
+        const filesWithLowercasedNames = fullPathFiles.map(file => file.toLowerCase());
         if (root) {
-            const normalizedFiles = fullPathFiles.map(fsPath => this.toRelativePath(vscode.Uri.file(fsPath), root.fsPath));
-            return { rootPath: root.fsPath, files: normalizedFiles};
-        } else if (fullPathFiles.length > 1) {
-            const splitFiles = fullPathFiles.map(file => file.split(sep).slice(1));
+            const normalizedFiles = filesWithLowercasedNames.map(path => this.toRelativePath(vscode.Uri.file(path), root.path));
+            return { rootPath: root.path, files: normalizedFiles};
+        } else if (filesWithLowercasedNames.length > 1) {
+            console.log({uriSeperator});
+            const splitFiles = filesWithLowercasedNames.map(file => file.split(uriSeperator).slice(1));
             const {rootPath, files} = reduceToRoot(splitFiles);
             return {rootPath, files};
         } else {
-            const fullPathSplit = fullPathFiles[0].split(sep);
-            const rootPath = fullPathSplit.slice(0, -1).join(sep);
+            const fullPathSplit = filesWithLowercasedNames[0].split(uriSeperator);
+            const rootPath = fullPathSplit.slice(0, -1).join(uriSeperator);
             const file = fullPathSplit[fullPathSplit.length-1];
             return { rootPath: rootPath, files: [file]};
         }
