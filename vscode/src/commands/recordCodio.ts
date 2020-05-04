@@ -6,7 +6,7 @@ import Recorder from "../recorder/Recorder";
 import Player from "../player/Player";
 import FSManager from "../filesystem/FSManager";
 import { Uri } from "vscode";
-import { isWindows, checkForFfmpeg } from "../utils/utils";
+import { isWindows, checkForFfmpeg } from "../utils";
 
 export default async function recordCodio(
   fsManager: FSManager,
