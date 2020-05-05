@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import {zip, unzip} from 'cross-zip';
-import {mkdir, readFile, unlink, readdir, exists, writeFile} from '../utils';
+import {mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator} from '../utils';
 import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
 import * as os from "os";
 import * as fs from "fs";
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
 
-const uriSeperator = '/';
+
 const homedir = require('os').homedir();
 const userOS = os.platform();
 const onCodiosChangedSubscribers = [];
