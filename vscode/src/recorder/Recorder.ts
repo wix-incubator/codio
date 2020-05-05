@@ -1,12 +1,12 @@
 import CodeEditorRecorder from './Editor';
-import AudioRecorder from './Audio';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
 import { Uri } from 'vscode';
+import AudioHandler from '../audio/Audio';
 
 const CODIO_FORMAT_VERSION = '0.1.0';
 export default class Recorder {
-    audioRecorder: AudioRecorder;
+    audioRecorder: AudioHandler;
     codeEditorRecorder: CodeEditorRecorder;
     timer: Timer;
     codioPath: string;
@@ -36,7 +36,7 @@ export default class Recorder {
         this.codioName = codioName;
         this.destinationFolder = destinationFolder;
         this.workspaceRoot = workspaceRoot;
-        this.audioRecorder = new AudioRecorder(FSManager.audioPath(this.codioPath));
+        this.audioRecorder = new AudioHandler(FSManager.audioPath(this.codioPath));
         this.codeEditorRecorder = new CodeEditorRecorder();
         this.timer = new Timer();
         this.process = undefined;

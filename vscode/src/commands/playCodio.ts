@@ -3,7 +3,7 @@ import { UI, MESSAGES } from "../user_interface/messages";
 import Player from "../player/Player";
 import Recorder from "../recorder/Recorder";
 import FSManager from "../filesystem/FSManager";
-import { isWindows, checkForFfmpeg } from "../utils/utils";
+import { checkForFfmpeg } from "../utils";
 
 export default async function playCodio(
   fsManager: FSManager,

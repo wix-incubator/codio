@@ -13,8 +13,9 @@ export const unlink = util.promisify(fs.unlink);
 export const mkdir = util.promisify(fs.mkdir);
 export const exists = util.promisify(fs.exists);
 
-export const isWindows = platform() === 'win32';
-export const isMacOs = platform() === 'darwin';
+export const isWindows = platform() === "win32";
+console.log(isWindows);
+export const isMacOs = platform() === "darwin";
 //ffmpeg
 export const checkForFfmpeg = async () => {
     return new Promise(res => {
