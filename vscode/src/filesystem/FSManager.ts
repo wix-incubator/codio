@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {zip, unzip} from 'cross-zip';
-import {mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator} from '../utils';
+import {mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator, isWindows} from '../utils';
 import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
 import * as os from "os";
 import * as fs from "fs";
@@ -77,23 +77,26 @@ export default class FSManager {
         if (destinationFolder) {
             this.zip(codioPath, destinationFolder.fsPath);
         } else {
-            await new Promise((res, rej) => fs.rename(codioPath, join(codiosFolder, uuid()), (err) => err ? rej(err) : res()));
+            fs.renameSync(codioPath, join(codiosFolder, uuid()));
         }
         onCodiosChangedSubscribers.forEach(func => func());
     }
 
     static normalizeFilesPath(fullPathFiles: Array<string> , root?: vscode.Uri) : {rootPath: string, files: string[]} {
-        const filesWithLowercasedNames = fullPathFiles.map(file => file.toLowerCase());
+        // In Windows, case doesn't matter in file names, and some events return files with different cases.
+        // That is not the same in Linux for example, where case does matter. The reduceToRoot algorithm is case sensetive,
+        // which is why we are normalizing for windows here
+        const filesWithNormalizedCase = fullPathFiles.map(file => isWindows ? file.toLowerCase() : file);
         if (root) {
-            const normalizedFiles = filesWithLowercasedNames.map(path => this.toRelativePath(vscode.Uri.file(path), root.path));
+            const normalizedFiles = filesWithNormalizedCase.map(path => this.toRelativePath(vscode.Uri.file(path), root.path));
             return { rootPath: root.path, files: normalizedFiles};
-        } else if (filesWithLowercasedNames.length > 1) {
+        } else if (filesWithNormalizedCase.length > 1) {
             console.log({uriSeperator});
-            const splitFiles = filesWithLowercasedNames.map(file => file.split(uriSeperator).slice(1));
+            const splitFiles = filesWithNormalizedCase.map(file => file.split(uriSeperator).slice(1));
             const {rootPath, files} = reduceToRoot(splitFiles);
             return {rootPath, files};
         } else {
-            const fullPathSplit = filesWithLowercasedNames[0].split(uriSeperator);
+            const fullPathSplit = filesWithNormalizedCase[0].split(uriSeperator);
             const rootPath = fullPathSplit.slice(0, -1).join(uriSeperator);
             const file = fullPathSplit[fullPathSplit.length-1];
             return { rootPath: rootPath, files: [file]};
