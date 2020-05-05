@@ -5,7 +5,7 @@ import { isWindows, isMacOs, } from '../utils';
 export default class AudioHandler {
     private audioFilePath;
     private currentAudioProcess: ChildProcess;
-    private audioInputDevice: string = undefined;
+    private audioInputDevice: string;
 
     constructor(path: string) {
         this.audioFilePath = path;
