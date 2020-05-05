@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import {zip, unzip} from 'cross-zip';
-import {mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator, isWindows} from '../utils';
+import {mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator, isWindows, promiseExec} from '../utils';
 import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
 import * as os from "os";
 import * as fs from "fs";
@@ -156,8 +156,11 @@ export default class FSManager {
 
     static async zip(srcPath, distPath) {
         try {
-            // await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
-            await new Promise((res, rej) => zip(srcPath, distPath, (error: Error) => error ? rej(error) : res()));
+            if (isWindows) {
+                await new Promise((res, rej) => zip(srcPath, distPath, (error: Error) => error ? rej(error) : res()));
+            } else {
+                await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
+            }
             return `${distPath}`;
         } catch(e) {
             console.log(`zip for folder ${srcPath} failed`, e);
