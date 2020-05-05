@@ -12,7 +12,6 @@ Codio Format is an open source media format for developers to record and playbac
 
 2) Get the Codio Format extension from [the marketplace](https://marketplace.visualstudio.com/items?itemName=wix.codio)
 
->Note: Currently Codio does not support Windows, but we are working on it!
 ### Recording a Codio
 
 You can record a codio through the command palette using the `Codio: Record Codio` command.

@@ -1,3 +1,6 @@
+## [0.1.4]
+- Bug Fixes
+
 ## [0.1.2]
 - Added Initial experimental Windows Support.
 
