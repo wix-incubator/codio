@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
-import { exec } from 'child_process';
+import * as vscode from "vscode";
+import { exec } from "child_process";
 import * as fs from  "fs";
 import * as util from  "util";
 import { platform } from "os";
@@ -13,16 +13,19 @@ export const unlink = util.promisify(fs.unlink);
 export const mkdir = util.promisify(fs.mkdir);
 export const exists = util.promisify(fs.exists);
 
-export const isWindows = platform() === 'win32';
+export const isWindows = platform() === "win32";
+export const isMacOs = platform() === "darwin";
 
+export const uriSeperator = "/";
+//ffmpeg
 export const checkForFfmpeg = async () => {
     return new Promise(res => {
-        exec('ffmpeg -h', (error, stdout, stderr) => {
-            console.log({error,stdout, stderr});
+        exec("ffmpeg -h", (error) => {
             res(!error);
         });
     });
 };
+
 //editor
 export async function overrideEditorText(editor: vscode.TextEditor, newText: string) {
     let invalidRange = new vscode.Range(0, 0, editor.document.lineCount /*intentionally missing the '-1' */, 0);

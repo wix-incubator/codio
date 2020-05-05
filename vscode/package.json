@@ -138,7 +138,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
+        "install-vscode-types": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
@@ -149,6 +149,7 @@
         "@types/mocha": "^2.2.42"
     },
     "dependencies": {
+        "cross-zip": "^3.0.0",
         "uuid": "^7.0.3"
     }
 }

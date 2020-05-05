@@ -1,8 +1,8 @@
-import AudioPlayer from './Audio';
 import CodeEditorPlayer from './Editor';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
 import { commands } from 'vscode';
+import AudioHandler from '../audio/Audio';
 
 export default class Player {
     isPlaying: boolean = false;
@@ -14,7 +14,7 @@ export default class Player {
     lastStoppedTime: number = 0;
 
     codeEditorPlayer: CodeEditorPlayer;
-    audioPlayer: AudioPlayer;
+    audioPlayer: AudioHandler;
     timer: Timer;
 
     closeCodioResolver: any;
@@ -27,7 +27,7 @@ export default class Player {
             const timeline = await FSManager.loadTimeline(this.codioPath);
             this.codioLength = timeline.codioLength;
             this.codeEditorPlayer = new CodeEditorPlayer(workspaceToPlayOn ? workspaceToPlayOn : FSManager.workspacePath(this.codioPath), timeline);
-            this.audioPlayer = new AudioPlayer(FSManager.audioPath(this.codioPath));
+            this.audioPlayer = new AudioHandler(FSManager.audioPath(this.codioPath));
             this.timer = new Timer(this.codioLength);
             this.timer.onFinish(() => this.pause());
         } catch (e) {

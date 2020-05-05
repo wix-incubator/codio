@@ -1,6 +1,7 @@
 import { window, ProgressLocation } from "vscode";
 import Player from "../player/Player";
 import Recorder from "../recorder/Recorder";
+import { finishRecording } from "../commands";
 
 export const showCodioNameInputBox = async () =>
   await window.showInputBox({ prompt: "Give your codio a name:" });
@@ -27,6 +28,7 @@ export const MESSAGES = {
   windowsNotSupported: "Unfortunately, Codio Format does not work on Windows.",
   ffmpegNotAvailable: `Looks like you haven't installed ffmpeg, which is required for Codio to work.
      You can install it with brew: "brew install ffmpeg"`,
+  noRecordingDeviceAvailable: "Cidio Could not find an audio recording device"
 };
 
 class UIController {
@@ -80,12 +82,7 @@ class UIController {
           cancellable: true,
         },
         async (progress, token) => {
-          token.onCancellationRequested(() => {
-            recorder.stopRecording();
-            this.showMessage(MESSAGES.savingRecording);
-            recorder.saveRecording();
-            this.showMessage(MESSAGES.recordingSaved);
-          });
+          token.onCancellationRequested(() => finishRecording(recorder));
           recorder.onTimerUpdate(async (currentTime) => {
             progress.report({ message: `${currentTime}` });
           });

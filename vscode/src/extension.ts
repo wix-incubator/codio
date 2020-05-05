@@ -137,5 +137,6 @@ export async function activate(context: ExtensionContext) {
 }
 
 export function deactivate() {
-  //@TODO: kill any active FFMPEG proccess
+  player.closeCodio();
+  recorder.stopRecording();
 }

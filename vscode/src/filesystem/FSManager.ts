@@ -1,10 +1,12 @@
-import {mkdir, readFile, unlink, readdir, exists, promiseExec, writeFile} from '../utils';
 import * as vscode from 'vscode';
+import {zip, unzip} from 'cross-zip';
+import {mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator, isWindows} from '../utils';
 import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
 import * as os from "os";
 import * as fs from "fs";
-import { join, sep } from 'path';
+import { join } from 'path';
 import { v4 as uuid } from 'uuid';
+
 
 const homedir = require('os').homedir();
 const userOS = os.platform();
@@ -59,17 +61,17 @@ export default class FSManager {
     }
 
     static toRelativePath(uri: vscode.Uri, rootPath: string) {
-        const pathSplit = uri.path.split(sep);
-        const rootPathSplit = rootPath.split(sep);
-        const relativePath = pathSplit.slice(rootPathSplit.length).join(sep);
+        const pathSplit = uri.path.split(uriSeperator);
+        const rootPathSplit = rootPath.split(uriSeperator);
+        const relativePath = pathSplit.slice(rootPathSplit.length).join(uriSeperator);
         return relativePath;
     }
 
     static async saveRecordingToFile(codioContent: Object, metaData: Object, files: Array<string>, codioPath: string, destinationFolder?: vscode.Uri) {
         const codioContentJson = JSON.stringify(codioContent);
         const metaDataJson = JSON.stringify(metaData);
-        this.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
-        this.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
+        await this.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
+        await this.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
         const codioWorkspaceFolderPath = join(codioPath, CODIO_WORKSPACE_FOLDER);
         await saveProjectFiles(codioWorkspaceFolderPath, files);
         if (destinationFolder) {
@@ -81,16 +83,21 @@ export default class FSManager {
     }
 
     static normalizeFilesPath(fullPathFiles: Array<string> , root?: vscode.Uri) : {rootPath: string, files: string[]} {
+        // In Windows, case doesn't matter in file names, and some events return files with different cases.
+        // That is not the same in Linux for example, where case does matter. The reduceToRoot algorithm is case sensetive,
+        // which is why we are normalizing for windows here
+        const filesWithNormalizedCase = fullPathFiles.map(file => isWindows ? file.toLowerCase() : file);
         if (root) {
-            const normalizedFiles = fullPathFiles.map(fsPath => this.toRelativePath(vscode.Uri.file(fsPath), root.fsPath));
-            return { rootPath: root.fsPath, files: normalizedFiles};
-        } else if (fullPathFiles.length > 1) {
-            const splitFiles = fullPathFiles.map(file => file.split(sep).slice(1));
+            const normalizedFiles = filesWithNormalizedCase.map(path => this.toRelativePath(vscode.Uri.file(path), root.path));
+            return { rootPath: root.path, files: normalizedFiles};
+        } else if (filesWithNormalizedCase.length > 1) {
+            console.log({uriSeperator});
+            const splitFiles = filesWithNormalizedCase.map(file => file.split(uriSeperator).slice(1));
             const {rootPath, files} = reduceToRoot(splitFiles);
             return {rootPath, files};
         } else {
-            const fullPathSplit = fullPathFiles[0].split(sep);
-            const rootPath = fullPathSplit.slice(0, -1).join(sep);
+            const fullPathSplit = filesWithNormalizedCase[0].split(uriSeperator);
+            const rootPath = fullPathSplit.slice(0, -1).join(uriSeperator);
             const file = fullPathSplit[fullPathSplit.length-1];
             return { rootPath: rootPath, files: [file]};
         }
@@ -149,8 +156,9 @@ export default class FSManager {
 
     static async zip(srcPath, distPath) {
         try {
-            await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
-            return `${distPath}.zip`;
+            // await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
+            await new Promise((res, rej) => zip(srcPath, distPath, (error: Error) => error ? rej(error) : res()));
+            return `${distPath}`;
         } catch(e) {
             console.log(`zip for folder ${srcPath} failed`, e);
         }
@@ -161,7 +169,8 @@ export default class FSManager {
         const codioId = uuid.v4();
         const codioTempFolder = join(this.tempFolder, codioId);
         try {
-            await promiseExec(`unzip ${srcPath} -d ${codioTempFolder}`);
+            // await promiseExec(`unzip ${srcPath} -d ${codioTempFolder}`);
+            await new Promise((res, rej) => unzip(srcPath, codioTempFolder, (error: Error) => error ? rej(error) : res()));
             return codioTempFolder;
         } catch(e) {
             console.log(`unzipping codio with path: ${srcPath} failed`, e);

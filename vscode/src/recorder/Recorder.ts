@@ -1,12 +1,12 @@
 import CodeEditorRecorder from './Editor';
-import AudioRecorder from './Audio';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
 import { Uri } from 'vscode';
+import AudioHandler from '../audio/Audio';
 
 const CODIO_FORMAT_VERSION = '0.1.0';
 export default class Recorder {
-    audioRecorder: AudioRecorder;
+    audioRecorder: AudioHandler;
     codeEditorRecorder: CodeEditorRecorder;
     timer: Timer;
     codioPath: string;
@@ -23,9 +23,9 @@ export default class Recorder {
     stopRecordingResolver: Function;
 
 
-    loadCodio(codioPath: string, codioName: string, destinationFolder?: Uri, workspaceRoot?: Uri) {
+    async loadCodio(codioPath: string, codioName: string, destinationFolder?: Uri, workspaceRoot?: Uri) {
         if (this.isRecording) {
-            this.stopRecording();
+            await this.stopRecording();
             this.saveRecording();
         }
         this.setInitialState(codioPath, codioName, destinationFolder, workspaceRoot);
@@ -36,7 +36,7 @@ export default class Recorder {
         this.codioName = codioName;
         this.destinationFolder = destinationFolder;
         this.workspaceRoot = workspaceRoot;
-        this.audioRecorder = new AudioRecorder(FSManager.audioPath(this.codioPath));
+        this.audioRecorder = new AudioHandler(FSManager.audioPath(this.codioPath));
         this.codeEditorRecorder = new CodeEditorRecorder();
         this.timer = new Timer();
         this.process = undefined;
@@ -64,9 +64,13 @@ export default class Recorder {
         this.recordingStartTime = Date.now() + 300;
     }
 
-    stopRecording() {
+    async setRecordingDevice() : Promise<boolean> {
+        return this.audioRecorder.setDevice();
+    }
+
+    async stopRecording() {
         this.isRecording = false;
-        this.audioRecorder.stopRecording();
+        await this.audioRecorder.stopRecording();
         this.codeEditorRecorder.stopRecording();
         this.timer.stop();
         this.recordingLength = Date.now() - this.recordingStartTime;

@@ -28,3 +28,5 @@ maven
 .history
 test/e2e/screenshots
 out/
+.cache
+dist

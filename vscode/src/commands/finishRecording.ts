@@ -1,10 +1,11 @@
 import {UI, MESSAGES} from '../user_interface/messages';
+import Recorder from '../recorder/Recorder';
 
-export default function finishRecording(recorder) {
+export default async function finishRecording(recorder: Recorder) {
     try {
         if (recorder && recorder.isRecording) {
-            recorder.stopRecording();
             UI.showMessage(MESSAGES.savingRecording);
+            await recorder.stopRecording();
             recorder.saveRecording();
             UI.showMessage(MESSAGES.recordingSaved);
         }
