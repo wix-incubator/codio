@@ -33,11 +33,10 @@ export default async function playCodio(
           );
           await loadAndPlay(player, codioUnzippedFolder, workspacePath);
         } else {
-          const codioId = await fsManager.chooseCodio();
-          if (codioId) {
-            const codioPath = fsManager.codioPath(codioId);
+          const codioUri = await fsManager.chooseCodio();
+          if (codioUri) {
             //@TODO: add an if to check that the folder contains audio.mp3 and actions.json
-            await loadAndPlay(player, codioPath, workspacePath);
+            await loadAndPlay(player, codioUri.fsPath, workspacePath);
           }
         }
       }

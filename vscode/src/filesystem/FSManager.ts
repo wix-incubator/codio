@@ -6,6 +6,7 @@ import * as os from "os";
 import * as fs from "fs";
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
+import { getWorkspaceCodiosFolderIfExists } from './workspace';
 
 
 const homedir = require('os').homedir();
@@ -215,6 +216,14 @@ export default class FSManager {
         }
     }
 
+    async getAllCodiosMetadata() {
+        const workspaceCodiosFolder = getWorkspaceCodiosFolderIfExists();
+        const codioWorkspaceCodios = workspaceCodiosFolder ? await this.getCodiosMetadata(workspaceCodiosFolder) : [];
+        const libraryCodios = await this.getCodiosMetadata();
+        const allCodios = [...codioWorkspaceCodios, ...libraryCodios];
+        return allCodios;
+    }
+
     async getCodioMetaDataContent(codioFolderPath) {
         try {
             const metaData = await readFile(join(codioFolderPath, CODIO_META_FILE));
@@ -224,11 +233,10 @@ export default class FSManager {
         }
     }
 
-    async choose(getMetaDataCallback) {
+    async choose(codiosMetadata) : Promise<vscode.Uri | undefined>{
         let unlock;
         let itemSelected;
-        const metaData = await getMetaDataCallback();
-        const quickPickItems = metaData.map(item => ({label: item.name, description: item.id}));
+        const quickPickItems = codiosMetadata.map(item => ({label: item.name, description: item.uri}));
         const quickPick = vscode.window.createQuickPick();
         quickPick.items = quickPickItems;
         quickPick.onDidChangeSelection((e) => {
@@ -244,13 +252,14 @@ export default class FSManager {
         await new Promise(res => unlock = res);
         console.log('itemSelected', itemSelected);
         if (itemSelected) {
-            return itemSelected.description; // description is the codio id. This due to vscode api being weird here, refactor needed...
+            return itemSelected.description; // description is the codio uri. This due to vscode api being weird here, refactor needed...
         } else {
             return undefined;
         }
     }
 
-    async chooseCodio() {
-        return this.choose(this.getCodiosMetadata.bind(this));
+    async chooseCodio() : Promise<vscode.Uri | undefined>{
+        const codios = await this.getAllCodiosMetadata();
+        return this.choose(codios);
     }
 }
