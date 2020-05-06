@@ -1,3 +1,7 @@
+## [0.1.6]
+- Added initial support for saving codios in a project, displaying codios from a project. This is a first step for
+adding codio "tutorials" to a codebase.
+
 ## [0.1.5]
 - Docs
 
