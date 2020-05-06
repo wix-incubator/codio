@@ -236,7 +236,7 @@ export default class FSManager {
     async choose(codiosMetadata) : Promise<vscode.Uri | undefined>{
         let unlock;
         let itemSelected;
-        const quickPickItems = codiosMetadata.map(item => ({label: item.name, description: item.uri.fsPath}));
+        const quickPickItems = codiosMetadata.map(item => ({label: item.name, details: item.uri.fsPath}));
         const quickPick = vscode.window.createQuickPick();
         quickPick.items = quickPickItems;
         quickPick.onDidChangeSelection((e) => {
@@ -252,7 +252,7 @@ export default class FSManager {
         await new Promise(res => unlock = res);
         console.log('itemSelected', itemSelected);
         if (itemSelected) {
-            return itemSelected.description; // description is the codio uri. This due to vscode api being weird here, refactor needed...
+            return itemSelected.details; // details is the codio path. This due to vscode api being weird here, refactor needed...
         } else {
             return undefined;
         }
