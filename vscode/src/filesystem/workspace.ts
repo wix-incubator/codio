@@ -16,7 +16,7 @@ export const getWorkspaceUriAndCodioDestinationUri = async () => {
         const codioWorkspaceFolderPath = await createWorkspaceCodiosFolder(workspaceUri);
         const name = await showCodioNameInputBox();
         if (name) {
-         const codioUri = Uri.file(join(codioWorkspaceFolderPath, `${name}.codio`));
+         const codioUri = Uri.file(join(codioWorkspaceFolderPath, `${name.split(' ').join('_')}.codio`));
          return {workspaceUri, codioUri, getCodioName: async () => name};
         }
 	} else {
