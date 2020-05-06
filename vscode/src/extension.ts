@@ -40,7 +40,7 @@ export {
 export async function activate(context: ExtensionContext) {
   await fsManager.createExtensionFolders();
   UI.shouldDisplayMessages = true;
-  registerTreeViews(fsManager);
+  registerTreeViews(fsManager, context.extensionPath);
 
   const recordCodioDisposable = commands.registerCommand(
     COMMAND_NAMES.RECORD_CODIO,

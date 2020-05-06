@@ -76,7 +76,7 @@ export default class FSManager {
         const codioWorkspaceFolderPath = join(codioPath, CODIO_WORKSPACE_FOLDER);
         await saveProjectFiles(codioWorkspaceFolderPath, files);
         if (destinationFolder) {
-            this.zip(codioPath, destinationFolder.fsPath);
+            await this.zip(codioPath, destinationFolder.fsPath);
         } else {
             fs.renameSync(codioPath, join(codiosFolder, uuid()));
         }
