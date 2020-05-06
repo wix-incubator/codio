@@ -217,8 +217,8 @@ export default class FSManager {
     }
 
     async getAllCodiosMetadata() {
-        const {workspaceCodiosFolder, workspaceRootUri} = getWorkspaceRootAndCodiosFolderIfExists();
-        const codioWorkspaceCodios = workspaceCodiosFolder ? await this.getCodiosMetadata(workspaceCodiosFolder, workspaceRootUri) : [];
+        const workspaceFolders = getWorkspaceRootAndCodiosFolderIfExists();
+        const codioWorkspaceCodios = workspaceFolders ? await this.getCodiosMetadata(workspaceFolders.workspaceCodiosFolder, workspaceFolders.workspaceRootUri) : [];
         const libraryCodios = await this.getCodiosMetadata();
         const allCodios = [...codioWorkspaceCodios, ...libraryCodios];
         return allCodios;
