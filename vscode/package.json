@@ -48,23 +48,36 @@
         "commands": [
             {
                 "command": "codio.recordCodioAndAddToProject",
-                "title": "Codio: Record Codio and Add to Project"
+                "title": "Record Codio and Add to Project",
+                "category": "Codio",
+                "icon": {
+                    "light": "media/microphone-light.svg",
+                    "dark": "media/microphone.svg"
+                }
             },
             {
                 "command": "codio.recordCodio",
-                "title": "Codio: Record Codio"
+                "category": "Codio",
+                "title": "Record Codio",
+                "icon": {
+                    "light": "media/microphone-light.svg",
+                    "dark": "media/microphone.svg"
+                }
             },
             {
                 "command": "codio.finishRecording",
-                "title": "Codio: Save Recording"
+                "category": "Codio",
+                "title": "Save Recording"
             },
             {
                 "command": "codio.playCodio",
-                "title": "Codio: Play Codio"
+                "category": "Codio",
+                "title": "Play Codio"
             },
             {
                 "command": "codio.pauseCodio",
-                "title": "Codio: Pause Codio",
+                "category": "Codio",
+                "title": "Pause Codio",
                 "icon": {
                     "light": "./media/pause.svg",
                     "dark": "./media/pause.svg"
@@ -72,39 +85,45 @@
             },
             {
                 "command": "codio.resumeCodio",
-                "title": "Codio: Resume Codio"
+                "category": "Codio",
+                "title": "Resume Codio"
             },
             {
                 "command": "codio.playFrom",
-                "title": "Codio: Play from.."
+                "category": "Codio",
+                "title": "Play from.."
             },
             {
                 "command": "codio.pauseOrResume",
-                "title": "Codio: Pause/Resume",
+                "category": "Codio",
+                "title": "Pause/Resume",
                 "icon": {
-                    "light": "./media/pauseOrResume.svg",
+                    "light": "./media/pauseOrResume-light.svg",
                     "dark": "./media/pauseOrResume.svg"
                 }
             },
             {
                 "command": "codio.forward",
-                "title": "Codio: Forward 10 seconds",
+                "category": "Codio",
+                "title": "Forward 10 seconds",
                 "icon": {
-                    "light": "./media/forward.svg",
+                    "light": "./media/forward-light.svg",
                     "dark": "./media/forward.svg"
                 }
             },
             {
                 "command": "codio.rewind",
-                "title": "Codio: Rewind 10 seconds",
+                "category": "Codio",
+                "title": "Rewind 10 seconds",
                 "icon": {
-                    "light": "./media/rewind.svg",
+                    "light": "./media/rewind-light.svg",
                     "dark": "./media/rewind.svg"
                 }
             },
             {
                 "command": "codio.executeFile",
-                "title": "Codio: Execute FIle"
+                "category": "Codio",
+                "title": "Execute FIle"
             }
         ],
         "menus": {
@@ -133,6 +152,13 @@
                     "command": "codio.pauseOrResume",
                     "when": "viewItem == codio",
                     "group": "navigation"
+                }
+            ],
+            "view/title" :  [{
+                "command": "codio.recordCodioAndAddToProject",
+                "when": "view == codioMessages",
+                "group": "navigation@1"
+
                 }
             ]
         },

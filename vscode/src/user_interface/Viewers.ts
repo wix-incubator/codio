@@ -36,7 +36,7 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
             return [element];
         } else {
            const allCodios = await this.fsManager.getAllCodiosMetadata();
-           if (allCodios.length > 1) {
+           if (allCodios.length > 0) {
                return allCodios.map(codio => {
                    const codioItem = new vscode.TreeItem(codio.name);
                    codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [codio.uri, codio.workspaceRoot]};
