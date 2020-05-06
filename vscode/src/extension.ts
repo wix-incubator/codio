@@ -60,14 +60,16 @@ export async function activate(context: ExtensionContext) {
     COMMAND_NAMES.RECORD_CODIO_AND_ADD_TO_PROJECT,
     async () => {
       const {workspaceUri, codioUri, getCodioName} = await getWorkspaceUriAndCodioDestinationUri();
-      codioCommands.recordCodio(
-        fsManager,
-        player,
-        recorder,
-        codioUri,
-        workspaceUri,
-        getCodioName
-      );
+      if (workspaceUri && codioUri && getCodioName) {
+        codioCommands.recordCodio(
+          fsManager,
+          player,
+          recorder,
+          codioUri,
+          workspaceUri,
+          getCodioName
+        );
+      }
     }
   );
 
