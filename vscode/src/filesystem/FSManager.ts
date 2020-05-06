@@ -236,7 +236,7 @@ export default class FSManager {
     async choose(codiosMetadata) : Promise<vscode.Uri | undefined>{
         let unlock;
         let itemSelected;
-        const quickPickItems = codiosMetadata.map(item => ({label: item.name, description: item.uri}));
+        const quickPickItems = codiosMetadata.map(item => ({label: item.name, description: item.uri.fsPath}));
         const quickPick = vscode.window.createQuickPick();
         quickPick.items = quickPickItems;
         quickPick.onDidChangeSelection((e) => {
