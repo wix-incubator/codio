@@ -16,7 +16,7 @@
     "bugs": {
         "url": "https://github.com/wix-incubator/codio"
     },
-    "version": "0.1.5",
+    "version": "0.1.6",
     "license": "MIT",
     "publisher": "Wix",
     "icon": "media/icon.png",
@@ -131,16 +131,8 @@
                 }
             ]
         },
-        "viewsContainers": {
-            "panel": [
-                {"id": "codio", "icon": {
-                    "light": "./media/pause.svg",
-                    "dark": "./media/pause.svg"
-                }, "title": "Codio"}
-            ]
-        },
         "views": {
-            "codio": [
+            "explorer": [
                 {
                     "id": "codioMessages",
                     "name": "Codios"
