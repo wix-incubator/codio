@@ -1,3 +1,6 @@
+## [0.1.13]
+- Added icons to each codio in the codio viewer, improved docs with gifs
+
 ## [0.1.12]
 - Add save recording to control panel
 
