@@ -67,7 +67,11 @@
             {
                 "command": "codio.finishRecording",
                 "category": "Codio",
-                "title": "Save Recording"
+                "title": "Save Recording",
+                "icon": {
+                    "light": "media/save-light.svg",
+                    "dark": "media/save.svg"
+                }
             },
             {
                 "command": "codio.playCodio",
@@ -154,11 +158,16 @@
                     "group": "navigation"
                 }
             ],
-            "view/title" :  [{
-                "command": "codio.recordCodioAndAddToProject",
-                "when": "view == codioMessages",
-                "group": "navigation@1"
-
+            "view/title" :  [
+                {
+                    "command": "codio.recordCodioAndAddToProject",
+                    "when": "view == codioMessages && !inCodioRecording",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "codio.finishRecording",
+                    "when": "view == codioMessages && inCodioRecording",
+                    "group": "navigation@1"
                 }
             ]
         },

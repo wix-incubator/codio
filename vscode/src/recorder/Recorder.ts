@@ -1,7 +1,7 @@
 import CodeEditorRecorder from './Editor';
 import Timer from '../ProgressTimer';
 import FSManager from '../filesystem/FSManager';
-import { Uri } from 'vscode';
+import { Uri, commands } from 'vscode';
 import AudioHandler from '../audio/Audio';
 
 const CODIO_FORMAT_VERSION = '0.1.0';
@@ -62,6 +62,7 @@ export default class Recorder {
         this.timer.run();
         this.process = new Promise((resolve) => this.stopRecordingResolver = resolve);
         this.recordingStartTime = Date.now() + 300;
+        commands.executeCommand('setContext', 'inCodioRecording', true);
     }
 
     async setRecordingDevice() : Promise<boolean> {
@@ -69,12 +70,13 @@ export default class Recorder {
     }
 
     async stopRecording() {
-        this.isRecording = false;
         await this.audioRecorder.stopRecording();
         this.codeEditorRecorder.stopRecording();
         this.timer.stop();
         this.recordingLength = Date.now() - this.recordingStartTime;
         this.stopRecordingResolver();
+        this.isRecording = false;
+        commands.executeCommand('setContext', 'inCodioRecording', false);
     }
 
     async saveRecording() {
