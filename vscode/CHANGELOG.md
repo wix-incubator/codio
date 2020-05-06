@@ -1,3 +1,6 @@
+## [0.1.7]
+- Fix bug where the `Play Codio` command did not display codios inside your project.
+
 ## [0.1.6]
 - Added initial support for saving codios in a project, displaying codios from a project. This is a first step for
 adding codio "tutorials" to a codebase.
