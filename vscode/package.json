@@ -16,7 +16,7 @@
     "bugs": {
         "url": "https://github.com/wix-incubator/codio"
     },
-    "version": "0.1.7",
+    "version": "0.1.8",
     "license": "MIT",
     "publisher": "Wix",
     "icon": "media/icon.png",

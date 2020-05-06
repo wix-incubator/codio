@@ -1,4 +1,7 @@
 ## [0.1.7]
+- Playing a codio from a workspace will play that codio on the files of that workspace.
+
+## [0.1.7]
 - Fix bug where the `Play Codio` command did not display codios inside your project.
 
 ## [0.1.6]
