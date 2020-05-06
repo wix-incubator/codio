@@ -28,7 +28,8 @@ export const MESSAGES = {
   windowsNotSupported: "Unfortunately, Codio Format does not work on Windows.",
   ffmpegNotAvailable: `Looks like you haven't installed ffmpeg, which is required for Codio to work.
      You can install it with brew: "brew install ffmpeg"`,
-  noRecordingDeviceAvailable: "Cidio Could not find an audio recording device"
+  noRecordingDeviceAvailable: "Codio Could not find an audio recording device",
+  noActiveWorkspace: "You need to have an active workspace to record a Codio"
 };
 
 class UIController {

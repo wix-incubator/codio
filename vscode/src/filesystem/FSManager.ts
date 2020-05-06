@@ -188,15 +188,26 @@ export default class FSManager {
         return path;
     }
 
+    async getCodiosUnzippedFromCodioFolder(folder) {
+        const folderContents = await readdir(folder);
+        return await Promise.all(folderContents.map(file => {
+            const fullPath = join(folder, file);
+            if (fs.statSync(fullPath).isDirectory()) {
+                return fullPath;
+            } else if (file.endsWith('.codio')) {
+                return this.getCodioUnzipped(vscode.Uri.file(fullPath));
+            }
+        }).filter(folder => !!folder));
+    }
 
-    async getCodiosMetadata() : Promise<Array<any>> {
+    async getCodiosMetadata(folder = codiosFolder) : Promise<Array<any>> {
         try {
             let codiosMetaData = [];
-            const folderContents = await readdir(codiosFolder);
-            const directories = folderContents.filter(file => fs.statSync(join(codiosFolder, file)).isDirectory());
+            const directories = await this.getCodiosUnzippedFromCodioFolder(folder);
             await Promise.all(directories.map(async dir => {
                 const metaData = await this.getCodioMetaDataContent(dir);
-                codiosMetaData.push({...metaData, id: dir});
+                const codioUri = vscode.Uri.file(dir);
+                codiosMetaData.push({...metaData, uri: codioUri});
             }));
             return codiosMetaData;
         } catch(e) {
@@ -204,12 +215,12 @@ export default class FSManager {
         }
     }
 
-    async getCodioMetaDataContent(codioId) {
+    async getCodioMetaDataContent(codioFolderPath) {
         try {
-            const metaData = await readFile(join(codiosFolder, codioId, CODIO_META_FILE));
+            const metaData = await readFile(join(codioFolderPath, CODIO_META_FILE));
             return JSON.parse(metaData.toString());
         } catch(e) {
-            console.log(`Problem getting codio ${codioId} meta data`, e);
+            console.log(`Problem getting codio ${codioFolderPath} meta data`, e);
         }
     }
 

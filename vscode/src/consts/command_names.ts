@@ -14,3 +14,4 @@ export const EXECUTE_FILE = 'codio.executeFile';
 export const REWIND = 'codio.rewind';
 export const FORWARD = 'codio.forward';
 export const PAUSE_OR_RESUME = 'codio.pauseOrResume';
+export const RECORD_CODIO_AND_ADD_TO_PROJECT = 'codio.recordCodioAndAddToProject';

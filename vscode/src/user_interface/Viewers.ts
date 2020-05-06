@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
 import FSManager from '../filesystem/FSManager';
 import {PLAY_CODIO} from '../consts/command_names';
+import { getWorkspaceCodiosFolderIfExists } from '../filesystem/workspace';
 
 export async function registerTreeViews(fsManager: FSManager) {
     const codioTreeDataProvider = new CodiosDataProvider(fsManager);
     vscode.window.createTreeView("codioMessages", {treeDataProvider: codioTreeDataProvider});
     fsManager.onCodiosChanged(() => codioTreeDataProvider.refresh());
+    vscode.workspace.onDidChangeWorkspaceFolders(() => codioTreeDataProvider.refresh());
 }
 
 export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
@@ -31,10 +33,13 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
         if (element) {
             return [element];
         } else {
-            const codios = await this.fsManager.getCodiosMetadata();
-            return codios.map(codio => {
+            const workspaceCodiosFolder = getWorkspaceCodiosFolderIfExists();
+            const codioWorkspaceCodios = workspaceCodiosFolder ? await this.fsManager.getCodiosMetadata(workspaceCodiosFolder) : [];
+            const libraryCodios = await this.fsManager.getCodiosMetadata();
+            const allCodios = [...codioWorkspaceCodios, ...libraryCodios];
+            return allCodios.map(codio => {
                 const codioItem = new vscode.TreeItem(codio.name);
-                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [vscode.Uri.file(this.fsManager.codioPath(codio.id))]};
+                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [codio.uri]};
                 codioItem.contextValue = "codio";
                 return codioItem;
             });

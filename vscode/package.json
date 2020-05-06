@@ -35,6 +35,7 @@
     "activationEvents": [
         "onView:codioMessages",
         "onCommand:codio.recordCodio",
+        "onCommand:codio.recordCodioAndAddToProject",
         "onCommand:codio.finishRecording",
         "onCommand:codio.playCodio",
         "onCommand:codio.pauseRecording",
@@ -45,6 +46,10 @@
     "main": "./out/extension",
     "contributes": {
         "commands": [
+            {
+                "command": "codio.recordCodioAndAddToProject",
+                "title": "Codio: Record Codio and Add to Project"
+            },
             {
                 "command": "codio.recordCodio",
                 "title": "Codio: Record Codio"
@@ -131,14 +136,14 @@
                 }
             ]
         },
-        "views": {
-            "explorer": [
-                {
-                    "id": "codioMessages",
+		"views": {
+			"explorer": [
+				{
+					"id": "codioMessages",
                     "name": "Codios"
-                }
-            ]
-        }
+				}
+			]
+		}
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

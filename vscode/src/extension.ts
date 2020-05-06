@@ -7,6 +7,7 @@ import FSManager from "./filesystem/FSManager";
 import * as COMMAND_NAMES from "./consts/command_names";
 import * as codioCommands from "./commands/index";
 import { createSdk } from "./sdk";
+import { getWorkspaceUriAndCodioDestinationUri } from "./filesystem/workspace";
 
 const fsManager = new FSManager();
 const player = new Player();
@@ -51,6 +52,21 @@ export async function activate(context: ExtensionContext) {
         destination,
         workspaceRoot,
         showCodioNameInputBox
+      );
+    }
+  );
+
+  const recordCodioAndAddToProjectDisposable = commands.registerCommand(
+    COMMAND_NAMES.RECORD_CODIO_AND_ADD_TO_PROJECT,
+    async () => {
+      const {workspaceUri, codioUri, getCodioName} = await getWorkspaceUriAndCodioDestinationUri();
+      codioCommands.recordCodio(
+        fsManager,
+        player,
+        recorder,
+        codioUri,
+        workspaceUri,
+        getCodioName
       );
     }
   );

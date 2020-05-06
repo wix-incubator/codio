@@ -43,7 +43,7 @@ async function saveFiles(root: string, filesWithSplittedPath: string[][]) {
 
 
 const fs = require('fs').promises;
-async function ensureDir (dirpath) {
+export async function ensureDir (dirpath) {
   try {
     await fs.mkdir(dirpath);
   } catch (err) {
