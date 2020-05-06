@@ -1,4 +1,4 @@
-## [0.1.7]
+## [0.1.8]
 - Playing a codio from a workspace will play that codio on the files of that workspace.
 
 ## [0.1.7]
