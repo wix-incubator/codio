@@ -39,14 +39,14 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
            if (allCodios.length > 0) {
                return allCodios.map(codio => {
                    const codioItem = new vscode.TreeItem(codio.name);
-                   codioItem.iconPath = {dark: join(this.extensionPath, "media/icon-small.svg"), light: join(this.extensionPath, "media/icon-small-light")};
+                   codioItem.iconPath = {dark: join(this.extensionPath, "media/icon-small.svg"), light: join(this.extensionPath, "media/icon-small-light.svg")};
                    codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [codio.uri, codio.workspaceRoot]};
                    codioItem.contextValue = "codio";
                    return codioItem;
                });
            } else {
             const recordCodioItem = new vscode.TreeItem("Record Codio");
-            recordCodioItem.iconPath = {dark: join(this.extensionPath, "media/microphone.svg"), light: join(this.extensionPath, "media/microphone-light")};
+            recordCodioItem.iconPath = {dark: join(this.extensionPath, "media/microphone.svg"), light: join(this.extensionPath, "media/microphone-light.svg")};
             recordCodioItem.command =  {command: RECORD_CODIO_AND_ADD_TO_PROJECT, title: "Record Codio and Add to Project", arguments: []};
             recordCodioItem.contextValue = "codio";
             return [recordCodioItem];
