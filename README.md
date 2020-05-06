@@ -17,8 +17,6 @@ Codio
     - [Documentation](#documentation)
   - [Continue Reading](#continue-reading)
 
->Note: Codio currently supports only MacOS, but we hope to add Windows support soon.
-
 ## About
 Codio is a media format for recording the process of programming.
 
