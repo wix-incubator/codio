@@ -1,3 +1,6 @@
+## [0.1.9]
+- Bug fix
+
 ## [0.1.8]
 - Playing a codio from a workspace will play that codio on the files of that workspace.
 
