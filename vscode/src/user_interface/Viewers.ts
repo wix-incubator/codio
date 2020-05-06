@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import FSManager from '../filesystem/FSManager';
 import {PLAY_CODIO} from '../consts/command_names';
-import { getWorkspaceCodiosFolderIfExists } from '../filesystem/workspace';
 
 export async function registerTreeViews(fsManager: FSManager) {
     const codioTreeDataProvider = new CodiosDataProvider(fsManager);
@@ -36,7 +35,7 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
            const allCodios = await this.fsManager.getAllCodiosMetadata();
             return allCodios.map(codio => {
                 const codioItem = new vscode.TreeItem(codio.name);
-                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [codio.uri]};
+                codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [codio.uri, codio.workspaceRoot]};
                 codioItem.contextValue = "codio";
                 return codioItem;
             });

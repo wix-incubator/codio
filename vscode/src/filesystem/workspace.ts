@@ -25,12 +25,12 @@ export const getWorkspaceUriAndCodioDestinationUri = async () => {
 };
 
 
-export const getWorkspaceCodiosFolderIfExists = () : string | undefined => {
-    const workspaceUri = workspace.workspaceFolders && workspace.workspaceFolders[0].uri;
-    if (workspaceUri) {
-        const codiosFolderPath = join(workspaceUri.fsPath, '.codio');
-        if (existsSync(codiosFolderPath)) {
-            return codiosFolderPath;
+export const getWorkspaceRootAndCodiosFolderIfExists = () : {workspaceRootUri: Uri, workspaceCodiosFolder: string} => {
+    const workspaceRootUri = workspace.workspaceFolders && workspace.workspaceFolders[0].uri;
+    if (workspaceRootUri) {
+        const workspaceCodiosFolder = join(workspaceRootUri.fsPath, '.codio');
+        if (existsSync(workspaceCodiosFolder)) {
+            return {workspaceCodiosFolder, workspaceRootUri};
         }
     }
 };

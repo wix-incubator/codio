@@ -6,7 +6,7 @@ import * as os from "os";
 import * as fs from "fs";
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
-import { getWorkspaceCodiosFolderIfExists } from './workspace';
+import { getWorkspaceRootAndCodiosFolderIfExists } from './workspace';
 
 
 const homedir = require('os').homedir();
@@ -201,14 +201,14 @@ export default class FSManager {
         }).filter(folder => !!folder));
     }
 
-    async getCodiosMetadata(folder = codiosFolder) : Promise<Array<any>> {
+    async getCodiosMetadata(folder = codiosFolder, workspaceRoot?: vscode.Uri) : Promise<Array<any>> {
         try {
             let codiosMetaData = [];
             const directories = await this.getCodiosUnzippedFromCodioFolder(folder);
             await Promise.all(directories.map(async dir => {
                 const metaData = await this.getCodioMetaDataContent(dir);
                 const codioUri = vscode.Uri.file(dir);
-                codiosMetaData.push({...metaData, uri: codioUri});
+                codiosMetaData.push({...metaData, uri: codioUri, workspaceRoot});
             }));
             return codiosMetaData;
         } catch(e) {
@@ -217,8 +217,8 @@ export default class FSManager {
     }
 
     async getAllCodiosMetadata() {
-        const workspaceCodiosFolder = getWorkspaceCodiosFolderIfExists();
-        const codioWorkspaceCodios = workspaceCodiosFolder ? await this.getCodiosMetadata(workspaceCodiosFolder) : [];
+        const {workspaceCodiosFolder, workspaceRootUri} = getWorkspaceRootAndCodiosFolderIfExists();
+        const codioWorkspaceCodios = workspaceCodiosFolder ? await this.getCodiosMetadata(workspaceCodiosFolder, workspaceRootUri) : [];
         const libraryCodios = await this.getCodiosMetadata();
         const allCodios = [...codioWorkspaceCodios, ...libraryCodios];
         return allCodios;
@@ -233,10 +233,10 @@ export default class FSManager {
         }
     }
 
-    async choose(codiosMetadata) : Promise<vscode.Uri | undefined>{
+    async choose(codiosMetadata) : Promise<{path: string, workspaceRoot: vscode.Uri} | undefined>{
         let unlock;
         let itemSelected;
-        const quickPickItems = codiosMetadata.map(item => ({label: item.name, details: item.uri.fsPath}));
+        const quickPickItems = codiosMetadata.map(item => ({label: item.name, details: {path: item.uri.fsPath, workspaceRoot: item.workspaceRoot}}));
         const quickPick = vscode.window.createQuickPick();
         quickPick.items = quickPickItems;
         quickPick.onDidChangeSelection((e) => {
@@ -258,7 +258,7 @@ export default class FSManager {
         }
     }
 
-    async chooseCodio() : Promise<vscode.Uri | undefined>{
+    async chooseCodio() : Promise<{path: string, workspaceRoot?: vscode.Uri} | undefined>{
         const codios = await this.getAllCodiosMetadata();
         return this.choose(codios);
     }
