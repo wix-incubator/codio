@@ -1,4 +1,8 @@
 ## [0.1.10]
+## [0.1.11]
+- Bug fixes, improved icons and controls
+
+## [0.1.10]
 - Bug fix
 
 ## [0.1.9]
