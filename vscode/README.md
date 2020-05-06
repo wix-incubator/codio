@@ -11,6 +11,7 @@ You can use codio to create interactive tutorials, messages and documentation th
 
 1) Install FFmpeg: `brew install ffmpeg`.
  If you are using windows you can either download it from [here](https://www.ffmpeg.org/) and add it to your path, or use a tool like [chocolatey](https://chocolatey.org/packages/ffmpeg) which will handle that for you.
+
   FFmpeg is how we record and play audio files. You can read more about it [here](https://www.ffmpeg.org/).
 
 2) Get the Codio Format extension from [the marketplace](https://marketplace.visualstudio.com/items?itemName=wix.codio)
