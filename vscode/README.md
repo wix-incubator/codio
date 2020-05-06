@@ -18,7 +18,7 @@ You can use codio to create interactive tutorials, messages and documentation th
 
 ### Recording a Codio
 
-<img width="800px" src="./docs/recording%20a%20codio.gif" />
+<img width="800px" src="https://user-images.githubusercontent.com/8999993/81228522-dd8db580-8ff6-11ea-834b-4c5a6120c3fa.gif" />
 
 You can record a codio through the command palette using the `Codio: Record Codio` and `Codio: Record Codio and Add to Project` commands or the the Codio View in the explorer tab.
 
@@ -30,7 +30,7 @@ if your are using the `Codio: Record Codio and Add to Project` command, codios w
 
 ### Playing a Codio
 
-<img width="800px" src="./docs/Playing%20a%20codio.gif" />
+<img width="800px" src="https://user-images.githubusercontent.com/8999993/81228503-d5ce1100-8ff6-11ea-827d-da4dc280f618.gif" />
 
 You can play a codio recording through the command palette or the Explorer tree viewer:
 -  Use the `Codio: Play Codio` command from the command palette.
