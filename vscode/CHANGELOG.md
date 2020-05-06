@@ -1,3 +1,6 @@
+## [0.1.12]
+- Add save recording to control panel
+
 ## [0.1.11]
 - Bug fixes, improved icons and controls
 
