@@ -8,7 +8,9 @@ Codio
   A media format to record and playback the process of programming
 </h4>
 
+Create interactive tutorials, code messages and embedded documentation with a media format that turns your IDE to a media player.
 
+  - [Getting Started With VSCode](./vscode/README.md)
   - [About](#about)
   - [Why?](#why)
   - [Use cases](#use-cases)
