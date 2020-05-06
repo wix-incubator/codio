@@ -12,10 +12,10 @@ const createWorkspaceCodiosFolder = async (workspaceUri: Uri) => {
 
 export const getWorkspaceUriAndCodioDestinationUri = async () => {
 	if (workspace.workspaceFolders) {
-        const workspaceUri = workspace.workspaceFolders[0].uri;
-        const codioWorkspaceFolderPath = await createWorkspaceCodiosFolder(workspaceUri);
         const name = await showCodioNameInputBox();
         if (name) {
+            const workspaceUri = workspace.workspaceFolders[0].uri;
+            const codioWorkspaceFolderPath = await createWorkspaceCodiosFolder(workspaceUri);
          const codioUri = Uri.file(join(codioWorkspaceFolderPath, `${name.split(' ').join('_')}.codio`));
          return {workspaceUri, codioUri, getCodioName: async () => name};
         }
