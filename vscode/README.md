@@ -17,6 +17,8 @@ You can use codio to create interactive tutorials, messages and documentation th
 2) Get the Codio Format extension from [the marketplace](https://marketplace.visualstudio.com/items?itemName=wix.codio)
 
 ### Recording a Codio
+#### Check out the [demo video](https://youtu.be/XC2liN3OhA8)
+
 
 <img width="800px" src="https://user-images.githubusercontent.com/8999993/81228522-dd8db580-8ff6-11ea-834b-4c5a6120c3fa.gif" />
 
