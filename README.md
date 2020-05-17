@@ -10,7 +10,7 @@ Codio
 
 Create interactive tutorials, code messages and embedded documentation with a media format that turns your IDE to a media player.
 
-##### Check out the [demo video](https://youtu.be/XC2liN3OhA8)
+##### Check out the [demo video](https://youtu.be/XC2liN3OhA8) and [follow](https://twitter.com/eladbogo) for updates
 
   - [Getting Started With VSCode](./vscode/README.md)
   - [About](#about)
