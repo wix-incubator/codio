@@ -1,4 +1,3 @@
-
 export const PLAY_CODIO = 'codio.playCodio';
 export const RECORD_CODIO = 'codio.recordCodio';
 export const FINISH_RECORDING = 'codio.finishRecording';
