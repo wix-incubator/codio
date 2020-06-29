@@ -58,15 +58,10 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
 
 
 export const cursorStyle = vscode.window.createTextEditorDecorationType({
-    backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
-    borderColor: new vscode.ThemeColor('editorCursor.foreground'),
-    dark: {
-      color: 'rgb(81,80,82)',
-    },
-    light: {
-      // used for light colored themes
-      color: 'rgb(255, 255, 255)',
-    },
-    borderStyle: 'solid',
-    borderWidth: '1px',
-  });
+  dark: {
+    backgroundColor: vscode.workspace.getConfiguration('codio').get<string>('cursorColorDarkTheme'),
+  },
+  light: {
+    backgroundColor: vscode.workspace.getConfiguration('codio').get<string>('cursorColorLightTheme'),
+  },
+});
