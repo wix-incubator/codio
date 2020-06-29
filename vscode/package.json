@@ -45,6 +45,22 @@
     ],
     "main": "./out/extension",
     "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Codio configuration",
+            "properties": {
+                "codio.cursorColorDarkTheme": {
+                    "type": "string",
+                    "default": "rgb(81,80,82)",
+                    "description": "The color of the cursor in a Codio in a dark theme"
+                },
+                "codio.cursorColorLightTheme": {
+                    "type": "string",
+                    "default": "rgb(255, 255, 255)",
+                    "description": "The color of the cursor in a Codio in a light theme"
+                }
+            }
+        },
         "commands": [
             {
                 "command": "codio.recordCodioAndAddToProject",
