@@ -1,11 +1,11 @@
-import {UI, MESSAGES} from '../user_interface/messages';
+import { UI, MESSAGES } from '../user_interface/messages';
 import Player from '../player/Player';
 
 export default function pauseCodio(player: Player) {
-    if (player && player.isPlaying) {
-        player.pause();
-        UI.showMessage(MESSAGES.codioPaused);
-    } else {
-        UI.showMessage(MESSAGES.noActiveCodio);
-    }
+  if (player && player.isPlaying) {
+    player.pause();
+    UI.showMessage(MESSAGES.codioPaused);
+  } else {
+    UI.showMessage(MESSAGES.noActiveCodio);
+  }
 }

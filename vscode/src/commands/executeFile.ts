@@ -1,9 +1,9 @@
-import { interacterExecute } from "../editor/execution";
+import { interacterExecute } from '../editor/execution';
 
 export default function executeFile(recorder) {
-    if (recorder && recorder.isRecording) {
-        recorder.executeFile();
-    } else {
-        interacterExecute();
-    }
+  if (recorder && recorder.isRecording) {
+    recorder.executeFile();
+  } else {
+    interacterExecute();
+  }
 }
