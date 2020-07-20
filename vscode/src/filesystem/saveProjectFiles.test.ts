@@ -1,4 +1,3 @@
-
 // for later tests
 // const example1 = "/Users/moshe/Documents/workplace/mouse-experiment/main.css";
 // const example2 = "/Users/moshe/Documents/workplace/mouse-experiment/index.html";

@@ -1,0 +1,4168 @@
+diff --git a/vscode/.eslintignore b/vscode/.eslintignore
+new file mode 100644
+index 0000000..466e248
+--- /dev/null
++++ b/vscode/.eslintignore
+@@ -0,0 +1 @@
++out/
+\ No newline at end of file
+diff --git a/vscode/.eslintrc.js b/vscode/.eslintrc.js
+new file mode 100644
+index 0000000..540f259
+--- /dev/null
++++ b/vscode/.eslintrc.js
+@@ -0,0 +1,16 @@
++module.exports = {
++  parser: "@typescript-eslint/parser", // Specifies the ESLint parser
++  parserOptions: {
++    ecmaVersion: 2020, // Allows for the parsing of modern ECMAScript features
++    sourceType: "module" // Allows for the use of imports
++  },
++  extends: [
++    "plugin:@typescript-eslint/recommended", // Uses the recommended rules from the @typescript-eslint/eslint-plugin
++    "prettier/@typescript-eslint", // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
++    "plugin:prettier/recommended" // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
++  ],
++  rules: {
++    // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
++    // e.g. "@typescript-eslint/explicit-function-return-type": "off",
++  }
++};
+\ No newline at end of file
+diff --git a/vscode/.prettierrc.js b/vscode/.prettierrc.js
+new file mode 100644
+index 0000000..a80633b
+--- /dev/null
++++ b/vscode/.prettierrc.js
+@@ -0,0 +1,7 @@
++module.exports = {
++  semi: true,
++  trailingComma: "all",  
++  singleQuote: true,
++  printWidth: 120,  
++  tabWidth: 2
++};
+\ No newline at end of file
+diff --git a/vscode/package.json b/vscode/package.json
+index ba95273..ec49971 100644
+--- a/vscode/package.json
++++ b/vscode/package.json
+@@ -158,7 +158,7 @@
+                     "group": "navigation"
+                 }
+             ],
+-            "view/title" :  [
++            "view/title": [
+                 {
+                     "command": "codio.recordCodioAndAddToProject",
+                     "when": "view == codioMessages && !inCodioRecording",
+@@ -171,28 +171,35 @@
+                 }
+             ]
+         },
+-		"views": {
+-			"explorer": [
+-				{
+-					"id": "codioMessages",
++        "views": {
++            "explorer": [
++                {
++                    "id": "codioMessages",
+                     "name": "Codios"
+-				}
+-			]
+-		}
++                }
++            ]
++        }
+     },
+     "scripts": {
+         "vscode:prepublish": "npm run compile",
+         "compile": "tsc -p ./",
+         "watch": "tsc -watch -p ./",
+         "install-vscode-types": "node ./node_modules/vscode/bin/install",
+-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
++        "test": "npm run compile && node ./node_modules/vscode/bin/test",
++        "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
+     },
+     "devDependencies": {
+-        "typescript": "^3.1.4",
+-        "vscode": "^1.1.25",
+-        "tslint": "^5.8.0",
++        "@types/mocha": "^2.2.42",
+         "@types/node": "^8.10.25",
+-        "@types/mocha": "^2.2.42"
++        "@typescript-eslint/eslint-plugin": "^3.4.0",
++        "@typescript-eslint/parser": "^3.4.0",
++        "eslint": "^7.3.1",
++        "eslint-config-prettier": "^6.11.0",
++        "eslint-plugin-prettier": "^3.1.4",
++        "prettier": "^2.0.5",
++        "tslint": "^5.8.0",
++        "typescript": "^3.9.5",
++        "vscode": "^1.1.25"
+     },
+     "dependencies": {
+         "cross-zip": "^3.0.0",
+diff --git a/vscode/src/ProgressTimer.ts b/vscode/src/ProgressTimer.ts
+index f5cbeae..05c1823 100644
+--- a/vscode/src/ProgressTimer.ts
++++ b/vscode/src/ProgressTimer.ts
+@@ -1,43 +1,45 @@
+ export default class CodioProgressTimer {
+-    codioLength: number | undefined;
+-    timer: NodeJS.Timer;
+-    currentSecond: number;
++  codioLength: number | undefined;
++  timer: NodeJS.Timer;
++  currentSecond: number;
+ 
+-    private onUpdateObservers: Array<Function> = [];
+-    private onFinishObservers: Array<Function> = [];
++  private onUpdateObservers: Array<Function> = [];
++  private onFinishObservers: Array<Function> = [];
+ 
+-    constructor(codioLengh?: number) {
+-        this.codioLength = codioLengh;
+-    }
++  constructor(codioLengh?: number) {
++    this.codioLength = codioLengh;
++  }
+ 
+-    onFinish(observer) {
+-        this.onFinishObservers.push(observer);
+-    }
++  onFinish(observer) {
++    this.onFinishObservers.push(observer);
++  }
+ 
+-    onUpdate(observer) {
+-        this.onUpdateObservers.push(observer);
+-    }
++  onUpdate(observer) {
++    this.onUpdateObservers.push(observer);
++  }
+ 
+-    stop() {
+-        clearInterval(this.timer);
+-    }
++  stop() {
++    clearInterval(this.timer);
++  }
+ 
+-    run(codioTime = 0) {
+-        try {
+-            if (this.timer) { clearInterval(this.timer); }
+-            this.currentSecond = codioTime;
+-            this.timer = setInterval(() => {
+-                this.currentSecond++;
+-                if (this.codioLength && this.currentSecond > this.codioLength / 1000) {
+-                    this.onFinishObservers.forEach(observer => observer());
+-                    clearInterval(this.timer);
+-                    this.onUpdateObservers.forEach(observer => observer(this.codioLength / 1000, this.codioLength / 1000));
+-                } else {
+-                    this.onUpdateObservers.forEach(observer => observer(this.currentSecond, this.codioLength / 1000));
+-                }
+-            }, 1000);
+-        } catch(e) {
+-            console.log('report progress error,', e);
++  run(codioTime = 0) {
++    try {
++      if (this.timer) {
++        clearInterval(this.timer);
++      }
++      this.currentSecond = codioTime;
++      this.timer = setInterval(() => {
++        this.currentSecond++;
++        if (this.codioLength && this.currentSecond > this.codioLength / 1000) {
++          this.onFinishObservers.forEach((observer) => observer());
++          clearInterval(this.timer);
++          this.onUpdateObservers.forEach((observer) => observer(this.codioLength / 1000, this.codioLength / 1000));
++        } else {
++          this.onUpdateObservers.forEach((observer) => observer(this.currentSecond, this.codioLength / 1000));
+         }
++      }, 1000);
++    } catch (e) {
++      console.log('report progress error,', e);
+     }
++  }
+ }
+diff --git a/vscode/src/audio/Audio.ts b/vscode/src/audio/Audio.ts
+index 7bc9f78..b42d4ed 100644
+--- a/vscode/src/audio/Audio.ts
++++ b/vscode/src/audio/Audio.ts
+@@ -1,58 +1,58 @@
+-import { ChildProcess, exec, spawn} from "child_process";
+-import {getDeviceList } from "./ffmpegDeviceListParser";
+-import { isWindows, isMacOs, } from '../utils';
++import { ChildProcess, exec, spawn } from 'child_process';
++import { getDeviceList } from './ffmpegDeviceListParser';
++import { isWindows, isMacOs } from '../utils';
+ 
+ export default class AudioHandler {
+-    private audioFilePath;
+-    private currentAudioProcess: ChildProcess;
+-    private audioInputDevice: string;
+-
+-    constructor(path: string) {
+-        this.audioFilePath = path;
+-    }
+-
+-    async setDevice() : Promise<boolean> {
+-        if (isWindows || isMacOs) {
+-            const deviceList: any = await getDeviceList();
+-            this.audioInputDevice = deviceList?.audioDevices[0].name;
+-            if (!this.audioInputDevice) {
+-                return false;
+-            } else {
+-                return true;
+-            }
+-        }
+-    }
+-
+-    async record() {
+-        if (isWindows) {
+-            this.currentAudioProcess = exec(`ffmpeg -f dshow -i audio="${this.audioInputDevice}"  ${this.audioFilePath}`);
+-        } else {
+-            this.currentAudioProcess = exec(`ffmpeg -f avfoundation -i :"${this.audioInputDevice}" ${this.audioFilePath}`);
+-        }
++  private audioFilePath;
++  private currentAudioProcess: ChildProcess;
++  private audioInputDevice: string;
++
++  constructor(path: string) {
++    this.audioFilePath = path;
++  }
++
++  async setDevice(): Promise<boolean> {
++    if (isWindows || isMacOs) {
++      const deviceList: any = await getDeviceList();
++      this.audioInputDevice = deviceList?.audioDevices[0].name;
++      if (!this.audioInputDevice) {
++        return false;
++      } else {
++        return true;
++      }
+     }
++  }
+ 
+-    async stopRecording() {
+-        return this.stopAudioProcess();
++  async record() {
++    if (isWindows) {
++      this.currentAudioProcess = exec(`ffmpeg -f dshow -i audio="${this.audioInputDevice}"  ${this.audioFilePath}`);
++    } else {
++      this.currentAudioProcess = exec(`ffmpeg -f avfoundation -i :"${this.audioInputDevice}" ${this.audioFilePath}`);
+     }
+-
+-    play(time) {
+-        this.currentAudioProcess = exec(`ffplay -nodisp -ss ${time} ${this.audioFilePath}`);
+-    }
+-
+-    async pause() {
+-       return this.stopAudioProcess();
+-    }
+-
+-    stopAudioProcess() {
+-        if (isWindows) {
+-            return new Promise((res, rej) => {
+-                const taskKill = spawn("taskkill", ["/pid", this.currentAudioProcess.pid.toString(), '/f', '/t']);
+-                taskKill.stdout.on('data', () =>  res());
+-                taskKill.stderr.on('data', data =>  rej(data));
+-                taskKill.on('close', () =>  res());
+-            });
+-        } else {
+-            this.currentAudioProcess.kill();
+-        }
++  }
++
++  async stopRecording() {
++    return this.stopAudioProcess();
++  }
++
++  play(time) {
++    this.currentAudioProcess = exec(`ffplay -nodisp -ss ${time} ${this.audioFilePath}`);
++  }
++
++  async pause() {
++    return this.stopAudioProcess();
++  }
++
++  stopAudioProcess() {
++    if (isWindows) {
++      return new Promise((res, rej) => {
++        const taskKill = spawn('taskkill', ['/pid', this.currentAudioProcess.pid.toString(), '/f', '/t']);
++        taskKill.stdout.on('data', () => res());
++        taskKill.stderr.on('data', (data) => rej(data));
++        taskKill.on('close', () => res());
++      });
++    } else {
++      this.currentAudioProcess.kill();
+     }
+-}
+\ No newline at end of file
++  }
++}
+diff --git a/vscode/src/audio/ffmpegDeviceListParser.ts b/vscode/src/audio/ffmpegDeviceListParser.ts
+index 4a3cfdb..482e4d1 100644
+--- a/vscode/src/audio/ffmpegDeviceListParser.ts
++++ b/vscode/src/audio/ffmpegDeviceListParser.ts
+@@ -2,87 +2,88 @@
+ const exec = require('child_process').exec;
+ const platform = process.platform;
+ 
+-function getDeviceList(options: {ffmpegPath?: string} = {}, callback? : Function) {
+-	if(typeof options === 'function') {
+-		callback = options;
+-		options = null;
+-	} 
+-	const ffmpegPath = options?.ffmpegPath || 'ffmpeg';
+-	const callbackExists = typeof callback === 'function';
++function getDeviceList(options: { ffmpegPath?: string } = {}, callback?: Function) {
++  if (typeof options === 'function') {
++    callback = options;
++    options = null;
++  }
++  const ffmpegPath = options?.ffmpegPath || 'ffmpeg';
++  const callbackExists = typeof callback === 'function';
+ 
+-	let inputDevice, prefix, audioSeparator, alternativeName, deviceParams;
+-	switch(platform) {
+-		case 'win32':
+-			inputDevice = 'dshow';
+-			prefix = /\[dshow/;
+-			audioSeparator = /DirectShow\saudio\sdevices/;
+-			alternativeName = /Alternative\sname\s*?\"(.*?)\"/;
+-			deviceParams = /\"(.*?)\"/;
+-			break;
+-		case 'darwin':
+-			inputDevice = 'avfoundation';
+-			prefix = /^\[AVFoundation/;
+-			audioSeparator = /AVFoundation\saudio\sdevices/;
+-			deviceParams = /^\[AVFoundation.*?\]\s\[(\d*?)\]\s(.*)$/;
+-			break;
+-	}
++  let inputDevice, prefix, audioSeparator, alternativeName, deviceParams;
++  switch (platform) {
++    case 'win32':
++      inputDevice = 'dshow';
++      prefix = /\[dshow/;
++      audioSeparator = /DirectShow\saudio\sdevices/;
++      alternativeName = /Alternative\sname\s*?\"(.*?)\"/;
++      deviceParams = /\"(.*?)\"/;
++      break;
++    case 'darwin':
++      inputDevice = 'avfoundation';
++      prefix = /^\[AVFoundation/;
++      audioSeparator = /AVFoundation\saudio\sdevices/;
++      deviceParams = /^\[AVFoundation.*?\]\s\[(\d*?)\]\s(.*)$/;
++      break;
++  }
+ 
+-	const searchPrefix = (line) => (line.search(prefix) > -1);
+-	const searchAudioSeparator = (line) => isVideo && (line.search(audioSeparator) > -1);
+-	const searchAlternativeName = (line) => (platform === 'win32') && (line.search(/Alternative\sname/) > -1);
++  const searchPrefix = (line) => line.search(prefix) > -1;
++  const searchAudioSeparator = (line) => isVideo && line.search(audioSeparator) > -1;
++  const searchAlternativeName = (line) => platform === 'win32' && line.search(/Alternative\sname/) > -1;
+ 
+-	const videoDevices = [];
+-	const audioDevices = [];
+-	let isVideo = true;
++  const videoDevices = [];
++  const audioDevices = [];
++  let isVideo = true;
+ 
+-	const execute = (fulfill? : Function) => {
+-		exec(`${ffmpegPath} -f ${inputDevice} -list_devices true -i ""`, (err, stdout, stderr) => {
+-			stderr.split("\n")
+-				.filter(searchPrefix)
+-				.forEach((line) => {
+-					const deviceList = isVideo ? videoDevices : audioDevices;
+-					if(searchAudioSeparator(line)) {
+-						isVideo = false;
+-						return;
+-					}
+-					if(searchAlternativeName(line)) {
+-						const lastDevice = deviceList[deviceList.length - 1];
+-						lastDevice.alternativeName = line.match(alternativeName)[1];
+-						return;
+-					} 
+-					const params = line.match(deviceParams);
+-					if(params) {
+-						let device;
+-						switch(platform) {
+-							case 'win32':
+-								device = {
+-									name: params[1]
+-								};
+-								break;
+-							case 'darwin':
+-								device = {
+-									id: parseInt(params[1]),
+-									name: params[2]
+-								};
+-								break;
+-						}
+-						deviceList.push(device);
+-					}
+-				});
+-			const result = { videoDevices, audioDevices };
+-			if(callbackExists) {
+-				callback(result);
+-			} else {
+-				fulfill(result);
+-			}
+-		});
+-	};
++  const execute = (fulfill?: Function) => {
++    exec(`${ffmpegPath} -f ${inputDevice} -list_devices true -i ""`, (err, stdout, stderr) => {
++      stderr
++        .split('\n')
++        .filter(searchPrefix)
++        .forEach((line) => {
++          const deviceList = isVideo ? videoDevices : audioDevices;
++          if (searchAudioSeparator(line)) {
++            isVideo = false;
++            return;
++          }
++          if (searchAlternativeName(line)) {
++            const lastDevice = deviceList[deviceList.length - 1];
++            lastDevice.alternativeName = line.match(alternativeName)[1];
++            return;
++          }
++          const params = line.match(deviceParams);
++          if (params) {
++            let device;
++            switch (platform) {
++              case 'win32':
++                device = {
++                  name: params[1],
++                };
++                break;
++              case 'darwin':
++                device = {
++                  id: parseInt(params[1]),
++                  name: params[2],
++                };
++                break;
++            }
++            deviceList.push(device);
++          }
++        });
++      const result = { videoDevices, audioDevices };
++      if (callbackExists) {
++        callback(result);
++      } else {
++        fulfill(result);
++      }
++    });
++  };
+ 
+-	if(callbackExists) {
+-		execute();
+-	} else {
+-		return new Promise(execute);
+-	}
++  if (callbackExists) {
++    execute();
++  } else {
++    return new Promise(execute);
++  }
+ }
+ 
+-export { getDeviceList };
+\ No newline at end of file
++export { getDeviceList };
+diff --git a/vscode/src/commands/executeFile.ts b/vscode/src/commands/executeFile.ts
+index fc02421..3449521 100644
+--- a/vscode/src/commands/executeFile.ts
++++ b/vscode/src/commands/executeFile.ts
+@@ -1,9 +1,9 @@
+-import { interacterExecute } from "../editor/execution";
++import { interacterExecute } from '../editor/execution';
+ 
+ export default function executeFile(recorder) {
+-    if (recorder && recorder.isRecording) {
+-        recorder.executeFile();
+-    } else {
+-        interacterExecute();
+-    }
+-}
+\ No newline at end of file
++  if (recorder && recorder.isRecording) {
++    recorder.executeFile();
++  } else {
++    interacterExecute();
++  }
++}
+diff --git a/vscode/src/commands/finishRecording.ts b/vscode/src/commands/finishRecording.ts
+index 46d7ed3..1482079 100644
+--- a/vscode/src/commands/finishRecording.ts
++++ b/vscode/src/commands/finishRecording.ts
+@@ -1,15 +1,15 @@
+-import {UI, MESSAGES} from '../user_interface/messages';
++import { UI, MESSAGES } from '../user_interface/messages';
+ import Recorder from '../recorder/Recorder';
+ 
+ export default async function finishRecording(recorder: Recorder) {
+-    try {
+-        if (recorder && recorder.isRecording) {
+-            UI.showMessage(MESSAGES.savingRecording);
+-            await recorder.stopRecording();
+-            recorder.saveRecording();
+-            UI.showMessage(MESSAGES.recordingSaved);
+-        }
+-    } catch(e) {
+-        console.log('finish recording failed', e);
++  try {
++    if (recorder && recorder.isRecording) {
++      UI.showMessage(MESSAGES.savingRecording);
++      await recorder.stopRecording();
++      recorder.saveRecording();
++      UI.showMessage(MESSAGES.recordingSaved);
+     }
+-}
+\ No newline at end of file
++  } catch (e) {
++    console.log('finish recording failed', e);
++  }
++}
+diff --git a/vscode/src/commands/index.ts b/vscode/src/commands/index.ts
+index 883beab..928afee 100644
+--- a/vscode/src/commands/index.ts
++++ b/vscode/src/commands/index.ts
+@@ -1,7 +1,7 @@
+ import executeFile from './executeFile';
+ import pauseOrResume from './pauseOrResume';
+ import playCodio from './playCodio';
+-import {forward, rewind} from './rewindAndForward';
++import { forward, rewind } from './rewindAndForward';
+ import playFrom from './playFrom';
+ import resumeCodio from './resumeCodio';
+ import pauseCodio from './pauseCodio';
+@@ -9,14 +9,14 @@ import finishRecording from './finishRecording';
+ import recordCodio from './recordCodio';
+ 
+ export {
+-    executeFile,
+-    pauseOrResume,
+-    playCodio,
+-    forward,
+-    rewind,
+-    playFrom,
+-    resumeCodio,
+-    pauseCodio,
+-    finishRecording,
+-    recordCodio,
+-};
+\ No newline at end of file
++  executeFile,
++  pauseOrResume,
++  playCodio,
++  forward,
++  rewind,
++  playFrom,
++  resumeCodio,
++  pauseCodio,
++  finishRecording,
++  recordCodio,
++};
+diff --git a/vscode/src/commands/pauseCodio.ts b/vscode/src/commands/pauseCodio.ts
+index 815b2e2..02f3566 100644
+--- a/vscode/src/commands/pauseCodio.ts
++++ b/vscode/src/commands/pauseCodio.ts
+@@ -1,11 +1,11 @@
+-import {UI, MESSAGES} from '../user_interface/messages';
++import { UI, MESSAGES } from '../user_interface/messages';
+ import Player from '../player/Player';
+ 
+ export default function pauseCodio(player: Player) {
+-    if (player && player.isPlaying) {
+-        player.pause();
+-        UI.showMessage(MESSAGES.codioPaused);
+-    } else {
+-        UI.showMessage(MESSAGES.noActiveCodio);
+-    }
+-}
+\ No newline at end of file
++  if (player && player.isPlaying) {
++    player.pause();
++    UI.showMessage(MESSAGES.codioPaused);
++  } else {
++    UI.showMessage(MESSAGES.noActiveCodio);
++  }
++}
+diff --git a/vscode/src/commands/pauseOrResume.ts b/vscode/src/commands/pauseOrResume.ts
+index f9211f8..0f405c5 100644
+--- a/vscode/src/commands/pauseOrResume.ts
++++ b/vscode/src/commands/pauseOrResume.ts
+@@ -1,10 +1,10 @@
+-import Player from "../player/Player";
++import Player from '../player/Player';
+ 
+ export default function pauseOrResume(player: Player) {
+-    if (player && player.isPlaying) {
+-        player.pause();
+-    } else if (player && !player.isPlaying && player.relativeActiveTime > 0) {
+-        //todo: handle error "time is undefined" when playing throw the player-buttons
+-        player.resume();
+-    }
+-}
+\ No newline at end of file
++  if (player && player.isPlaying) {
++    player.pause();
++  } else if (player && !player.isPlaying && player.relativeActiveTime > 0) {
++    //todo: handle error "time is undefined" when playing throw the player-buttons
++    player.resume();
++  }
++}
+diff --git a/vscode/src/commands/playCodio.ts b/vscode/src/commands/playCodio.ts
+index 81ac626..95c8ffa 100644
+--- a/vscode/src/commands/playCodio.ts
++++ b/vscode/src/commands/playCodio.ts
+@@ -1,47 +1,45 @@
+-import { Uri } from "vscode";
+-import { UI, MESSAGES } from "../user_interface/messages";
+-import Player from "../player/Player";
+-import Recorder from "../recorder/Recorder";
+-import FSManager from "../filesystem/FSManager";
+-import { checkForFfmpeg } from "../utils";
++import { Uri } from 'vscode';
++import { UI, MESSAGES } from '../user_interface/messages';
++import Player from '../player/Player';
++import Recorder from '../recorder/Recorder';
++import FSManager from '../filesystem/FSManager';
++import { checkForFfmpeg } from '../utils';
+ 
+ export default async function playCodio(
+   fsManager: FSManager,
+   player: Player,
+   recorder: Recorder,
+   codioUri?: Uri,
+-  workspaceUri?: Uri
++  workspaceUri?: Uri,
+ ) {
+   try {
+-      const hasFfmpeg = await checkForFfmpeg();
+-      if (!hasFfmpeg) {
+-        UI.showMessage(MESSAGES.ffmpegNotAvailable);
++    const hasFfmpeg = await checkForFfmpeg();
++    if (!hasFfmpeg) {
++      UI.showMessage(MESSAGES.ffmpegNotAvailable);
++    } else {
++      const workspacePath = workspaceUri?.fsPath;
++      if (recorder && recorder.isRecording) {
++        UI.showMessage(MESSAGES.cantPlayWhileRecording);
++        return;
++      }
++      if (player && player.isPlaying) {
++        UI.showMessage(MESSAGES.stopCodio);
++        player.pause();
++        player.closeCodio();
++      }
++      if (codioUri) {
++        const codioUnzippedFolder = await fsManager.getCodioUnzipped(codioUri);
++        await loadAndPlay(player, codioUnzippedFolder, workspacePath);
+       } else {
+-        const workspacePath = workspaceUri?.fsPath;
+-        if (recorder && recorder.isRecording) {
+-          UI.showMessage(MESSAGES.cantPlayWhileRecording);
+-          return;
+-        }
+-        if (player && player.isPlaying) {
+-          UI.showMessage(MESSAGES.stopCodio);
+-          player.pause();
+-          player.closeCodio();
+-        }
+-        if (codioUri) {
+-          const codioUnzippedFolder = await fsManager.getCodioUnzipped(
+-            codioUri
+-          );
+-          await loadAndPlay(player, codioUnzippedFolder, workspacePath);
+-        } else {
+-          const itemSelected = await fsManager.chooseCodio();
+-          if (itemSelected?.path) {
+-            //@TODO: add an if to check that the folder contains audio.mp3 and actions.json
+-            await loadAndPlay(player, itemSelected.path, itemSelected.workspaceRoot?.fsPath);
+-          }
++        const itemSelected = await fsManager.chooseCodio();
++        if (itemSelected?.path) {
++          //@TODO: add an if to check that the folder contains audio.mp3 and actions.json
++          await loadAndPlay(player, itemSelected.path, itemSelected.workspaceRoot?.fsPath);
+         }
+       }
++    }
+   } catch (e) {
+-    console.log("Play codio failed", e);
++    console.log('Play codio failed', e);
+   }
+ }
+ 
+diff --git a/vscode/src/commands/playFrom.ts b/vscode/src/commands/playFrom.ts
+index d381531..42a48c5 100644
+--- a/vscode/src/commands/playFrom.ts
++++ b/vscode/src/commands/playFrom.ts
+@@ -1,21 +1,21 @@
+-import Player from "../player/Player";
+-import { showPlayFromInputBox, UI, MESSAGES } from "../user_interface/messages";
++import Player from '../player/Player';
++import { showPlayFromInputBox, UI, MESSAGES } from '../user_interface/messages';
+ 
+-export default async function playFrom(player: Player, time? : number) {
+-    if (player && player.isPlaying) {
+-        if (time) {
+-            player.playFrom(time);
+-        } else {
+-            const timeInSecondsInput: string = await showPlayFromInputBox(player);
+-            const timeInSeconds = Number(timeInSecondsInput);
+-            if (timeInSeconds && timeInSeconds > 0 && timeInSeconds < (player.codioLength / 1000)) {
+-                const timeInMilliseconds = Number(timeInSeconds) * 1000;
+-                player.playFrom(timeInMilliseconds);
+-            } else {
+-                UI.showMessage(MESSAGES.invalidNumber);
+-            }
+-        }
++export default async function playFrom(player: Player, time?: number) {
++  if (player && player.isPlaying) {
++    if (time) {
++      player.playFrom(time);
+     } else {
+-        UI.showMessage(MESSAGES.noActiveCodio);
++      const timeInSecondsInput: string = await showPlayFromInputBox(player);
++      const timeInSeconds = Number(timeInSecondsInput);
++      if (timeInSeconds && timeInSeconds > 0 && timeInSeconds < player.codioLength / 1000) {
++        const timeInMilliseconds = Number(timeInSeconds) * 1000;
++        player.playFrom(timeInMilliseconds);
++      } else {
++        UI.showMessage(MESSAGES.invalidNumber);
++      }
+     }
+-}
+\ No newline at end of file
++  } else {
++    UI.showMessage(MESSAGES.noActiveCodio);
++  }
++}
+diff --git a/vscode/src/commands/recordCodio.ts b/vscode/src/commands/recordCodio.ts
+index d825e7c..bab7444 100644
+--- a/vscode/src/commands/recordCodio.ts
++++ b/vscode/src/commands/recordCodio.ts
+@@ -1,12 +1,9 @@
+-import {
+-  UI,
+-  MESSAGES,
+-} from "../user_interface/messages";
+-import Recorder from "../recorder/Recorder";
+-import Player from "../player/Player";
+-import FSManager from "../filesystem/FSManager";
+-import { Uri } from "vscode";
+-import { isWindows, checkForFfmpeg } from "../utils";
++import { UI, MESSAGES } from '../user_interface/messages';
++import Recorder from '../recorder/Recorder';
++import Player from '../player/Player';
++import FSManager from '../filesystem/FSManager';
++import { Uri } from 'vscode';
++import { checkForFfmpeg } from '../utils';
+ 
+ export default async function recordCodio(
+   fsManager: FSManager,
+@@ -14,30 +11,30 @@ export default async function recordCodio(
+   recorder: Recorder,
+   destUri?: Uri,
+   workspaceRoot?: Uri,
+-  getCodioName?: () => Promise<string>
++  getCodioName?: () => Promise<string>,
+ ) {
+-    const hasFfmpeg = await checkForFfmpeg();
+-    if (!hasFfmpeg) {
+-      UI.showMessage(MESSAGES.ffmpegNotAvailable);
++  const hasFfmpeg = await checkForFfmpeg();
++  if (!hasFfmpeg) {
++    UI.showMessage(MESSAGES.ffmpegNotAvailable);
++  } else {
++    if (player.isPlaying) {
++      player.closeCodio();
++    }
++    let codioName = '';
++    if (getCodioName) {
++      codioName = await getCodioName();
++    }
++    const uuid = require('uuid');
++    const codioId = uuid.v4();
++    const path = await fsManager.createTempCodioFolder(codioId);
++    await recorder.loadCodio(path, codioName, destUri, workspaceRoot);
++    const isDeviceAvailable = await recorder.setRecordingDevice();
++    if (!isDeviceAvailable) {
++      UI.showMessage(MESSAGES.noRecordingDeviceAvailable);
+     } else {
+-      if (player.isPlaying) {
+-        player.closeCodio();
+-      }
+-      let codioName = '';
+-      if (getCodioName) {
+-        codioName = await getCodioName();
+-      }
+-      const uuid = require("uuid");
+-      const codioId = uuid.v4();
+-      const path = await fsManager.createTempCodioFolder(codioId);
+-      await recorder.loadCodio(path, codioName, destUri, workspaceRoot);
+-      const isDeviceAvailable = await recorder.setRecordingDevice();
+-      if (!isDeviceAvailable) {
+-        UI.showMessage(MESSAGES.noRecordingDeviceAvailable);
+-      } else {
+-        UI.showMessage(MESSAGES.startingToRecord);
+-        recorder.startRecording();
+-        UI.showRecorderProgressBar(recorder);
+-      } 
++      UI.showMessage(MESSAGES.startingToRecord);
++      recorder.startRecording();
++      UI.showRecorderProgressBar(recorder);
+     }
++  }
+ }
+diff --git a/vscode/src/commands/resumeCodio.ts b/vscode/src/commands/resumeCodio.ts
+index aae7e88..4f49c87 100644
+--- a/vscode/src/commands/resumeCodio.ts
++++ b/vscode/src/commands/resumeCodio.ts
+@@ -1,10 +1,10 @@
+-import { UI, MESSAGES } from "../user_interface/messages";
+-import Player from "../player/Player";
++import { UI, MESSAGES } from '../user_interface/messages';
++import Player from '../player/Player';
+ 
+ export default function resumeCodio(player: Player) {
+-    if (player && !player.isPlaying && player.relativeActiveTime > 0) {
+-        player.resume();
+-    } else {
+-        UI.showMessage(MESSAGES.alreadyPlaying);
+-    }
+-}
+\ No newline at end of file
++  if (player && !player.isPlaying && player.relativeActiveTime > 0) {
++    player.resume();
++  } else {
++    UI.showMessage(MESSAGES.alreadyPlaying);
++  }
++}
+diff --git a/vscode/src/commands/rewindAndForward.ts b/vscode/src/commands/rewindAndForward.ts
+index e07c70c..7441fc1 100644
+--- a/vscode/src/commands/rewindAndForward.ts
++++ b/vscode/src/commands/rewindAndForward.ts
+@@ -1,13 +1,13 @@
+-import Player from "../player/Player";
++import Player from '../player/Player';
+ 
+ export function rewind(player: Player, time?: number) {
+-    if (player) {
+-        typeof time === 'number' ? player.rewind(time) : player.rewind(10);
+-    }
++  if (player) {
++    typeof time === 'number' ? player.rewind(time) : player.rewind(10);
++  }
+ }
+ 
+ export function forward(player: Player, time?: number) {
+-    if (player) {
+-        typeof time === 'number' ? player.forward(time) : player.forward(10);
+-    }
+-}
+\ No newline at end of file
++  if (player) {
++    typeof time === 'number' ? player.forward(time) : player.forward(10);
++  }
++}
+diff --git a/vscode/src/consts/command_names.ts b/vscode/src/consts/command_names.ts
+index 0ebf9ac..a5b337f 100644
+--- a/vscode/src/consts/command_names.ts
++++ b/vscode/src/consts/command_names.ts
+@@ -1,4 +1,3 @@
+-
+ export const PLAY_CODIO = 'codio.playCodio';
+ export const RECORD_CODIO = 'codio.recordCodio';
+ export const FINISH_RECORDING = 'codio.finishRecording';
+@@ -14,4 +13,4 @@ export const EXECUTE_FILE = 'codio.executeFile';
+ export const REWIND = 'codio.rewind';
+ export const FORWARD = 'codio.forward';
+ export const PAUSE_OR_RESUME = 'codio.pauseOrResume';
+-export const RECORD_CODIO_AND_ADD_TO_PROJECT = 'codio.recordCodioAndAddToProject';
+\ No newline at end of file
++export const RECORD_CODIO_AND_ADD_TO_PROJECT = 'codio.recordCodioAndAddToProject';
+diff --git a/vscode/src/editor/consts.ts b/vscode/src/editor/consts.ts
+index 11cae3a..83c4352 100644
+--- a/vscode/src/editor/consts.ts
++++ b/vscode/src/editor/consts.ts
+@@ -1,13 +1,7 @@
+-const CODIO_EDITOR_CHANGED = "editor";
+-const CODIO_SELECTION_CHANGED = "selection";
+-const CODIO_TEXT_CHANGED = "text";
+-const CODIO_VISIBLE_RANGE_CHANGED = "visibleRange";
+-const CODIO_EXEC = "exec";
++const CODIO_EDITOR_CHANGED = 'editor';
++const CODIO_SELECTION_CHANGED = 'selection';
++const CODIO_TEXT_CHANGED = 'text';
++const CODIO_VISIBLE_RANGE_CHANGED = 'visibleRange';
++const CODIO_EXEC = 'exec';
+ 
+-export {
+-  CODIO_EDITOR_CHANGED,
+-  CODIO_SELECTION_CHANGED,
+-  CODIO_TEXT_CHANGED,
+-  CODIO_VISIBLE_RANGE_CHANGED,
+-  CODIO_EXEC
+-};
++export { CODIO_EDITOR_CHANGED, CODIO_SELECTION_CHANGED, CODIO_TEXT_CHANGED, CODIO_VISIBLE_RANGE_CHANGED, CODIO_EXEC };
+diff --git a/vscode/src/editor/deserialize.ts b/vscode/src/editor/deserialize.ts
+index a134a5e..d59fd7e 100644
+--- a/vscode/src/editor/deserialize.ts
++++ b/vscode/src/editor/deserialize.ts
+@@ -1,15 +1,20 @@
+-import FSManager from "../filesystem/FSManager";
+-import { Uri, Range, Position, Selection } from "vscode";
+-import {isSerializedTextEvent, isSerializedSelectionEvent, isSerializedVisibleRangeEvent, isSerializedEditorEvent } from "./event_creator";
++import FSManager from '../filesystem/FSManager';
++import { Uri, Range, Position, Selection } from 'vscode';
++import {
++  isSerializedTextEvent,
++  isSerializedSelectionEvent,
++  isSerializedVisibleRangeEvent,
++  isSerializedEditorEvent,
++} from './event_creator';
+ 
+-export default function deserializeEvents(events: Array<CodioSerializedEvent>, codioPath) : Array<CodioEvent> {
+-  return events.map(serializedEvent => {
++export default function deserializeEvents(events: Array<CodioSerializedEvent>, codioPath): Array<CodioEvent> {
++  return events.map((serializedEvent) => {
+     const event = deserializeFilePath(serializedEvent, codioPath);
+     if (isSerializedTextEvent(event)) {
+       return deserializeTextEvent(event);
+     } else if (isSerializedSelectionEvent(event)) {
+       return deserializeSelectionEvent(event);
+-    } else if (isSerializedVisibleRangeEvent(event)){
++    } else if (isSerializedVisibleRangeEvent(event)) {
+       return deserializeVisibleRangeEvent(event);
+     } else if (isSerializedEditorEvent(event)) {
+       return deserializeEditorEvent(event);
+@@ -21,69 +26,63 @@ export default function deserializeEvents(events: Array<CodioSerializedEvent>, c
+ 
+ function deserializeFilePath(event: CodioSerializedEvent, codioPath: string) {
+   if (event.data.path) {
+-    const {path, ...eventData } = event.data;
+-    const newEvent = {...event, data: {...eventData, uri: Uri.file(
+-      FSManager.toFullPath(codioPath, path)
+-    )}};
++    const { path, ...eventData } = event.data;
++    const newEvent = { ...event, data: { ...eventData, uri: Uri.file(FSManager.toFullPath(codioPath, path)) } };
+     return newEvent;
+   } else {
+     return event;
+   }
+ }
+ 
+-function deserializeTextEvent(event: CodioSerializedTextEvent) : CodioTextEvent {
++function deserializeTextEvent(event: CodioSerializedTextEvent): CodioTextEvent {
+   return {
+     ...event,
+     //@ts-ignore
+     data: {
+       ...event.data,
+-      changes: event.data.changes.map(change => {
++      changes: event.data.changes.map((change) => {
+         if (change.range) {
+           return { ...change, range: deserializeRange(change.range) };
+         } else if (change.position) {
+           return { ...change, position: deserializePosition(change.position) };
+         }
+-      })
+-    }
++      }),
++    },
+   };
+ }
+ 
+-function deserializeSelectionEvent(event: CodioSerializedSelectionEvent) : CodioSelectionEvent {
++function deserializeSelectionEvent(event: CodioSerializedSelectionEvent): CodioSelectionEvent {
+   return {
+     ...event,
+     //@ts-ignore
+     data: {
+       ...event.data,
+-      selections: event.data.selections.map(selection => {
+-        return new Selection(
+-          deserializePosition(selection.anchor),
+-          deserializePosition(selection.active)
+-        );
+-      })
+-    }
++      selections: event.data.selections.map((selection) => {
++        return new Selection(deserializePosition(selection.anchor), deserializePosition(selection.active));
++      }),
++    },
+   };
+ }
+ 
+-function deserializeVisibleRangeEvent(event: CodioSerializedVisibleRangeEvent) : CodioVisibleRangeEvent {
++function deserializeVisibleRangeEvent(event: CodioSerializedVisibleRangeEvent): CodioVisibleRangeEvent {
+   return {
+     ...event,
+     //@ts-ignore
+     data: {
+       ...event.data,
+-      visibleRange: deserializeRange(event.data.visibleRange)
+-    }
+-
++      visibleRange: deserializeRange(event.data.visibleRange),
++    },
+   };
+ }
+ 
+-function deserializeEditorEvent(event: CodioSerializedChangeActiveEditorEvent) : CodioChangeActiveEditorEvent {
++function deserializeEditorEvent(event: CodioSerializedChangeActiveEditorEvent): CodioChangeActiveEditorEvent {
+   return {
+     ...event,
+     //@ts-ignore
+     data: {
+       ...event.data,
+-      visibleRange: deserializeRange(event.data.visibleRange)
+-    }
++      visibleRange: deserializeRange(event.data.visibleRange),
++    },
+   };
+ }
+ function deserializeRange(range): Range {
+diff --git a/vscode/src/editor/event_creator.ts b/vscode/src/editor/event_creator.ts
+index bb03ea8..bc5860c 100644
+--- a/vscode/src/editor/event_creator.ts
++++ b/vscode/src/editor/event_creator.ts
+@@ -2,59 +2,53 @@ import {
+   TextDocumentChangeEvent,
+   TextEditorSelectionChangeEvent,
+   TextEditor,
+-  TextEditorVisibleRangesChangeEvent
+-} from "vscode";
++  TextEditorVisibleRangesChangeEvent,
++} from 'vscode';
+ 
+ import {
+   CODIO_TEXT_CHANGED,
+   CODIO_VISIBLE_RANGE_CHANGED,
+   CODIO_SELECTION_CHANGED,
+   CODIO_EXEC,
+-  CODIO_EDITOR_CHANGED
+-} from "./consts";
++  CODIO_EDITOR_CHANGED,
++} from './consts';
+ 
+-export function createCodioTextEvent(
+-  e: TextDocumentChangeEvent
+-): CodioTextEvent {
+-  if (e.document.uri.scheme !== "output") {
++export function createCodioTextEvent(e: TextDocumentChangeEvent): CodioTextEvent {
++  if (e.document.uri.scheme !== 'output') {
+     return {
+       type: CODIO_TEXT_CHANGED,
+       data: {
+         uri: e.document.uri,
+         changes: e.contentChanges,
+-        time: Date.now()
+-      }
++        time: Date.now(),
++      },
+     };
+   }
+ }
+ 
+-export function createCodioVisibleRangeEvent(
+-  e: TextEditorVisibleRangesChangeEvent
+-): CodioVisibleRangeEvent {
+-  if (e.textEditor.document.uri.scheme !== "output") {
++export function createCodioVisibleRangeEvent(e: TextEditorVisibleRangesChangeEvent): CodioVisibleRangeEvent {
++  if (e.textEditor.document.uri.scheme !== 'output') {
+     return {
+       type: CODIO_VISIBLE_RANGE_CHANGED,
+       data: {
+         time: Date.now(),
+         uri: e.textEditor.document.uri,
+         //@TODO: Currently does not support folding.
+-        visibleRange: e.visibleRanges[0]
+-      }
++        visibleRange: e.visibleRanges[0],
++      },
+     };
+   }
+ }
+ 
+-export function createCodioSelectionEvent(
+-  e: TextEditorSelectionChangeEvent
+-): CodioSelectionEvent {
+-  if (e.textEditor.document.uri.scheme !== "output") {
++export function createCodioSelectionEvent(e: TextEditorSelectionChangeEvent): CodioSelectionEvent {
++  if (e.textEditor.document.uri.scheme !== 'output') {
+     return {
+       type: CODIO_SELECTION_CHANGED,
+       data: {
+         uri: e.textEditor.document.uri,
+         selections: e.selections,
+-        time: Date.now()
+-      }
++        time: Date.now(),
++      },
+     };
+   }
+ }
+@@ -64,15 +58,15 @@ export function createCodioExecutionEvent(output: string): CodioExecutionEvent {
+     type: CODIO_EXEC,
+     data: {
+       executionOutput: output,
+-      time: Date.now()
+-    }
++      time: Date.now(),
++    },
+   };
+ }
+ 
+ export function createCodioEditorEvent(
+   e: TextEditor,
+   content: string,
+-  isInitial: boolean
++  isInitial: boolean,
+ ): CodioChangeActiveEditorEvent {
+   return {
+     type: CODIO_EDITOR_CHANGED,
+@@ -83,33 +77,32 @@ export function createCodioEditorEvent(
+       viewColumn: e.viewColumn,
+       visibleRange: e.visibleRanges[0],
+       selections: e.selections,
+-      time: Date.now()
+-    }
++      time: Date.now(),
++    },
+   };
+ }
+ 
+-
+-export function isTextEvent(event: CodioEvent) : event is CodioTextEvent {
++export function isTextEvent(event: CodioEvent): event is CodioTextEvent {
+   return event.type === CODIO_TEXT_CHANGED;
+ }
+ 
+-export function isSerializedTextEvent(event: CodioSerializedEvent) : event is CodioSerializedTextEvent {
++export function isSerializedTextEvent(event: CodioSerializedEvent): event is CodioSerializedTextEvent {
+   return event.type === CODIO_TEXT_CHANGED;
+ }
+ 
+-export function isSelectionEvent(event: CodioEvent) : event is CodioSelectionEvent {
++export function isSelectionEvent(event: CodioEvent): event is CodioSelectionEvent {
+   return event.type === CODIO_SELECTION_CHANGED;
+ }
+ 
+-export function isSerializedSelectionEvent(event: CodioEvent) : event is  CodioSerializedSelectionEvent {
++export function isSerializedSelectionEvent(event: CodioEvent): event is CodioSerializedSelectionEvent {
+   return event.type === CODIO_SELECTION_CHANGED;
+ }
+ 
+-export function isVisibleRangeEvent(event: CodioEvent) : event is CodioVisibleRangeEvent {
++export function isVisibleRangeEvent(event: CodioEvent): event is CodioVisibleRangeEvent {
+   return event.type === CODIO_VISIBLE_RANGE_CHANGED;
+ }
+ 
+-export function isSerializedVisibleRangeEvent(event: CodioSerializedEvent) : event is CodioSerializedVisibleRangeEvent {
++export function isSerializedVisibleRangeEvent(event: CodioSerializedEvent): event is CodioSerializedVisibleRangeEvent {
+   return event.type === CODIO_VISIBLE_RANGE_CHANGED;
+ }
+ 
+diff --git a/vscode/src/editor/event_dispatcher.ts b/vscode/src/editor/event_dispatcher.ts
+index 097ae8b..173ccf8 100644
+--- a/vscode/src/editor/event_dispatcher.ts
++++ b/vscode/src/editor/event_dispatcher.ts
+@@ -1,13 +1,7 @@
+-import * as vscode from "vscode";
+-import { cursorStyle } from "../user_interface/Viewers";
+-import { overrideEditorText, getTextEditor } from "../utils";
+-import {
+-  isTextEvent,
+-  isSelectionEvent,
+-  isVisibleRangeEvent,
+-  isExecutionEvent,
+-  isEditorEvent
+-} from "./event_creator";
++import * as vscode from 'vscode';
++import { cursorStyle } from '../user_interface/Viewers';
++import { overrideEditorText, getTextEditor } from '../utils';
++import { isTextEvent, isSelectionEvent, isVisibleRangeEvent, isExecutionEvent, isEditorEvent } from './event_creator';
+ 
+ export default async function dispatchEvent(event: CodioEvent) {
+   try {
+@@ -23,20 +17,16 @@ export default async function dispatchEvent(event: CodioEvent) {
+       dispatchEditorEvent(event);
+     }
+   } catch (e) {
+-    console.log("Failed to dispatch codio action", e);
++    console.log('Failed to dispatch codio action', e);
+   }
+ }
+ 
+ function dispatchTextEvent(event: CodioTextEvent) {
+   const actions = event.data.changes;
+   const edit = new vscode.WorkspaceEdit();
+-  actions.forEach(action => {
++  actions.forEach((action) => {
+     if (action.position) {
+-      edit.replace(
+-        event.data.uri,
+-        new vscode.Range(action.position, action.position),
+-        action.value
+-      );
++      edit.replace(event.data.uri, new vscode.Range(action.position, action.position), action.value);
+     } else if (action.range) {
+       edit.replace(event.data.uri, action.range, action.value);
+     }
+@@ -45,13 +35,11 @@ function dispatchTextEvent(event: CodioTextEvent) {
+ }
+ 
+ function dispatchSelectionEvent(event: CodioSelectionEvent) {
+-  const RangesToDecorate = event.data.selections.map(
+-    (selection: vscode.Selection) => {
+-      return new vscode.Range(selection.anchor, selection.active);
+-    }
+-  );
++  const RangesToDecorate = event.data.selections.map((selection: vscode.Selection) => {
++    return new vscode.Range(selection.anchor, selection.active);
++  });
+   const textDocumentToDecorate: vscode.TextEditor = vscode.window.visibleTextEditors.find(
+-    editor => editor.document.uri.path === event.data.uri.path
++    (editor) => editor.document.uri.path === event.data.uri.path,
+   );
+   if (textDocumentToDecorate) {
+     textDocumentToDecorate.setDecorations(cursorStyle, RangesToDecorate);
+@@ -63,7 +51,7 @@ function dispatchSelectionEvent(event: CodioSelectionEvent) {
+ 
+ function dispatchVisibleRangeEvent(event: CodioVisibleRangeEvent) {
+   const textEditor: vscode.TextEditor = vscode.window.visibleTextEditors.find(
+-    editor => editor.document.uri.path === event.data.uri.path
++    (editor) => editor.document.uri.path === event.data.uri.path,
+   );
+   if (textEditor) {
+     textEditor.revealRange(event.data.visibleRange);
+@@ -72,11 +60,11 @@ function dispatchVisibleRangeEvent(event: CodioVisibleRangeEvent) {
+ 
+ function dispatchExecutionEvent(event: CodioExecutionEvent) {
+   try {
+-    const outputChannel = vscode.window.createOutputChannel("codioReplay");
++    const outputChannel = vscode.window.createOutputChannel('codioReplay');
+     outputChannel.show(true);
+     outputChannel.append(event.data.executionOutput);
+   } catch (e) {
+-    console.log("output error", e);
++    console.log('output error', e);
+   }
+ }
+ 
+@@ -87,10 +75,10 @@ function isEditorShownForFirstTime(event: CodioChangeActiveEditorEvent) {
+ async function dispatchEditorShownFirstTime(event: CodioChangeActiveEditorEvent) {
+   await vscode.window.showTextDocument(event.data.uri, {
+     viewColumn: event.data.viewColumn,
+-    preview: true
++    preview: true,
+   });
+   const textEditor: vscode.TextEditor = vscode.window.visibleTextEditors.find(
+-    editor => editor.document.uri.path === event.data.uri.path
++    (editor) => editor.document.uri.path === event.data.uri.path,
+   );
+   console.log(textEditor);
+   if (textEditor) {
+@@ -102,37 +90,33 @@ async function dispatchEditorEvent(event: CodioChangeActiveEditorEvent) {
+   if (isEditorShownForFirstTime(event)) {
+     dispatchEditorShownFirstTime(event);
+   } else {
+-    const textEditor: vscode.TextEditor = getTextEditor(
+-      event.data.uri.path
+-    );
++    const textEditor: vscode.TextEditor = getTextEditor(event.data.uri.path);
+     if (textEditor) {
+       try {
+         if (textEditor.viewColumn === event.data.viewColumn) {
+           await vscode.window.showTextDocument(textEditor.document, {
+             viewColumn: event.data.viewColumn,
+-            preview: true
++            preview: true,
+           });
+         } else {
+           await vscode.workspace.saveAll();
+           await vscode.window.showTextDocument(textEditor.document, {
+-            viewColumn: textEditor.viewColumn
++            viewColumn: textEditor.viewColumn,
+           });
+-          await vscode.commands.executeCommand(
+-            "workbench.action.closeActiveEditor"
+-          );
++          await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+           await vscode.window.showTextDocument(textEditor.document, {
+             viewColumn: event.data.viewColumn,
+-            preview: true
++            preview: true,
+           });
+         }
+         textEditor.revealRange(event.data.visibleRange);
+       } catch (e) {
+-        console.log("bagabaga faillll", { e, event });
++        console.log('bagabaga faillll', { e, event });
+       }
+     } else {
+       await vscode.window.showTextDocument(event.data.uri, {
+         viewColumn: event.data.viewColumn,
+-        preview: true
++        preview: true,
+       });
+       const textEditor = getTextEditor(event.data.uri.path);
+       textEditor.revealRange(event.data.visibleRange);
+@@ -141,7 +125,7 @@ async function dispatchEditorEvent(event: CodioChangeActiveEditorEvent) {
+ }
+ 
+ export function removeSelection() {
+-  vscode.window.visibleTextEditors.map(editor => {
++  vscode.window.visibleTextEditors.map((editor) => {
+     editor.setDecorations(cursorStyle, []);
+   });
+ }
+diff --git a/vscode/src/editor/event_timeline.ts b/vscode/src/editor/event_timeline.ts
+index ad5e42b..df29d92 100644
+--- a/vscode/src/editor/event_timeline.ts
++++ b/vscode/src/editor/event_timeline.ts
+@@ -1,49 +1,55 @@
+-import dispatchEvent from "./event_dispatcher";
++import dispatchEvent from './event_dispatcher';
+ 
+-function createEventWithModifiedTime(event: CodioEvent, newTime: number) : CodioEvent {
+-    return {
+-        ...event,
+-        data: {
+-            ...event.data,
+-            time: newTime
+-        }};
++function createEventWithModifiedTime(event: CodioEvent, newTime: number): CodioEvent {
++  return {
++    ...event,
++    data: {
++      ...event.data,
++      time: newTime,
++    },
++  };
+ }
+ 
+ export function createRelativeTimeline(events: Array<CodioEvent>, startTime: number): Array<any> {
+-    return events.map(event => {
+-        const newTime =  event.data.time - startTime;
+-        return createEventWithModifiedTime(event, newTime);
+-    });
++  return events.map((event) => {
++    const newTime = event.data.time - startTime;
++    return createEventWithModifiedTime(event, newTime);
++  });
+ }
+ 
+ export function cutTimelineFrom(events: Array<CodioEvent>, time: number): Array<CodioEvent> {
+-    return events.filter(event => event.data.time > time);
++  return events.filter((event) => event.data.time > time);
+ }
+ 
+ export function cutTimelineUntil(events: Array<CodioEvent>, time: number): Array<CodioEvent> {
+-    return events.filter(event => event.data.time < time);
++  return events.filter((event) => event.data.time < time);
+ }
+ 
+-export function createTimelineWithAbsoluteTimes(eventsWithRelativeTimeline: Array<CodioEvent>, startTime: number): Array<CodioEvent> {
+-    return eventsWithRelativeTimeline.map(event => {
+-        const newTime = event.data.time + startTime;
+-        return createEventWithModifiedTime(event, newTime);
+-    });
++export function createTimelineWithAbsoluteTimes(
++  eventsWithRelativeTimeline: Array<CodioEvent>,
++  startTime: number,
++): Array<CodioEvent> {
++  return eventsWithRelativeTimeline.map((event) => {
++    const newTime = event.data.time + startTime;
++    return createEventWithModifiedTime(event, newTime);
++  });
+ }
+ 
+ export function runThroughTimeline(timeline: Array<CodioEvent>, setCurrentActionTimer: Function) {
+-    try {
+-        const currentEventIndex = 0;
+-        const now = Date.now();
+-        const timeToPerform = timeline[currentEventIndex].data.time - now;
+-        const event = timeline[currentEventIndex];
+-        setCurrentActionTimer(setTimeout(() => {
+-            dispatchEvent(event);
+-            if (timeline.length !== 1) {
+-                runThroughTimeline(timeline.slice(1), setCurrentActionTimer);
+-            }
+-        }, timeToPerform));
+-    } catch(e) {
+-        console.log("timeline error", e);
+-    }
+-}
+\ No newline at end of file
++  try {
++    const currentEventIndex = 0;
++    const now = Date.now();
++    const timeToPerform = timeline[currentEventIndex].data.time - now;
++    const event = timeline[currentEventIndex];
++    setCurrentActionTimer(
++      setTimeout(() => {
++        dispatchEvent(event);
++        if (timeline.length !== 1) {
++          runThroughTimeline(timeline.slice(1), setCurrentActionTimer);
++        }
++      }, timeToPerform),
++    );
++  } catch (e) {
++    console.log('timeline error', e);
++  }
++}
+diff --git a/vscode/src/editor/execution.ts b/vscode/src/editor/execution.ts
+index 7cca14d..007e9fa 100644
+--- a/vscode/src/editor/execution.ts
++++ b/vscode/src/editor/execution.ts
+@@ -2,21 +2,21 @@ import { spawn } from 'child_process';
+ import { window } from 'vscode';
+ 
+ export async function interacterExecute() {
+-    const document = window.activeTextEditor.document;
+-    const outputChannel = window.createOutputChannel('codio');
+-    const uri = document.uri;
+-    await document.save();
+-    outputChannel.show(true);
+-    const nodeExecution = spawn(`node`,  [`${uri.fsPath}`]);
+-    nodeExecution.stdout.on('data', function (data) {
+-        console.log('stdout: ' + data.toString());
+-        outputChannel.append(data.toString());
+-    });
+-    nodeExecution.stderr.on('data', function (data) {
+-        console.log('stderr: ' + data.toString());
+-        outputChannel.append(data.toString());
+-    });
+-    nodeExecution.on('exit', function (code) {
+-        console.log('child process exited with code ' + code.toString());
+-    });
++  const document = window.activeTextEditor.document;
++  const outputChannel = window.createOutputChannel('codio');
++  const uri = document.uri;
++  await document.save();
++  outputChannel.show(true);
++  const nodeExecution = spawn(`node`, [`${uri.fsPath}`]);
++  nodeExecution.stdout.on('data', function (data) {
++    console.log('stdout: ' + data.toString());
++    outputChannel.append(data.toString());
++  });
++  nodeExecution.stderr.on('data', function (data) {
++    console.log('stderr: ' + data.toString());
++    outputChannel.append(data.toString());
++  });
++  nodeExecution.on('exit', function (code) {
++    console.log('child process exited with code ' + code.toString());
++  });
+ }
+diff --git a/vscode/src/editor/frame/ShadowDocument.ts b/vscode/src/editor/frame/ShadowDocument.ts
+index 417caf5..245f487 100644
+--- a/vscode/src/editor/frame/ShadowDocument.ts
++++ b/vscode/src/editor/frame/ShadowDocument.ts
+@@ -1,40 +1,39 @@
+-import {replaceRange, nthIndex} from '../../utils';
++import { replaceRange, nthIndex } from '../../utils';
+ 
+ export default class ShadowDocument {
+-    text: string;
++  text: string;
+ 
+-    constructor(text: string) {
+-        this.text = text;
+-        return this;
+-    }
++  constructor(text: string) {
++    this.text = text;
++    return this;
++  }
+ 
+-    replaceWithPosition(position, substitute){
+-        try {
+-            let start = this.transformPositionToIndex(position, this.text);
+-            let end = start;
+-            this.text = replaceRange(this.text, start, end, substitute);
+-        } catch(e) {
+-            console.log('replace failed', {position, substitute});
+-        }
+-      }
++  replaceWithPosition(position, substitute) {
++    try {
++      const start = this.transformPositionToIndex(position, this.text);
++      const end = start;
++      this.text = replaceRange(this.text, start, end, substitute);
++    } catch (e) {
++      console.log('replace failed', { position, substitute });
++    }
++  }
+ 
+-    replaceWithRange(range, substitute){
+-        try {
+-            const start = this.transformPositionToIndex(range.start, this.text);
+-            const end = this.transformPositionToIndex(range.end, this.text);
+-            this.text = replaceRange(this.text, start, end, substitute);
+-        } catch(e) {
+-            console.log('replaceWithRange failed', {range, substitute});
+-        }
+-      }
++  replaceWithRange(range, substitute) {
++    try {
++      const start = this.transformPositionToIndex(range.start, this.text);
++      const end = this.transformPositionToIndex(range.end, this.text);
++      this.text = replaceRange(this.text, start, end, substitute);
++    } catch (e) {
++      console.log('replaceWithRange failed', { range, substitute });
++    }
++  }
+ 
+-    transformPositionToIndex(position, str) {
+-        if (position.line !== 0) {
+-            const startLineIndex = nthIndex(str, '\n', position.line);
+-            return startLineIndex + position.character + 1;
+-        } else {
+-          return position.character;
+-        }
+-      }
++  transformPositionToIndex(position, str) {
++    if (position.line !== 0) {
++      const startLineIndex = nthIndex(str, '\n', position.line);
++      return startLineIndex + position.character + 1;
++    } else {
++      return position.character;
++    }
++  }
+ }
+-
+diff --git a/vscode/src/editor/frame/apply_frame.ts b/vscode/src/editor/frame/apply_frame.ts
+index 83825b2..420cd40 100644
+--- a/vscode/src/editor/frame/apply_frame.ts
++++ b/vscode/src/editor/frame/apply_frame.ts
+@@ -1,15 +1,17 @@
+-import { asyncForEach, overrideEditorText } from "../../utils";
+-import { TextEditor, window, commands } from "vscode";
++import { asyncForEach, overrideEditorText } from '../../utils';
++import { TextEditor, window, commands } from 'vscode';
+ 
+ export async function applyFrame(frame: CodioFrame) {
+-    await asyncForEach(frame, async file => {
+-        const textEditor: TextEditor = window.visibleTextEditors.find(editor => editor.document.uri.path === file.uri.path);
+-        if (textEditor && textEditor.viewColumn !== file.column) {
+-            await window.showTextDocument(textEditor.document, {viewColumn: textEditor.viewColumn});
+-            await commands.executeCommand('workbench.action.closeActiveEditor');
+-        }
+-        const editor = await window.showTextDocument(file.uri, {viewColumn: file.column, preview: false});
+-        console.log({text: file.document.text, editorPath: editor.document.uri.path, originPath: file.uri});
+-        await overrideEditorText(editor, file.document.text);
+-    });
+-}
+\ No newline at end of file
++  await asyncForEach(frame, async (file) => {
++    const textEditor: TextEditor = window.visibleTextEditors.find(
++      (editor) => editor.document.uri.path === file.uri.path,
++    );
++    if (textEditor && textEditor.viewColumn !== file.column) {
++      await window.showTextDocument(textEditor.document, { viewColumn: textEditor.viewColumn });
++      await commands.executeCommand('workbench.action.closeActiveEditor');
++    }
++    const editor = await window.showTextDocument(file.uri, { viewColumn: file.column, preview: false });
++    console.log({ text: file.document.text, editorPath: editor.document.uri.path, originPath: file.uri });
++    await overrideEditorText(editor, file.document.text);
++  });
++}
+diff --git a/vscode/src/editor/frame/create_frame.ts b/vscode/src/editor/frame/create_frame.ts
+index f46419d..dbd000b 100644
+--- a/vscode/src/editor/frame/create_frame.ts
++++ b/vscode/src/editor/frame/create_frame.ts
+@@ -1,61 +1,62 @@
+-import { Uri } from "vscode";
+-import ShadowDocument from "./ShadowDocument";
+-import { isTextEvent, isEditorEvent } from "../event_creator";
++import { Uri } from 'vscode';
++import ShadowDocument from './ShadowDocument';
++import { isTextEvent, isEditorEvent } from '../event_creator';
+ 
+ const INITIAL_FILE_INDEX = 0;
+ 
+ function initialFrametoDocumentsByPath(initialFrame: Array<CodioFile>) {
+-    return initialFrame.reduce((docByPath, file) => {
+-        docByPath[file.uri.path] = {
+-            document: new ShadowDocument(file.document.text),
+-            column: file.column,
+-            lastAction: file.lastAction
+-        };
+-        return docByPath;
+-    }, {});
++  return initialFrame.reduce((docByPath, file) => {
++    docByPath[file.uri.path] = {
++      document: new ShadowDocument(file.document.text),
++      column: file.column,
++      lastAction: file.lastAction,
++    };
++    return docByPath;
++  }, {});
+ }
+ 
+-function getInitialFileFromInitialFrame(initialFrame: CodioFrame) : CodioFile{
+-    return initialFrame[INITIAL_FILE_INDEX];
++function getInitialFileFromInitialFrame(initialFrame: CodioFrame): CodioFile {
++  return initialFrame[INITIAL_FILE_INDEX];
+ }
+ export function getInitialFilePathAndContentFromFrame(initialFrame: CodioFrame) {
+-    const {document, uri} = getInitialFileFromInitialFrame(initialFrame);
+-    return {content: document.text, uri};
++  const { document, uri } = getInitialFileFromInitialFrame(initialFrame);
++  return { content: document.text, uri };
+ }
+ export function createFrame(initialFrame: Array<CodioFile>, timeline: Array<CodioEvent>): CodioFrame {
+-    let actionCounter = 0;
+-    const documentsByPath = initialFrametoDocumentsByPath(initialFrame);
++  let actionCounter = 0;
++  const documentsByPath = initialFrametoDocumentsByPath(initialFrame);
+ 
+-    timeline.forEach(event => {
+-        if (isTextEvent(event)) {
+-            const document: ShadowDocument = documentsByPath[event.data.uri.path].document;
+-            event.data.changes.forEach(change => {
+-                if (change.position) {
+-                    document.replaceWithPosition(change.position, change.value);
+-                } else if (change.range) {
+-                    document.replaceWithRange(change.range, change.value);
+-                }
+-            });
+-        } else if (isEditorEvent(event)) {
+-            const viewColumn = event.data.viewColumn || 1;
+-            if (event.data.isInitial) {
+-                documentsByPath[event.data.uri.path] = {
+-                    document: new ShadowDocument(event.data.content),
+-                    column: viewColumn,
+-                    lastAction: actionCounter
+-                };
+-            } else {
+-                if (documentsByPath[event.data.uri.path]) {
+-                    documentsByPath[event.data.uri.path].column = viewColumn;
+-                    documentsByPath[event.data.uri.path].lastAction = actionCounter;
+-                }
+-            }
++  timeline.forEach((event) => {
++    if (isTextEvent(event)) {
++      const document: ShadowDocument = documentsByPath[event.data.uri.path].document;
++      event.data.changes.forEach((change) => {
++        if (change.position) {
++          document.replaceWithPosition(change.position, change.value);
++        } else if (change.range) {
++          document.replaceWithRange(change.range, change.value);
++        }
++      });
++    } else if (isEditorEvent(event)) {
++      const viewColumn = event.data.viewColumn || 1;
++      if (event.data.isInitial) {
++        documentsByPath[event.data.uri.path] = {
++          document: new ShadowDocument(event.data.content),
++          column: viewColumn,
++          lastAction: actionCounter,
++        };
++      } else {
++        if (documentsByPath[event.data.uri.path]) {
++          documentsByPath[event.data.uri.path].column = viewColumn;
++          documentsByPath[event.data.uri.path].lastAction = actionCounter;
+         }
+-        actionCounter++;
+-    });
+-    // this should all go to utils - make an auto go to util command.
+-    const frame = Object.keys(documentsByPath).map(path => ({...documentsByPath[path], uri: Uri.file(path) }))
+-    .sort((a, b) => a.lastAction<b.lastAction ? -1 : a.lastAction>b.lastAction ? 1 : 0);
+-    console.log(frame);
+-    return frame;
+-}
+\ No newline at end of file
++      }
++    }
++    actionCounter++;
++  });
++  // this should all go to utils - make an auto go to util command.
++  const frame = Object.keys(documentsByPath)
++    .map((path) => ({ ...documentsByPath[path], uri: Uri.file(path) }))
++    .sort((a, b) => (a.lastAction < b.lastAction ? -1 : a.lastAction > b.lastAction ? 1 : 0));
++  console.log(frame);
++  return frame;
++}
+diff --git a/vscode/src/editor/frame/deserialize_frame.ts b/vscode/src/editor/frame/deserialize_frame.ts
+index a69f1f0..76749bd 100644
+--- a/vscode/src/editor/frame/deserialize_frame.ts
++++ b/vscode/src/editor/frame/deserialize_frame.ts
+@@ -1,19 +1,18 @@
+-import FSManager from "../../filesystem/FSManager";
+-import ShadowDocument from "./ShadowDocument";
+-import {Uri} from 'vscode';
++import FSManager from '../../filesystem/FSManager';
++import ShadowDocument from './ShadowDocument';
++import { Uri } from 'vscode';
+ 
+-export default function deserializeFrame(frame: Array<CodioSerializedFile>, codioPath) : Array<CodioFile> {
+-  return frame.map(file => {
++export default function deserializeFrame(frame: Array<CodioSerializedFile>, codioPath): Array<CodioFile> {
++  return frame.map((file) => {
+     return deserializeFile(file, codioPath);
+   });
+ }
+ 
+-function deserializeFile(file: CodioSerializedFile, codioPath: string) : CodioFile {
++function deserializeFile(file: CodioSerializedFile, codioPath: string): CodioFile {
+   return {
+     uri: Uri.file(FSManager.toFullPath(codioPath, file.path)),
+     document: new ShadowDocument(file.text),
+     lastAction: file.lastActionCount,
+-    column: file.column
++    column: file.column,
+   };
+ }
+-
+diff --git a/vscode/src/editor/frame/index.ts b/vscode/src/editor/frame/index.ts
+index fefe98e..da3c3b4 100644
+--- a/vscode/src/editor/frame/index.ts
++++ b/vscode/src/editor/frame/index.ts
+@@ -1,3 +1,3 @@
+-import { createFrame } from "./create_frame";
+-import { applyFrame } from "./apply_frame";
++import { createFrame } from './create_frame';
++import { applyFrame } from './apply_frame';
+ export { createFrame, applyFrame };
+diff --git a/vscode/src/editor/frame/serialize_frame.ts b/vscode/src/editor/frame/serialize_frame.ts
+index 7647533..56e3a63 100644
+--- a/vscode/src/editor/frame/serialize_frame.ts
++++ b/vscode/src/editor/frame/serialize_frame.ts
+@@ -1,17 +1,18 @@
+ import FSManager from '../../filesystem/FSManager';
+ 
+-
+-export default function serializeFrame(frame : Array<CodioFile>, rootPath: string) : Array<CodioSerializedFile>{
+-    return frame.map(file => {
+-        return serializeFile(file, rootPath);
+-    }).filter(event => !!event);
++export default function serializeFrame(frame: Array<CodioFile>, rootPath: string): Array<CodioSerializedFile> {
++  return frame
++    .map((file) => {
++      return serializeFile(file, rootPath);
++    })
++    .filter((event) => !!event);
+ }
+ 
+-function serializeFile(file: CodioFile, rootPath) : CodioSerializedFile {
+-    return {
+-        column: file.column,
+-        lastActionCount: file.lastAction,
+-        path: FSManager.toRelativePath(file.uri, rootPath),
+-        text: file.document.text,
+-    };
++function serializeFile(file: CodioFile, rootPath): CodioSerializedFile {
++  return {
++    column: file.column,
++    lastActionCount: file.lastAction,
++    path: FSManager.toRelativePath(file.uri, rootPath),
++    text: file.document.text,
++  };
+ }
+diff --git a/vscode/src/editor/serialize.ts b/vscode/src/editor/serialize.ts
+index 542a99b..2a3e600 100644
+--- a/vscode/src/editor/serialize.ts
++++ b/vscode/src/editor/serialize.ts
+@@ -1,62 +1,62 @@
+-import {Position, Range} from 'vscode';
++import { Position, Range } from 'vscode';
+ import FSManager from '../filesystem/FSManager';
+ import { isTextEvent, isSelectionEvent, isEditorEvent, isExecutionEvent, isVisibleRangeEvent } from './event_creator';
+ 
++export default function serialize(events: Array<CodioEvent>, rootPath: string): Array<CodioSerializedEvent> {
++  return events
++    .map((event) => {
++      return serializeEvent(event, rootPath);
++    })
++    .filter((event) => !!event);
++}
+ 
+-
+-export default function serialize(events : Array<CodioEvent>, rootPath: string) : Array<CodioSerializedEvent>{
+-    return events.map(event => {
+-        return serializeEvent(event, rootPath);
+-    }).filter(event => !!event);
++function serializeEvent(event: CodioEvent, rootPath): CodioSerializedEvent {
++  if (isTextEvent(event)) {
++    return serializeTextEvent(event, rootPath);
++  } else if (isSelectionEvent(event) || isEditorEvent(event) || isExecutionEvent(event) || isVisibleRangeEvent(event)) {
++    return serializeFilePath(event, rootPath);
++  }
+ }
+ 
+-function serializeEvent(event: CodioEvent, rootPath) : CodioSerializedEvent {
+-    if (isTextEvent(event)) {
+-        return serializeTextEvent(event, rootPath);
+-    } else if (isSelectionEvent(event)
+-            || isEditorEvent(event)
+-            || isExecutionEvent(event)
+-            || isVisibleRangeEvent(event)) {
+-        return serializeFilePath(event, rootPath);
++function serializeTextEvent(event: CodioTextEvent, rootPath): CodioSerializedTextEvent {
++  serializeFilePath(event, rootPath);
++  if (event.data.changes.length === 0) {
++    console.log('event with 0 length', event);
++    //@TODO: figure out which actions do not have a change
++    return undefined;
++  }
++  const { uri, ...eventData } = event.data;
++  const serializedEvent = {
++    ...event,
++    data: {
++      ...eventData,
++      path: FSManager.toRelativePath(uri, rootPath),
++      changes: [],
++    },
++  };
++  serializedEvent.data.changes = event.data.changes.map((change) => {
++    const range = change.range;
++    const rangeLength = change.rangeLength;
++    const startPosition = new Position(range.start.line, range.start.character);
++    const endPosition = new Position(range.end.line, range.end.character);
++    if (rangeLength === 0) {
++      return { position: startPosition, value: change.text };
+     }
++    return { range: new Range(startPosition, endPosition), value: change.text };
++  });
++  return serializedEvent;
+ }
+ 
+-function serializeTextEvent(event : CodioTextEvent, rootPath) : CodioSerializedTextEvent {
+-    serializeFilePath(event, rootPath);
+-    if (event.data.changes.length === 0) {
+-        console.log('event with 0 length', event);
+-        //@TODO: figure out which actions do not have a change
+-        return undefined;
+-    }
+-    const {uri, ...eventData } = event.data;
+-    let serializedEvent = {
+-        ...event,
+-        data: {
+-            ...eventData,
+-            path: FSManager.toRelativePath(uri, rootPath),
+-            changes: []
+-        }
++function serializeFilePath(event: CodioEvent, rootPath): CodioSerializedEvent {
++  if (event.data.uri) {
++    const { uri, ...eventData } = event.data;
++    const newEvent = {
++      ...event,
++      data: {
++        ...eventData,
++        path: FSManager.toRelativePath(event.data.uri, rootPath),
++      },
+     };
+-    serializedEvent.data.changes = event.data.changes.map(change => {
+-        const range = change.range;
+-        const rangeLength = change.rangeLength;
+-        const startPosition = new Position(range.start.line, range.start.character);
+-        const endPosition = new Position(range.end.line, range.end.character);
+-        if (rangeLength === 0) {
+-            return { position: startPosition, value: change.text};
+-        }
+-        return { range: new Range(startPosition, endPosition), value: change.text};
+-    });
+-    return serializedEvent;
++    return newEvent;
++  }
+ }
+-
+-function serializeFilePath(event: CodioEvent, rootPath) : CodioSerializedEvent {
+-    if (event.data.uri) {
+-        const {uri, ...eventData } = event.data;
+-        const newEvent = {...event, data: {
+-            ...eventData,
+-            path: FSManager.toRelativePath(event.data.uri, rootPath)
+-        }};
+-        return newEvent;
+-      }
+-}
+\ No newline at end of file
+diff --git a/vscode/src/extension.ts b/vscode/src/extension.ts
+index ab2c867..b65672b 100644
+--- a/vscode/src/extension.ts
++++ b/vscode/src/extension.ts
+@@ -1,41 +1,31 @@
+-import { commands, ExtensionContext, Uri } from "vscode";
+-import {UI, showCodioNameInputBox} from './user_interface/messages';
+-import Player from "./player/Player";
+-import Recorder from "./recorder/Recorder";
+-import { registerTreeViews } from "./user_interface/Viewers";
+-import FSManager from "./filesystem/FSManager";
+-import * as COMMAND_NAMES from "./consts/command_names";
+-import * as codioCommands from "./commands/index";
+-import { createSdk } from "./sdk";
+-import { getWorkspaceUriAndCodioDestinationUri } from "./filesystem/workspace";
++import { commands, ExtensionContext, Uri } from 'vscode';
++import { UI, showCodioNameInputBox } from './user_interface/messages';
++import Player from './player/Player';
++import Recorder from './recorder/Recorder';
++import { registerTreeViews } from './user_interface/Viewers';
++import FSManager from './filesystem/FSManager';
++import * as COMMAND_NAMES from './consts/command_names';
++import * as codioCommands from './commands/index';
++import { createSdk } from './sdk';
++import { getWorkspaceUriAndCodioDestinationUri } from './filesystem/workspace';
+ 
+ const fsManager = new FSManager();
+ const player = new Player();
+ const recorder = new Recorder();
+ 
+ const {
+-    recordCodio,
+-    finishRecording,
+-    playCodio,
+-    pauseCodio,
+-    pauseOrResume,
+-    resumeCodio,
+-    playFrom,
+-    rewind,
+-    forward
++  recordCodio,
++  finishRecording,
++  playCodio,
++  pauseCodio,
++  pauseOrResume,
++  resumeCodio,
++  playFrom,
++  rewind,
++  forward,
+ } = createSdk(player, recorder, fsManager);
+ 
+-export {
+-    recordCodio,
+-    finishRecording,
+-    playCodio,
+-    pauseCodio,
+-    pauseOrResume,
+-    resumeCodio,
+-    playFrom,
+-    rewind,
+-    forward
+-};
++export { recordCodio, finishRecording, playCodio, pauseCodio, pauseOrResume, resumeCodio, playFrom, rewind, forward };
+ 
+ export async function activate(context: ExtensionContext) {
+   await fsManager.createExtensionFolders();
+@@ -45,102 +35,58 @@ export async function activate(context: ExtensionContext) {
+   const recordCodioDisposable = commands.registerCommand(
+     COMMAND_NAMES.RECORD_CODIO,
+     async (destination?: Uri, workspaceRoot?: Uri) => {
+-      codioCommands.recordCodio(
+-        fsManager,
+-        player,
+-        recorder,
+-        destination,
+-        workspaceRoot,
+-        showCodioNameInputBox
+-      );
+-    }
++      codioCommands.recordCodio(fsManager, player, recorder, destination, workspaceRoot, showCodioNameInputBox);
++    },
+   );
+ 
+   const recordCodioAndAddToProjectDisposable = commands.registerCommand(
+     COMMAND_NAMES.RECORD_CODIO_AND_ADD_TO_PROJECT,
+     async () => {
+-      const {workspaceUri, codioUri, getCodioName} = await getWorkspaceUriAndCodioDestinationUri();
++      const { workspaceUri, codioUri, getCodioName } = await getWorkspaceUriAndCodioDestinationUri();
+       if (workspaceUri && codioUri && getCodioName) {
+-        codioCommands.recordCodio(
+-          fsManager,
+-          player,
+-          recorder,
+-          codioUri,
+-          workspaceUri,
+-          getCodioName
+-        );
++        codioCommands.recordCodio(fsManager, player, recorder, codioUri, workspaceUri, getCodioName);
+       }
+-    }
++    },
+   );
+ 
+-  const finishRecordingDisposable = commands.registerCommand(
+-    COMMAND_NAMES.FINISH_RECORDING,
+-    () => {
+-      codioCommands.finishRecording(recorder);
+-    }
+-  );
++  const finishRecordingDisposable = commands.registerCommand(COMMAND_NAMES.FINISH_RECORDING, () => {
++    codioCommands.finishRecording(recorder);
++  });
+ 
+   const playCodioDisposable = commands.registerCommand(
+     COMMAND_NAMES.PLAY_CODIO,
+     async (source: Uri, workspaceUri?: Uri) => {
+-      codioCommands.playCodio(
+-        fsManager,
+-        player,
+-        recorder,
+-        source,
+-        workspaceUri
+-      );
+-    }
++      codioCommands.playCodio(fsManager, player, recorder, source, workspaceUri);
++    },
+   );
+ 
+-  const pauseCodioDisposable = commands.registerCommand(
+-    COMMAND_NAMES.PAUSE_CODIO,
+-    () => {
+-      codioCommands.pauseCodio(player);
+-    }
+-  );
++  const pauseCodioDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_CODIO, () => {
++    codioCommands.pauseCodio(player);
++  });
+ 
+-  const pauseOrResumeDisposable = commands.registerCommand(
+-    COMMAND_NAMES.PAUSE_OR_RESUME,
+-    () => {
+-      codioCommands.pauseOrResume(player);
+-    }
+-  );
++  const pauseOrResumeDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_OR_RESUME, () => {
++    codioCommands.pauseOrResume(player);
++  });
+ 
+-  const resumeCodioDisposable = commands.registerCommand(
+-    COMMAND_NAMES.RESUME_CODIO,
+-    () => {
+-      codioCommands.resumeCodio(player);
+-    }
+-  );
++  const resumeCodioDisposable = commands.registerCommand(COMMAND_NAMES.RESUME_CODIO, () => {
++    codioCommands.resumeCodio(player);
++  });
+ 
+-  const playFromDisposable = commands.registerCommand(
+-    COMMAND_NAMES.PLAY_FROM,
+-    async (time?: number) => {
+-      codioCommands.playFrom(player, time);
+-    }
+-  );
++  const playFromDisposable = commands.registerCommand(COMMAND_NAMES.PLAY_FROM, async (time?: number) => {
++    codioCommands.playFrom(player, time);
++  });
+ 
+-  const rewindDisposable = commands.registerCommand(
+-    COMMAND_NAMES.REWIND,
+-    async (time?: number) => {
+-      codioCommands.rewind(player, time);
+-    }
+-  );
++  const rewindDisposable = commands.registerCommand(COMMAND_NAMES.REWIND, async (time?: number) => {
++    codioCommands.rewind(player, time);
++  });
+ 
+-  const forwardDisposable = commands.registerCommand(
+-    COMMAND_NAMES.FORWARD,
+-    async (time?: number) => {
+-      codioCommands.forward(player, time);
+-    }
+-  );
++  const forwardDisposable = commands.registerCommand(COMMAND_NAMES.FORWARD, async (time?: number) => {
++    codioCommands.forward(player, time);
++  });
+ 
+-  const executeFileDisposabble = commands.registerCommand(
+-    COMMAND_NAMES.EXECUTE_FILE,
+-    async () => {
+-      codioCommands.executeFile(recorder);
+-    }
+-  );
++  const executeFileDisposabble = commands.registerCommand(COMMAND_NAMES.EXECUTE_FILE, async () => {
++    codioCommands.executeFile(recorder);
++  });
+ 
+   context.subscriptions.push(recordCodioDisposable);
+   context.subscriptions.push(finishRecordingDisposable);
+@@ -157,4 +103,4 @@ export async function activate(context: ExtensionContext) {
+ export function deactivate() {
+   player.closeCodio();
+   recorder.stopRecording();
+-}
+\ No newline at end of file
++}
+diff --git a/vscode/src/filesystem/FSManager.ts b/vscode/src/filesystem/FSManager.ts
+index f2e4c8a..4e539c8 100644
+--- a/vscode/src/filesystem/FSManager.ts
++++ b/vscode/src/filesystem/FSManager.ts
+@@ -1,265 +1,283 @@
+ import * as vscode from 'vscode';
+-import {zip, unzip} from 'cross-zip';
+-import {mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator, isWindows, promiseExec} from '../utils';
++import { zip, unzip } from 'cross-zip';
++import { mkdir, readFile, unlink, readdir, exists, writeFile, uriSeperator, isWindows, promiseExec } from '../utils';
+ import { saveProjectFiles, reduceToRoot } from './saveProjectFiles';
+-import * as os from "os";
+-import * as fs from "fs";
++import * as os from 'os';
++import * as fs from 'fs';
+ import { join } from 'path';
+ import { v4 as uuid } from 'uuid';
+ import { getWorkspaceRootAndCodiosFolderIfExists } from './workspace';
+ 
+-
+ const homedir = require('os').homedir();
+ const userOS = os.platform();
+ const onCodiosChangedSubscribers = [];
+-const EXTENSION_FOLDER = userOS === "darwin" ? join(homedir,"Library", "codio") : join(homedir, "codio");
+-const codiosFolder = join(EXTENSION_FOLDER, "codios");
++const EXTENSION_FOLDER = userOS === 'darwin' ? join(homedir, 'Library', 'codio') : join(homedir, 'codio');
++const codiosFolder = join(EXTENSION_FOLDER, 'codios');
+ 
+ const CODIO_META_FILE = 'meta.json';
+ const CODIO_CONTENT_FILE = 'codio.json';
+ const CODIO_WORKSPACE_FOLDER = 'workspace';
+ 
+ export default class FSManager {
+-    tempFolder: string;
++  tempFolder: string;
+ 
+-    onCodiosChanged(func: Function) {
+-        onCodiosChangedSubscribers.push(func);
+-    }
++  onCodiosChanged(func: Function) {
++    onCodiosChangedSubscribers.push(func);
++  }
+ 
+-    codioPath(codioId) {
+-        return join(codiosFolder, codioId);
+-    }
++  codioPath(codioId) {
++    return join(codiosFolder, codioId);
++  }
+ 
+-    constructor() {
+-        this.tempFolder = os.tmpdir();
+-    }
++  constructor() {
++    this.tempFolder = os.tmpdir();
++  }
+ 
+-    static async saveFile(path, content) {
+-        try {
+-            await writeFile(path, content);
+-            console.log("The file was saved!", path);
+-        } catch(e) {
+-            console.log('save file fail', e);
+-        }
++  static async saveFile(path, content) {
++    try {
++      await writeFile(path, content);
++      console.log('The file was saved!', path);
++    } catch (e) {
++      console.log('save file fail', e);
+     }
++  }
+ 
+-    static timelinePath(codioPath) {
+-        return join(codioPath, 'codio.json');
+-    }
++  static timelinePath(codioPath) {
++    return join(codioPath, 'codio.json');
++  }
+ 
+-    static audioPath(codioPath) {
+-        return join(codioPath, 'audio.mp3');
+-    }
++  static audioPath(codioPath) {
++    return join(codioPath, 'audio.mp3');
++  }
+ 
+-    static workspacePath(codioPath) {
+-        return join(codioPath, 'workspace');
+-    }
++  static workspacePath(codioPath) {
++    return join(codioPath, 'workspace');
++  }
+ 
+-    static async loadTimeline(codioPath) {
+-        const timelineContent = await readFile(this.timelinePath(codioPath));
+-        const parsedTimeline = JSON.parse(timelineContent.toString());
+-        return parsedTimeline;
+-    }
++  static async loadTimeline(codioPath) {
++    const timelineContent = await readFile(this.timelinePath(codioPath));
++    const parsedTimeline = JSON.parse(timelineContent.toString());
++    return parsedTimeline;
++  }
+ 
+-    static toRelativePath(uri: vscode.Uri, rootPath: string) {
+-        const pathSplit = uri.path.split(uriSeperator);
+-        const rootPathSplit = rootPath.split(uriSeperator);
+-        const relativePath = pathSplit.slice(rootPathSplit.length).join(uriSeperator);
+-        return relativePath;
+-    }
++  static toRelativePath(uri: vscode.Uri, rootPath: string) {
++    const pathSplit = uri.path.split(uriSeperator);
++    const rootPathSplit = rootPath.split(uriSeperator);
++    const relativePath = pathSplit.slice(rootPathSplit.length).join(uriSeperator);
++    return relativePath;
++  }
+ 
+-    static async saveRecordingToFile(codioContent: Object, metaData: Object, files: Array<string>, codioPath: string, destinationFolder?: vscode.Uri) {
+-        const codioContentJson = JSON.stringify(codioContent);
+-        const metaDataJson = JSON.stringify(metaData);
+-        await this.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
+-        await this.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
+-        const codioWorkspaceFolderPath = join(codioPath, CODIO_WORKSPACE_FOLDER);
+-        await saveProjectFiles(codioWorkspaceFolderPath, files);
+-        if (destinationFolder) {
+-            await this.zip(codioPath, destinationFolder.fsPath);
+-        } else {
+-            fs.renameSync(codioPath, join(codiosFolder, uuid()));
+-        }
+-        onCodiosChangedSubscribers.forEach(func => func());
++  static async saveRecordingToFile(
++    codioContent: Object,
++    metaData: Object,
++    files: Array<string>,
++    codioPath: string,
++    destinationFolder?: vscode.Uri,
++  ) {
++    const codioContentJson = JSON.stringify(codioContent);
++    const metaDataJson = JSON.stringify(metaData);
++    await this.saveFile(join(codioPath, CODIO_CONTENT_FILE), codioContentJson);
++    await this.saveFile(join(codioPath, CODIO_META_FILE), metaDataJson);
++    const codioWorkspaceFolderPath = join(codioPath, CODIO_WORKSPACE_FOLDER);
++    await saveProjectFiles(codioWorkspaceFolderPath, files);
++    if (destinationFolder) {
++      await this.zip(codioPath, destinationFolder.fsPath);
++    } else {
++      fs.renameSync(codioPath, join(codiosFolder, uuid()));
+     }
++    onCodiosChangedSubscribers.forEach((func) => func());
++  }
+ 
+-    static normalizeFilesPath(fullPathFiles: Array<string> , root?: vscode.Uri) : {rootPath: string, files: string[]} {
+-        // In Windows, case doesn't matter in file names, and some events return files with different cases.
+-        // That is not the same in Linux for example, where case does matter. The reduceToRoot algorithm is case sensetive,
+-        // which is why we are normalizing for windows here
+-        const filesWithNormalizedCase = fullPathFiles.map(file => isWindows ? file.toLowerCase() : file);
+-        if (root) {
+-            const normalizedFiles = filesWithNormalizedCase.map(path => this.toRelativePath(vscode.Uri.file(path), root.path));
+-            return { rootPath: root.path, files: normalizedFiles};
+-        } else if (filesWithNormalizedCase.length > 1) {
+-            console.log({uriSeperator});
+-            const splitFiles = filesWithNormalizedCase.map(file => file.split(uriSeperator).slice(1));
+-            const {rootPath, files} = reduceToRoot(splitFiles);
+-            return {rootPath, files};
+-        } else {
+-            const fullPathSplit = filesWithNormalizedCase[0].split(uriSeperator);
+-            const rootPath = fullPathSplit.slice(0, -1).join(uriSeperator);
+-            const file = fullPathSplit[fullPathSplit.length-1];
+-            return { rootPath: rootPath, files: [file]};
+-        }
++  static normalizeFilesPath(fullPathFiles: Array<string>, root?: vscode.Uri): { rootPath: string; files: string[] } {
++    // In Windows, case doesn't matter in file names, and some events return files with different cases.
++    // That is not the same in Linux for example, where case does matter. The reduceToRoot algorithm is case sensetive,
++    // which is why we are normalizing for windows here
++    const filesWithNormalizedCase = fullPathFiles.map((file) => (isWindows ? file.toLowerCase() : file));
++    if (root) {
++      const normalizedFiles = filesWithNormalizedCase.map((path) =>
++        this.toRelativePath(vscode.Uri.file(path), root.path),
++      );
++      return { rootPath: root.path, files: normalizedFiles };
++    } else if (filesWithNormalizedCase.length > 1) {
++      console.log({ uriSeperator });
++      const splitFiles = filesWithNormalizedCase.map((file) => file.split(uriSeperator).slice(1));
++      const { rootPath, files } = reduceToRoot(splitFiles);
++      return { rootPath, files };
++    } else {
++      const fullPathSplit = filesWithNormalizedCase[0].split(uriSeperator);
++      const rootPath = fullPathSplit.slice(0, -1).join(uriSeperator);
++      const file = fullPathSplit[fullPathSplit.length - 1];
++      return { rootPath: rootPath, files: [file] };
+     }
++  }
+ 
+-    static toFullPath(codioPath, filePath) {
+-        return join(codioPath, filePath);
+-    }
++  static toFullPath(codioPath, filePath) {
++    return join(codioPath, filePath);
++  }
+ 
+-    async folderNameExists(folderName): Promise<boolean> {
+-        return await exists(join(EXTENSION_FOLDER, folderName));
+-    }
++  async folderNameExists(folderName): Promise<boolean> {
++    return await exists(join(EXTENSION_FOLDER, folderName));
++  }
+ 
+-    async createExtensionFolders() {
+-        try {
+-            const extensionFolderExists = await exists(EXTENSION_FOLDER);
+-            if (!extensionFolderExists) {
+-                await mkdir(EXTENSION_FOLDER);
+-            }
+-            const codiosFolderExists = await exists(codiosFolder);
+-            if (!codiosFolderExists) {
+-                await mkdir(codiosFolder);
+-            }
+-        } catch(e) {
+-            console.log('Problem creating your extension folders', e);
+-        }
++  async createExtensionFolders() {
++    try {
++      const extensionFolderExists = await exists(EXTENSION_FOLDER);
++      if (!extensionFolderExists) {
++        await mkdir(EXTENSION_FOLDER);
++      }
++      const codiosFolderExists = await exists(codiosFolder);
++      if (!codiosFolderExists) {
++        await mkdir(codiosFolder);
++      }
++    } catch (e) {
++      console.log('Problem creating your extension folders', e);
+     }
++  }
+ 
+-    async createCodioFolder(folderName) {
+-        try {
+-            const path = join(codiosFolder, folderName);
+-            await mkdir(path);
+-            return path;
+-        }  catch(e) {
+-            console.log('Problem creating folder', e);
+-        }
++  async createCodioFolder(folderName) {
++    try {
++      const path = join(codiosFolder, folderName);
++      await mkdir(path);
++      return path;
++    } catch (e) {
++      console.log('Problem creating folder', e);
+     }
++  }
+ 
+-    async createTempCodioFolder(codioId) {
+-        try {
+-            const path = join(this.tempFolder, codioId);
+-            await mkdir(path);
+-            return path;
+-        }  catch(e) {
+-            console.log('Problem creating folder', e);
+-        }
++  async createTempCodioFolder(codioId) {
++    try {
++      const path = join(this.tempFolder, codioId);
++      await mkdir(path);
++      return path;
++    } catch (e) {
++      console.log('Problem creating folder', e);
+     }
++  }
+ 
+-    getCodioUnzipped(uri: vscode.Uri) {
+-        if (fs.lstatSync(uri.fsPath).isDirectory()) {
+-            return uri.fsPath;
+-        } else {
+-            return this.unzipCodio(uri.fsPath);
+-        }
++  getCodioUnzipped(uri: vscode.Uri) {
++    if (fs.lstatSync(uri.fsPath).isDirectory()) {
++      return uri.fsPath;
++    } else {
++      return this.unzipCodio(uri.fsPath);
+     }
++  }
+ 
+-    static async zip(srcPath, distPath) {
+-        try {
+-            if (isWindows) {
+-                await new Promise((res, rej) => zip(srcPath, distPath, (error: Error) => error ? rej(error) : res()));
+-            } else {
+-                await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
+-            }
+-            return `${distPath}`;
+-        } catch(e) {
+-            console.log(`zip for folder ${srcPath} failed`, e);
+-        }
++  static async zip(srcPath, distPath) {
++    try {
++      if (isWindows) {
++        await new Promise((res, rej) => zip(srcPath, distPath, (error: Error) => (error ? rej(error) : res())));
++      } else {
++        await promiseExec(`cd ${srcPath} && zip -r ${distPath} .`);
++      }
++      return `${distPath}`;
++    } catch (e) {
++      console.log(`zip for folder ${srcPath} failed`, e);
+     }
++  }
+ 
+-    async unzipCodio(srcPath) {
+-        const uuid = require('uuid');
+-        const codioId = uuid.v4();
+-        const codioTempFolder = join(this.tempFolder, codioId);
+-        try {
+-            // await promiseExec(`unzip ${srcPath} -d ${codioTempFolder}`);
+-            await new Promise((res, rej) => unzip(srcPath, codioTempFolder, (error: Error) => error ? rej(error) : res()));
+-            return codioTempFolder;
+-        } catch(e) {
+-            console.log(`unzipping codio with path: ${srcPath} failed`, e);
+-        }
++  async unzipCodio(srcPath) {
++    const uuid = require('uuid');
++    const codioId = uuid.v4();
++    const codioTempFolder = join(this.tempFolder, codioId);
++    try {
++      // await promiseExec(`unzip ${srcPath} -d ${codioTempFolder}`);
++      await new Promise((res, rej) => unzip(srcPath, codioTempFolder, (error: Error) => (error ? rej(error) : res())));
++      return codioTempFolder;
++    } catch (e) {
++      console.log(`unzipping codio with path: ${srcPath} failed`, e);
+     }
++  }
+ 
+-    async deleteFilesInCodio(codioId) {
+-        const path = join(codiosFolder, codioId);
+-        const files = await readdir(path);
+-        // currently I am assuming there won't be directories inside the directory
+-        await Promise.all(files.map(f => unlink(join(path, f))));
+-        return path;
+-    }
++  async deleteFilesInCodio(codioId) {
++    const path = join(codiosFolder, codioId);
++    const files = await readdir(path);
++    // currently I am assuming there won't be directories inside the directory
++    await Promise.all(files.map((f) => unlink(join(path, f))));
++    return path;
++  }
+ 
+-    async getCodiosUnzippedFromCodioFolder(folder) {
+-        const folderContents = await readdir(folder);
+-        return await Promise.all(folderContents.map(file => {
+-            const fullPath = join(folder, file);
+-            if (fs.statSync(fullPath).isDirectory()) {
+-                return fullPath;
+-            } else if (file.endsWith('.codio')) {
+-                return this.getCodioUnzipped(vscode.Uri.file(fullPath));
+-            }
+-        }).filter(folder => !!folder));
+-    }
++  async getCodiosUnzippedFromCodioFolder(folder) {
++    const folderContents = await readdir(folder);
++    return await Promise.all(
++      folderContents
++        .map((file) => {
++          const fullPath = join(folder, file);
++          if (fs.statSync(fullPath).isDirectory()) {
++            return fullPath;
++          } else if (file.endsWith('.codio')) {
++            return this.getCodioUnzipped(vscode.Uri.file(fullPath));
++          }
++        })
++        .filter((folder) => !!folder),
++    );
++  }
+ 
+-    async getCodiosMetadata(folder = codiosFolder, workspaceRoot?: vscode.Uri) : Promise<Array<any>> {
+-        try {
+-            let codiosMetaData = [];
+-            const directories = await this.getCodiosUnzippedFromCodioFolder(folder);
+-            await Promise.all(directories.map(async dir => {
+-                const metaData = await this.getCodioMetaDataContent(dir);
+-                const codioUri = vscode.Uri.file(dir);
+-                codiosMetaData.push({...metaData, uri: codioUri, workspaceRoot});
+-            }));
+-            return codiosMetaData;
+-        } catch(e) {
+-            console.log(`getCodiosMetaData failed`, e);
+-        }
++  async getCodiosMetadata(folder = codiosFolder, workspaceRoot?: vscode.Uri): Promise<Array<any>> {
++    try {
++      const codiosMetaData = [];
++      const directories = await this.getCodiosUnzippedFromCodioFolder(folder);
++      await Promise.all(
++        directories.map(async (dir) => {
++          const metaData = await this.getCodioMetaDataContent(dir);
++          const codioUri = vscode.Uri.file(dir);
++          codiosMetaData.push({ ...metaData, uri: codioUri, workspaceRoot });
++        }),
++      );
++      return codiosMetaData;
++    } catch (e) {
++      console.log(`getCodiosMetaData failed`, e);
+     }
++  }
+ 
+-    async getAllCodiosMetadata() {
+-        const workspaceFolders = getWorkspaceRootAndCodiosFolderIfExists();
+-        const codioWorkspaceCodios = workspaceFolders ? await this.getCodiosMetadata(workspaceFolders.workspaceCodiosFolder, workspaceFolders.workspaceRootUri) : [];
+-        const libraryCodios = await this.getCodiosMetadata();
+-        const allCodios = [...codioWorkspaceCodios, ...libraryCodios];
+-        return allCodios;
+-    }
++  async getAllCodiosMetadata() {
++    const workspaceFolders = getWorkspaceRootAndCodiosFolderIfExists();
++    const codioWorkspaceCodios = workspaceFolders
++      ? await this.getCodiosMetadata(workspaceFolders.workspaceCodiosFolder, workspaceFolders.workspaceRootUri)
++      : [];
++    const libraryCodios = await this.getCodiosMetadata();
++    const allCodios = [...codioWorkspaceCodios, ...libraryCodios];
++    return allCodios;
++  }
+ 
+-    async getCodioMetaDataContent(codioFolderPath) {
+-        try {
+-            const metaData = await readFile(join(codioFolderPath, CODIO_META_FILE));
+-            return JSON.parse(metaData.toString());
+-        } catch(e) {
+-            console.log(`Problem getting codio ${codioFolderPath} meta data`, e);
+-        }
++  async getCodioMetaDataContent(codioFolderPath) {
++    try {
++      const metaData = await readFile(join(codioFolderPath, CODIO_META_FILE));
++      return JSON.parse(metaData.toString());
++    } catch (e) {
++      console.log(`Problem getting codio ${codioFolderPath} meta data`, e);
+     }
++  }
+ 
+-    async choose(codiosMetadata) : Promise<{path: string, workspaceRoot: vscode.Uri} | undefined>{
+-        let unlock;
+-        let itemSelected;
+-        const quickPickItems = codiosMetadata.map(item => ({label: item.name, details: {path: item.uri.fsPath, workspaceRoot: item.workspaceRoot}}));
+-        const quickPick = vscode.window.createQuickPick();
+-        quickPick.items = quickPickItems;
+-        quickPick.onDidChangeSelection((e) => {
+-            itemSelected = e[0];
+-            unlock();
+-            quickPick.hide();
+-        });
+-        quickPick.onDidHide(() => {
+-            quickPick.dispose();
+-            unlock();
+-        });
+-        quickPick.show();
+-        await new Promise(res => unlock = res);
+-        console.log('itemSelected', itemSelected);
+-        if (itemSelected) {
+-            return itemSelected.details; // details is the codio path. This due to vscode api being weird here, refactor needed...
+-        } else {
+-            return undefined;
+-        }
++  async choose(codiosMetadata): Promise<{ path: string; workspaceRoot: vscode.Uri } | undefined> {
++    let unlock;
++    let itemSelected;
++    const quickPickItems = codiosMetadata.map((item) => ({
++      label: item.name,
++      details: { path: item.uri.fsPath, workspaceRoot: item.workspaceRoot },
++    }));
++    const quickPick = vscode.window.createQuickPick();
++    quickPick.items = quickPickItems;
++    quickPick.onDidChangeSelection((e) => {
++      itemSelected = e[0];
++      unlock();
++      quickPick.hide();
++    });
++    quickPick.onDidHide(() => {
++      quickPick.dispose();
++      unlock();
++    });
++    quickPick.show();
++    await new Promise((res) => (unlock = res));
++    console.log('itemSelected', itemSelected);
++    if (itemSelected) {
++      return itemSelected.details; // details is the codio path. This due to vscode api being weird here, refactor needed...
++    } else {
++      return undefined;
+     }
++  }
+ 
+-    async chooseCodio() : Promise<{path: string, workspaceRoot?: vscode.Uri} | undefined>{
+-        const codios = await this.getAllCodiosMetadata();
+-        return this.choose(codios);
+-    }
+-}
+\ No newline at end of file
++  async chooseCodio(): Promise<{ path: string; workspaceRoot?: vscode.Uri } | undefined> {
++    const codios = await this.getAllCodiosMetadata();
++    return this.choose(codios);
++  }
++}
+diff --git a/vscode/src/filesystem/saveProjectFiles.test.ts b/vscode/src/filesystem/saveProjectFiles.test.ts
+index 4351a66..0ecb8df 100644
+--- a/vscode/src/filesystem/saveProjectFiles.test.ts
++++ b/vscode/src/filesystem/saveProjectFiles.test.ts
+@@ -1,4 +1,3 @@
+-
+ // for later tests
+ // const example1 = "/Users/moshe/Documents/workplace/mouse-experiment/main.css";
+ // const example2 = "/Users/moshe/Documents/workplace/mouse-experiment/index.html";
+@@ -6,4 +5,4 @@
+ // const example4 = "/Users/moshe/Documents/workplace/Yosi/yosifile.cdo";
+ // const example5 = "/Users/moshe/Documents/workplace/sha/wa/wa.txt";
+ // const example6 = "/Users/moshe/Documents/workplace/mouse-experiment/main.js";
+-// const files = [example1, example2, example3, example4, example5, example6]
+\ No newline at end of file
++// const files = [example1, example2, example3, example4, example5, example6]
+diff --git a/vscode/src/filesystem/saveProjectFiles.ts b/vscode/src/filesystem/saveProjectFiles.ts
+index 1a6e16b..0d8eef8 100644
+--- a/vscode/src/filesystem/saveProjectFiles.ts
++++ b/vscode/src/filesystem/saveProjectFiles.ts
+@@ -1,11 +1,11 @@
+-import FSManager from "./FSManager";
+-import { asyncForEach, uriSeperator } from "../utils";
++import FSManager from './FSManager';
++import { asyncForEach, uriSeperator } from '../utils';
+ import { join } from 'path';
+ 
+ export async function saveProjectFiles(codioWorkspacePath, files: Array<string>) {
+   try {
+     await saveFolderIfDoesNotExist(codioWorkspacePath);
+-    const filesWithSplittedPath: Array<string[]> = files.map(file => file.split(uriSeperator));
++    const filesWithSplittedPath: Array<string[]> = files.map((file) => file.split(uriSeperator));
+     await saveFiles(codioWorkspacePath, filesWithSplittedPath);
+   } catch (e) {
+     console.log('save project files error', e);
+@@ -13,22 +13,25 @@ export async function saveProjectFiles(codioWorkspacePath, files: Array<string>)
+ }
+ 
+ //@TODO: windows support
+-export function reduceToRoot(files: string[][], rootPath = uriSeperator) : {files: string[], rootPath: string}{
+-    if (!files || files[0].length === 0) {
+-      throw new Error('There is no common root, something is wrong');
+-    }
+-    console.log('reduceToRoot', {files, rootPath});
+-    const currentFolder = files[0][0];
+-    const isSame = files.every(file => file[0] === currentFolder);
+-    if (!isSame) {
+-      return {files: files.map(file => file.join(uriSeperator)), rootPath};
+-    } else {
+-      return reduceToRoot(files.map(file => file.slice(1)), join(rootPath, currentFolder) );
+-    }
++export function reduceToRoot(files: string[][], rootPath = uriSeperator): { files: string[]; rootPath: string } {
++  if (!files || files[0].length === 0) {
++    throw new Error('There is no common root, something is wrong');
++  }
++  console.log('reduceToRoot', { files, rootPath });
++  const currentFolder = files[0][0];
++  const isSame = files.every((file) => file[0] === currentFolder);
++  if (!isSame) {
++    return { files: files.map((file) => file.join(uriSeperator)), rootPath };
++  } else {
++    return reduceToRoot(
++      files.map((file) => file.slice(1)),
++      join(rootPath, currentFolder),
++    );
++  }
+ }
+ 
+ async function saveFiles(root: string, filesWithSplittedPath: string[][]) {
+-  await asyncForEach(filesWithSplittedPath, async filePathSplitted => {
++  await asyncForEach(filesWithSplittedPath, async (filePathSplitted) => {
+     let currentFolder = root;
+     await asyncForEach(filePathSplitted, async (partOfPath, idx) => {
+       if (idx === filePathSplitted.length - 1) {
+@@ -41,13 +44,14 @@ async function saveFiles(root: string, filesWithSplittedPath: string[][]) {
+   });
+ }
+ 
+-
+ const fs = require('fs').promises;
+-export async function ensureDir (dirpath) {
++export async function ensureDir(dirpath) {
+   try {
+     await fs.mkdir(dirpath);
+   } catch (err) {
+-    if (err.code !== 'EEXIST') { console.log('Dir Exists!!!'); }
++    if (err.code !== 'EEXIST') {
++      console.log('Dir Exists!!!');
++    }
+   }
+ }
+ 
+@@ -58,4 +62,4 @@ async function saveFolderIfDoesNotExist(path) {
+   } catch (err) {
+     console.error('ensure dir error', err);
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/vscode/src/filesystem/workspace.ts b/vscode/src/filesystem/workspace.ts
+index f4ac04c..9cbe5b4 100644
+--- a/vscode/src/filesystem/workspace.ts
++++ b/vscode/src/filesystem/workspace.ts
+@@ -1,36 +1,37 @@
+-import { workspace, Uri } from "vscode";
+-import { showCodioNameInputBox, UI, MESSAGES } from "../user_interface/messages";
+-import { join } from "path";
+-import {ensureDir} from './saveProjectFiles';
+-import { existsSync } from "fs";
++import { workspace, Uri } from 'vscode';
++import { showCodioNameInputBox, UI, MESSAGES } from '../user_interface/messages';
++import { join } from 'path';
++import { ensureDir } from './saveProjectFiles';
++import { existsSync } from 'fs';
+ 
+ const createWorkspaceCodiosFolder = async (workspaceUri: Uri) => {
+-    const codioWorkspaceFolder = join(workspaceUri.fsPath, '.codio');
+-    await ensureDir(codioWorkspaceFolder);
+-    return codioWorkspaceFolder;
++  const codioWorkspaceFolder = join(workspaceUri.fsPath, '.codio');
++  await ensureDir(codioWorkspaceFolder);
++  return codioWorkspaceFolder;
+ };
+ 
+ export const getWorkspaceUriAndCodioDestinationUri = async () => {
+-	if (workspace.workspaceFolders) {
+-        const name = await showCodioNameInputBox();
+-        if (name) {
+-            const workspaceUri = workspace.workspaceFolders[0].uri;
+-            const codioWorkspaceFolderPath = await createWorkspaceCodiosFolder(workspaceUri);
+-         const codioUri = Uri.file(join(codioWorkspaceFolderPath, `${name.split(' ').join('_')}.codio`));
+-         return {workspaceUri, codioUri, getCodioName: async () => name};
+-        }
+-	} else {
+-        UI.showMessage(MESSAGES.noActiveWorkspace);
++  if (workspace.workspaceFolders) {
++    const name = await showCodioNameInputBox();
++    if (name) {
++      const workspaceUri = workspace.workspaceFolders[0].uri;
++      const codioWorkspaceFolderPath = await createWorkspaceCodiosFolder(workspaceUri);
++      const codioUri = Uri.file(join(codioWorkspaceFolderPath, `${name.split(' ').join('_')}.codio`));
++      return { workspaceUri, codioUri, getCodioName: async () => name };
+     }
++  } else {
++    UI.showMessage(MESSAGES.noActiveWorkspace);
++  }
+ };
+ 
+-
+-export const getWorkspaceRootAndCodiosFolderIfExists = () : {workspaceRootUri: Uri, workspaceCodiosFolder: string} | undefined=> {
+-    const workspaceRootUri = workspace.workspaceFolders && workspace.workspaceFolders[0].uri;
+-    if (workspaceRootUri) {
+-        const workspaceCodiosFolder = join(workspaceRootUri.fsPath, '.codio');
+-        if (existsSync(workspaceCodiosFolder)) {
+-            return {workspaceCodiosFolder, workspaceRootUri};
+-        }
++export const getWorkspaceRootAndCodiosFolderIfExists = ():
++  | { workspaceRootUri: Uri; workspaceCodiosFolder: string }
++  | undefined => {
++  const workspaceRootUri = workspace.workspaceFolders && workspace.workspaceFolders[0].uri;
++  if (workspaceRootUri) {
++    const workspaceCodiosFolder = join(workspaceRootUri.fsPath, '.codio');
++    if (existsSync(workspaceCodiosFolder)) {
++      return { workspaceCodiosFolder, workspaceRootUri };
+     }
+-};
+\ No newline at end of file
++  }
++};
+diff --git a/vscode/src/player/Editor.ts b/vscode/src/player/Editor.ts
+index ea2ead0..c0884f7 100644
+--- a/vscode/src/player/Editor.ts
++++ b/vscode/src/player/Editor.ts
+@@ -1,50 +1,56 @@
+ import { removeSelection } from '../editor/event_dispatcher';
+-import {createFrame, applyFrame} from '../editor/frame';
+-import  deserializeEvents from '../editor/deserialize';
+-import { Uri, window } from "vscode";
+-import {join} from 'path';
+-import {overrideEditorText} from '../utils';
+-import { createTimelineWithAbsoluteTimes, cutTimelineFrom, runThroughTimeline, cutTimelineUntil, createRelativeTimeline } from '../editor/event_timeline';
++import { createFrame, applyFrame } from '../editor/frame';
++import deserializeEvents from '../editor/deserialize';
++import { Uri, window } from 'vscode';
++import { join } from 'path';
++import { overrideEditorText } from '../utils';
++import {
++  createTimelineWithAbsoluteTimes,
++  cutTimelineFrom,
++  runThroughTimeline,
++  cutTimelineUntil,
++  createRelativeTimeline,
++} from '../editor/event_timeline';
+ import deserializeFrame from '../editor/frame/deserialize_frame';
+ import { getInitialFilePathAndContentFromFrame } from '../editor/frame/create_frame';
+ export default class CodeEditorPlayer {
+-    currentActionTimer: any;
+-    events: Array<CodioEvent>;
+-    initialFrame: Array<CodioFile>;
+-    workspaceFolder: string;
++  currentActionTimer: any;
++  events: Array<CodioEvent>;
++  initialFrame: Array<CodioFile>;
++  workspaceFolder: string;
+ 
+-    constructor(workspacePath, timeline) {
+-        this.events = deserializeEvents(timeline.events, workspacePath);
+-        this.initialFrame = deserializeFrame(timeline.initialFrame, workspacePath);
+-    }
++  constructor(workspacePath, timeline) {
++    this.events = deserializeEvents(timeline.events, workspacePath);
++    this.initialFrame = deserializeFrame(timeline.initialFrame, workspacePath);
++  }
+ 
+-    play(events: Array<CodioEvent>, time) {
+-        const timeline = createTimelineWithAbsoluteTimes(events, time);
+-        runThroughTimeline(timeline, (timer) => this.currentActionTimer = timer);
+-    }
++  play(events: Array<CodioEvent>, time) {
++    const timeline = createTimelineWithAbsoluteTimes(events, time);
++    runThroughTimeline(timeline, (timer) => (this.currentActionTimer = timer));
++  }
+ 
+-    //todo: moveToFrame should use create+applyFrame when time is 0
+-    async moveToFrame(time: number) {
+-        if (time === 0) {
+-            const {uri, content} = getInitialFilePathAndContentFromFrame(this.initialFrame);
+-            await window.showTextDocument(uri);
+-            await overrideEditorText(window.activeTextEditor, content);
+-        }  else {
+-            const initialToCurrentFrameActions = cutTimelineUntil(this.events, time);
+-            // const interacterContent = getInteracterContent(this.tutorial);
+-            const frame  = createFrame(this.initialFrame, initialToCurrentFrameActions);
+-            // const finalFrame = addInteracterContentToFrame(frame, interacterContent);
+-            await applyFrame(frame);
+-        }
++  //todo: moveToFrame should use create+applyFrame when time is 0
++  async moveToFrame(time: number) {
++    if (time === 0) {
++      const { uri, content } = getInitialFilePathAndContentFromFrame(this.initialFrame);
++      await window.showTextDocument(uri);
++      await overrideEditorText(window.activeTextEditor, content);
++    } else {
++      const initialToCurrentFrameActions = cutTimelineUntil(this.events, time);
++      // const interacterContent = getInteracterContent(this.tutorial);
++      const frame = createFrame(this.initialFrame, initialToCurrentFrameActions);
++      // const finalFrame = addInteracterContentToFrame(frame, interacterContent);
++      await applyFrame(frame);
+     }
++  }
+ 
+-    getTimeline(relativeTimeToStart: number) {
+-        const timelineFromTime = cutTimelineFrom(this.events, relativeTimeToStart);
+-        return createRelativeTimeline(timelineFromTime, relativeTimeToStart);
+-    }
++  getTimeline(relativeTimeToStart: number) {
++    const timelineFromTime = cutTimelineFrom(this.events, relativeTimeToStart);
++    return createRelativeTimeline(timelineFromTime, relativeTimeToStart);
++  }
+ 
+-    pause() {
+-        clearTimeout(this.currentActionTimer);
+-        removeSelection();
+-    }
+-}
+\ No newline at end of file
++  pause() {
++    clearTimeout(this.currentActionTimer);
++    removeSelection();
++  }
++}
+diff --git a/vscode/src/player/InteracterContentHandler.ts b/vscode/src/player/InteracterContentHandler.ts
+index d0d9455..bc7647c 100644
+--- a/vscode/src/player/InteracterContentHandler.ts
++++ b/vscode/src/player/InteracterContentHandler.ts
+@@ -1,25 +1,24 @@
+ const guessRegex = new RegExp(/(\/\/\s*your guess:?)(.*)/gi);
+-const codeGoesHereRegex = new RegExp(/(\/\/\s*your code goes here:?)([\s\S]*)(\/\/\s*end)/gi)
+-
++const codeGoesHereRegex = new RegExp(/(\/\/\s*your code goes here:?)([\s\S]*)(\/\/\s*end)/gi);
+ 
+ export function getInteracterContent(text) {
+-    const guessMatches = [];
+-    const codeGoesHereMatches = [];
+-    text.replace(guessRegex, (_, p1, p2) => guessMatches.push({p1, p2}));
+-    text.replace(codeGoesHereRegex, (_, p1, p2, p3) => codeGoesHereMatches.push({p1, p2, p3}));
+-    console.log("interacter content:", {guessMatches, codeGoesHereMatches});
+-    return {guessMatches, codeGoesHereMatches};
++  const guessMatches = [];
++  const codeGoesHereMatches = [];
++  text.replace(guessRegex, (_, p1, p2) => guessMatches.push({ p1, p2 }));
++  text.replace(codeGoesHereRegex, (_, p1, p2, p3) => codeGoesHereMatches.push({ p1, p2, p3 }));
++  console.log('interacter content:', { guessMatches, codeGoesHereMatches });
++  return { guessMatches, codeGoesHereMatches };
+ }
+ 
+-export function addInteracterContentToFrame(frame, {guessMatches, codeGoesHereMatches}) {
+-    const frameWithInteracterGuess = frame.replace(guessRegex, (m, p) => {
+-        const {p1, p2} = guessMatches.shift();
+-        return `${p1}${p2}`;
+-      })
++export function addInteracterContentToFrame(frame, { guessMatches, codeGoesHereMatches }) {
++  const frameWithInteracterGuess = frame.replace(guessRegex, (m, p) => {
++    const { p1, p2 } = guessMatches.shift();
++    return `${p1}${p2}`;
++  });
+ 
+-    const frameWithInteracterCode = frameWithInteracterGuess.replace(codeGoesHereRegex, (m, p) => {
+-        const {p1, p2, p3} = codeGoesHereMatches.shift();
+-        return `${p1}${p2}${p3}`;
+-    })
+-    return frameWithInteracterCode;
+-}
+\ No newline at end of file
++  const frameWithInteracterCode = frameWithInteracterGuess.replace(codeGoesHereRegex, (m, p) => {
++    const { p1, p2, p3 } = codeGoesHereMatches.shift();
++    return `${p1}${p2}${p3}`;
++  });
++  return frameWithInteracterCode;
++}
+diff --git a/vscode/src/player/Player.ts b/vscode/src/player/Player.ts
+index 348fc44..16c9bc0 100644
+--- a/vscode/src/player/Player.ts
++++ b/vscode/src/player/Player.ts
+@@ -5,123 +5,125 @@ import { commands } from 'vscode';
+ import AudioHandler from '../audio/Audio';
+ 
+ export default class Player {
+-    isPlaying: boolean = false;
+-    codioPath: string;
+-
+-    codioLength: number;
+-    codioStartTime: number;
+-    relativeActiveTime: number = 0;
+-    lastStoppedTime: number = 0;
+-
+-    codeEditorPlayer: CodeEditorPlayer;
+-    audioPlayer: AudioHandler;
+-    timer: Timer;
+-
+-    closeCodioResolver: any;
+-    process: any;
+-
+-    async loadCodio(codioPath, workspaceToPlayOn?: string) {
+-        try {
+-            this.setInitialState();
+-            this.codioPath = codioPath;
+-            const timeline = await FSManager.loadTimeline(this.codioPath);
+-            this.codioLength = timeline.codioLength;
+-            this.codeEditorPlayer = new CodeEditorPlayer(workspaceToPlayOn ? workspaceToPlayOn : FSManager.workspacePath(this.codioPath), timeline);
+-            this.audioPlayer = new AudioHandler(FSManager.audioPath(this.codioPath));
+-            this.timer = new Timer(this.codioLength);
+-            this.timer.onFinish(() => this.pause());
+-        } catch (e) {
+-            console.log('loadCodio failed', e);
+-        }
++  isPlaying = false;
++  codioPath: string;
++
++  codioLength: number;
++  codioStartTime: number;
++  relativeActiveTime = 0;
++  lastStoppedTime = 0;
++
++  codeEditorPlayer: CodeEditorPlayer;
++  audioPlayer: AudioHandler;
++  timer: Timer;
++
++  closeCodioResolver: any;
++  process: any;
++
++  async loadCodio(codioPath, workspaceToPlayOn?: string) {
++    try {
++      this.setInitialState();
++      this.codioPath = codioPath;
++      const timeline = await FSManager.loadTimeline(this.codioPath);
++      this.codioLength = timeline.codioLength;
++      this.codeEditorPlayer = new CodeEditorPlayer(
++        workspaceToPlayOn ? workspaceToPlayOn : FSManager.workspacePath(this.codioPath),
++        timeline,
++      );
++      this.audioPlayer = new AudioHandler(FSManager.audioPath(this.codioPath));
++      this.timer = new Timer(this.codioLength);
++      this.timer.onFinish(() => this.pause());
++    } catch (e) {
++      console.log('loadCodio failed', e);
+     }
+-
+-    setInitialState() {
+-        this.relativeActiveTime = 0;
+-        this.lastStoppedTime = 0;
+-        this.codioStartTime = undefined;
+-        this.codioLength = undefined;
+-        this.closeCodioResolver = undefined;
+-        this.process = undefined;
++  }
++
++  setInitialState() {
++    this.relativeActiveTime = 0;
++    this.lastStoppedTime = 0;
++    this.codioStartTime = undefined;
++    this.codioLength = undefined;
++    this.closeCodioResolver = undefined;
++    this.process = undefined;
++  }
++
++  async startCodio() {
++    try {
++      this.process = new Promise((resolve) => (this.closeCodioResolver = resolve));
++      await this.codeEditorPlayer.moveToFrame(0);
++      this.play(this.codeEditorPlayer.events, this.relativeActiveTime);
++      commands.executeCommand('setContext', 'inCodioSession', true);
++    } catch (e) {
++      console.log('startCodio failed', e);
+     }
+-
+-    async startCodio() {
+-        try {
+-            this.process = new Promise((resolve) => this.closeCodioResolver = resolve);
+-            await this.codeEditorPlayer.moveToFrame(0);
+-            this.play(this.codeEditorPlayer.events, this.relativeActiveTime);
+-            commands.executeCommand('setContext', 'inCodioSession', true);
+-        } catch(e) {
+-            console.log('startCodio failed', e);
+-        }
++  }
++
++  play(actions: Array<any>, timeToStart: number) {
++    this.codioStartTime = Date.now();
++    this.codeEditorPlayer.play(actions, this.codioStartTime);
++    this.audioPlayer.play(timeToStart);
++    this.timer.run(timeToStart);
++    this.isPlaying = true;
++  }
++
++  pause() {
++    this.lastStoppedTime = Date.now();
++    this.codeEditorPlayer.pause();
++    this.audioPlayer.pause();
++    this.timer.stop();
++    this.relativeActiveTime = this.relativeActiveTime + (this.lastStoppedTime - this.codioStartTime);
++    this.isPlaying = false;
++  }
++
++  resume() {
++    this.playFrom(this.relativeActiveTime);
++  }
++
++  //@TODO: should closeCodio just call pause? sometime it is called with pause before and sometime it doesn't. Probably a mistake
++  closeCodio() {
++    this.timer.stop();
++    this.audioPlayer.pause();
++    this.closeCodioResolver();
++    commands.executeCommand('setContext', 'inCodioSession', false);
++  }
++
++  onTimerUpdate(observer) {
++    this.timer.onUpdate(observer);
++  }
++
++  rewind(s) {
++    if (this.isPlaying) {
++      this.pause();
+     }
++    let timeToRewind = this.relativeActiveTime - s * 1000;
++    if (timeToRewind < 0) {
++      timeToRewind = 0;
++    }
++    this.playFrom(timeToRewind);
++  }
+ 
+-    play(actions: Array<any>, timeToStart: number) {
+-        this.codioStartTime = Date.now();
+-        this.codeEditorPlayer.play(actions, this.codioStartTime);
+-        this.audioPlayer.play(timeToStart);
+-        this.timer.run(timeToStart);
+-        this.isPlaying = true;
++  forward(s) {
++    //@TODO: Handle case when Codio is less then 10 seconds before the end.
++    if (this.isPlaying) {
++      this.pause();
+     }
++    this.playFrom(this.relativeActiveTime + s * 1000);
++  }
+ 
+-    pause() {
+-        this.lastStoppedTime = Date.now();
++  async playFrom(relativeTimeToStart: number) {
++    try {
++      if (this.isPlaying) {
+         this.codeEditorPlayer.pause();
+         this.audioPlayer.pause();
+         this.timer.stop();
+-        this.relativeActiveTime = this.relativeActiveTime + (this.lastStoppedTime - this.codioStartTime);
+-        this.isPlaying = false;
+-    }
+-
+-    resume() {
+-        this.playFrom(this.relativeActiveTime);
+-    }
+-
+-    //@TODO: should closeCodio just call pause? sometime it is called with pause before and sometime it doesn't. Probably a mistake
+-    closeCodio() {
+-        this.timer.stop();
+-        this.audioPlayer.pause();
+-        this.closeCodioResolver();
+-        commands.executeCommand('setContext', 'inCodioSession', false);
+-    }
+-
+-    onTimerUpdate(observer) {
+-        this.timer.onUpdate(observer);
+-    }
+-
+-    rewind(s) {
+-        if (this.isPlaying) {
+-            this.pause();
+-        }
+-        let timeToRewind = this.relativeActiveTime - (s * 1000);
+-        if (timeToRewind < 0) {
+-            timeToRewind = 0;
+-        }
+-        this.playFrom(timeToRewind);
+-    }
+-
+-    forward(s) {
+-        //@TODO: Handle case when Codio is less then 10 seconds before the end.
+-        if (this.isPlaying) {
+-            this.pause();
+-        }
+-        this.playFrom(this.relativeActiveTime + (s * 1000));
+-    }
+-
+-    async playFrom(relativeTimeToStart: number) {
+-        try {
+-            if (this.isPlaying) {
+-                this.codeEditorPlayer.pause();
+-                this.audioPlayer.pause();
+-                this.timer.stop();
+-            }
+-            await this.codeEditorPlayer.moveToFrame(relativeTimeToStart);
+-            this.relativeActiveTime = relativeTimeToStart;
+-            const relevantRelativeActions = this.codeEditorPlayer.getTimeline(relativeTimeToStart);
+-            const timeToStartInSeconds = relativeTimeToStart / 1000;
+-            this.play(relevantRelativeActions, timeToStartInSeconds);
+-        } catch(e) {
+-            console.log('play from fail', e);
+-        }
++      }
++      await this.codeEditorPlayer.moveToFrame(relativeTimeToStart);
++      this.relativeActiveTime = relativeTimeToStart;
++      const relevantRelativeActions = this.codeEditorPlayer.getTimeline(relativeTimeToStart);
++      const timeToStartInSeconds = relativeTimeToStart / 1000;
++      this.play(relevantRelativeActions, timeToStartInSeconds);
++    } catch (e) {
++      console.log('play from fail', e);
+     }
++  }
+ }
+-
+diff --git a/vscode/src/recorder/Editor.ts b/vscode/src/recorder/Editor.ts
+index 41b982f..fb0878d 100644
+--- a/vscode/src/recorder/Editor.ts
++++ b/vscode/src/recorder/Editor.ts
+@@ -1,120 +1,138 @@
+-import { workspace, window, TextEditor, TextDocumentChangeEvent, TextEditorSelectionChangeEvent, Disposable, TextEditorVisibleRangesChangeEvent, Uri} from 'vscode';
++import {
++  workspace,
++  window,
++  TextEditor,
++  TextDocumentChangeEvent,
++  TextEditorSelectionChangeEvent,
++  Disposable,
++  TextEditorVisibleRangesChangeEvent,
++  Uri,
++} from 'vscode';
+ import serializeEvents from '../editor/serialize';
+ import * as eventCreators from '../editor/event_creator';
+ import FSManager from '../filesystem/FSManager';
+-import {exec} from "child_process";
++import { exec } from 'child_process';
+ import { createRelativeTimeline } from '../editor/event_timeline';
+ import ShadowDocument from '../editor/frame/ShadowDocument';
+ import serializeFrame from '../editor/frame/serialize_frame';
+ 
+ export default class CodeEditorRecorder {
+-    onDocumentTextChangedListener: Disposable;
+-    onDidChangeActiveTextEditorListener: Disposable;
+-    onDidChangeTextEditorSelectionListener: Disposable;
+-    onDidChangeTextEditorVisibleRangesListener: Disposable;
++  onDocumentTextChangedListener: Disposable;
++  onDidChangeActiveTextEditorListener: Disposable;
++  onDidChangeTextEditorSelectionListener: Disposable;
++  onDidChangeTextEditorVisibleRangesListener: Disposable;
+ 
+-    initialFrame: Array<CodioFile> = [];
+-    codioEditors: Array<any>;
+-    records: Array<any> = [];
++  initialFrame: Array<CodioFile> = [];
++  codioEditors: Array<any>;
++  records: Array<any> = [];
+ 
+-    record() {
+-        const editor = window.activeTextEditor;
+-        if (editor) {
+-            this.addCodioFileToInitialFrame(new ShadowDocument(editor.document.getText()), 1, editor.document.uri, 0);
+-            this.codioEditors = [editor.document.uri.path];
+-            this.onDidChangeActiveTextEditorListener = window.onDidChangeActiveTextEditor(this.onDidChangeActiveTextEditor);
+-            this.onDidChangeTextEditorSelectionListener = window.onDidChangeTextEditorSelection(this.onDidChangeTextEditorSelection);
+-            this.onDocumentTextChangedListener = workspace.onDidChangeTextDocument(this.onDocumentTextChanged);
+-            this.onDidChangeTextEditorVisibleRangesListener = window.onDidChangeTextEditorVisibleRanges(this.onDidChangeTextEditorVisibleRanges);
+-        } else {
+-            //@TODO: Handle codio that is recorded without an editor open initialy.
+-        }
++  record() {
++    const editor = window.activeTextEditor;
++    if (editor) {
++      this.addCodioFileToInitialFrame(new ShadowDocument(editor.document.getText()), 1, editor.document.uri, 0);
++      this.codioEditors = [editor.document.uri.path];
++      this.onDidChangeActiveTextEditorListener = window.onDidChangeActiveTextEditor(this.onDidChangeActiveTextEditor);
++      this.onDidChangeTextEditorSelectionListener = window.onDidChangeTextEditorSelection(
++        this.onDidChangeTextEditorSelection,
++      );
++      this.onDocumentTextChangedListener = workspace.onDidChangeTextDocument(this.onDocumentTextChanged);
++      this.onDidChangeTextEditorVisibleRangesListener = window.onDidChangeTextEditorVisibleRanges(
++        this.onDidChangeTextEditorVisibleRanges,
++      );
++    } else {
++      //@TODO: Handle codio that is recorded without an editor open initialy.
+     }
++  }
+ 
+-    addCodioFileToInitialFrame(document: ShadowDocument, column: number, uri: Uri, lastAction: number) {
+-        this.initialFrame.push({
+-            document,
+-            column,
+-            uri,
+-            lastAction,
+-        });
+-    }
++  addCodioFileToInitialFrame(document: ShadowDocument, column: number, uri: Uri, lastAction: number) {
++    this.initialFrame.push({
++      document,
++      column,
++      uri,
++      lastAction,
++    });
++  }
+ 
+-    stopRecording() {
+-        this.onDidChangeActiveTextEditorListener.dispose();
+-        this.onDidChangeTextEditorSelectionListener.dispose();
+-        this.onDocumentTextChangedListener.dispose();
+-    }
++  stopRecording() {
++    this.onDidChangeActiveTextEditorListener.dispose();
++    this.onDidChangeTextEditorSelectionListener.dispose();
++    this.onDocumentTextChangedListener.dispose();
++  }
+ 
+-    getTimelineContent(recordingStartTime, workspaceRoot?: Uri) {
+-        const {files, rootPath} = FSManager.normalizeFilesPath(this.codioEditors, workspaceRoot);
+-        const events = serializeEvents(this.records, rootPath);
+-        const initialFrame = serializeFrame(this.initialFrame, rootPath);
+-        const eventsTimeline = createRelativeTimeline(events, recordingStartTime);
+-        // change ctions to events, change codioEditors initialFilePath and initialContent to initialFrame.
+-        return {events: eventsTimeline, initialFrame, codioEditors: files};
+-    }
++  getTimelineContent(recordingStartTime, workspaceRoot?: Uri) {
++    const { files, rootPath } = FSManager.normalizeFilesPath(this.codioEditors, workspaceRoot);
++    const events = serializeEvents(this.records, rootPath);
++    const initialFrame = serializeFrame(this.initialFrame, rootPath);
++    const eventsTimeline = createRelativeTimeline(events, recordingStartTime);
++    // change ctions to events, change codioEditors initialFilePath and initialContent to initialFrame.
++    return { events: eventsTimeline, initialFrame, codioEditors: files };
++  }
+ 
+-    onDocumentTextChanged = (e: TextDocumentChangeEvent) => {
+-        const record = eventCreators.createCodioTextEvent(e);
+-        if (record) {
+-            this.records.push(record);
+-        }
++  onDocumentTextChanged = (e: TextDocumentChangeEvent) => {
++    const record = eventCreators.createCodioTextEvent(e);
++    if (record) {
++      this.records.push(record);
+     }
++  };
+ 
+-    onDidChangeActiveTextEditor = (e: TextEditor) => {
+-        try {
+-            const editorPath = e.document.uri.path;
+-            const editorContent = e.document.getText();
+-            if (this.codioEditors.indexOf(editorPath) === -1) {
+-                this.codioEditors.push(editorPath);
+-                const record = eventCreators.createCodioEditorEvent(e, editorContent, true);
+-                this.records.push(record);
+-                this.addCodioFileToInitialFrame(new ShadowDocument(record.data.content), record.data.viewColumn, record.data.uri, 1);
+-            } else {
+-                const record = eventCreators.createCodioEditorEvent(e, editorContent, false);
+-                this.records.push(record);
+-            }
+-        } catch(e) {
+-            console.log('onDidChangeActiveTextEditor fail', e);
+-        }
++  onDidChangeActiveTextEditor = (e: TextEditor) => {
++    try {
++      const editorPath = e.document.uri.path;
++      const editorContent = e.document.getText();
++      if (this.codioEditors.indexOf(editorPath) === -1) {
++        this.codioEditors.push(editorPath);
++        const record = eventCreators.createCodioEditorEvent(e, editorContent, true);
++        this.records.push(record);
++        this.addCodioFileToInitialFrame(
++          new ShadowDocument(record.data.content),
++          record.data.viewColumn,
++          record.data.uri,
++          1,
++        );
++      } else {
++        const record = eventCreators.createCodioEditorEvent(e, editorContent, false);
++        this.records.push(record);
++      }
++    } catch (e) {
++      console.log('onDidChangeActiveTextEditor fail', e);
+     }
++  };
+ 
+-    onDidChangeTextEditorVisibleRanges = (e: TextEditorVisibleRangesChangeEvent) => {
+-        const record = eventCreators.createCodioVisibleRangeEvent(e);
+-        if (record) {
+-            this.records.push(record);
+-        }
++  onDidChangeTextEditorVisibleRanges = (e: TextEditorVisibleRangesChangeEvent) => {
++    const record = eventCreators.createCodioVisibleRangeEvent(e);
++    if (record) {
++      this.records.push(record);
+     }
++  };
+ 
+-    onDidChangeTextEditorSelection = (e: TextEditorSelectionChangeEvent) => {
+-        const record = eventCreators.createCodioSelectionEvent(e);
+-        if (record) {
+-            this.records.push(record);
+-        }
++  onDidChangeTextEditorSelection = (e: TextEditorSelectionChangeEvent) => {
++    const record = eventCreators.createCodioSelectionEvent(e);
++    if (record) {
++      this.records.push(record);
+     }
++  };
+ 
+-    executeFile = () => {
+-        const document = window.activeTextEditor.document;
+-        const outputChannel = window.createOutputChannel('codio');
+-        let output = "";
+-        const uri = document.uri;
+-        document.save().then(() => {
+-            outputChannel.show(true);
+-            exec(`node ${uri.fsPath}`, (err, stdout, stderr) => {
+-                if (stderr) {
+-                    output = stderr;
+-                    outputChannel.append(stderr);
+-                }
+-                if (stdout) {
+-                    outputChannel.append(stdout);
+-                    output = stdout;
+-                }
+-                if (output) {
+-                    const record = eventCreators.createCodioExecutionEvent(output);
+-                    this.records.push(record);
+-                }
+-            });
+-        });
+-    }
+-}
+\ No newline at end of file
++  executeFile = () => {
++    const document = window.activeTextEditor.document;
++    const outputChannel = window.createOutputChannel('codio');
++    let output = '';
++    const uri = document.uri;
++    document.save().then(() => {
++      outputChannel.show(true);
++      exec(`node ${uri.fsPath}`, (err, stdout, stderr) => {
++        if (stderr) {
++          output = stderr;
++          outputChannel.append(stderr);
++        }
++        if (stdout) {
++          outputChannel.append(stdout);
++          output = stdout;
++        }
++        if (output) {
++          const record = eventCreators.createCodioExecutionEvent(output);
++          this.records.push(record);
++        }
++      });
++    });
++  };
++}
+diff --git a/vscode/src/recorder/Recorder.ts b/vscode/src/recorder/Recorder.ts
+index f2aa17f..c369810 100644
+--- a/vscode/src/recorder/Recorder.ts
++++ b/vscode/src/recorder/Recorder.ts
+@@ -6,88 +6,96 @@ import AudioHandler from '../audio/Audio';
+ 
+ const CODIO_FORMAT_VERSION = '0.1.0';
+ export default class Recorder {
+-    audioRecorder: AudioHandler;
+-    codeEditorRecorder: CodeEditorRecorder;
+-    timer: Timer;
+-    codioPath: string;
+-    destinationFolder?: Uri;
+-    workspaceRoot?: Uri;
+-    codioName: string;
++  audioRecorder: AudioHandler;
++  codeEditorRecorder: CodeEditorRecorder;
++  timer: Timer;
++  codioPath: string;
++  destinationFolder?: Uri;
++  workspaceRoot?: Uri;
++  codioName: string;
+ 
+-    recordingStartTime: number;
+-    recordingLength: number = 0;
+-    isRecording: boolean = false;
++  recordingStartTime: number;
++  recordingLength = 0;
++  isRecording = false;
+ 
+-    recordingSavedObservers: Array<Function> = [];
+-    process: any;
+-    stopRecordingResolver: Function;
++  recordingSavedObservers: Array<Function> = [];
++  process: any;
++  stopRecordingResolver: Function;
+ 
+-
+-    async loadCodio(codioPath: string, codioName: string, destinationFolder?: Uri, workspaceRoot?: Uri) {
+-        if (this.isRecording) {
+-            await this.stopRecording();
+-            this.saveRecording();
+-        }
+-        this.setInitialState(codioPath, codioName, destinationFolder, workspaceRoot);
++  async loadCodio(codioPath: string, codioName: string, destinationFolder?: Uri, workspaceRoot?: Uri) {
++    if (this.isRecording) {
++      await this.stopRecording();
++      this.saveRecording();
+     }
++    this.setInitialState(codioPath, codioName, destinationFolder, workspaceRoot);
++  }
+ 
+-    setInitialState = (codioPath, codioName, destinationFolder, workspaceRoot) => {
+-        this.codioPath = codioPath;
+-        this.codioName = codioName;
+-        this.destinationFolder = destinationFolder;
+-        this.workspaceRoot = workspaceRoot;
+-        this.audioRecorder = new AudioHandler(FSManager.audioPath(this.codioPath));
+-        this.codeEditorRecorder = new CodeEditorRecorder();
+-        this.timer = new Timer();
+-        this.process = undefined;
+-        this.recordingSavedObservers = [];
+-    }
++  setInitialState = (codioPath, codioName, destinationFolder, workspaceRoot) => {
++    this.codioPath = codioPath;
++    this.codioName = codioName;
++    this.destinationFolder = destinationFolder;
++    this.workspaceRoot = workspaceRoot;
++    this.audioRecorder = new AudioHandler(FSManager.audioPath(this.codioPath));
++    this.codeEditorRecorder = new CodeEditorRecorder();
++    this.timer = new Timer();
++    this.process = undefined;
++    this.recordingSavedObservers = [];
++  };
+ 
+-    executeFile() {
+-        this.codeEditorRecorder.executeFile();
+-    }
++  executeFile() {
++    this.codeEditorRecorder.executeFile();
++  }
+ 
+-    onTimerUpdate(observer) {
+-        this.timer.onUpdate(observer);
+-    }
++  onTimerUpdate(observer) {
++    this.timer.onUpdate(observer);
++  }
+ 
+-    onRecordingSaved(observer) {
+-        this.recordingSavedObservers.push(observer);
+-    }
++  onRecordingSaved(observer) {
++    this.recordingSavedObservers.push(observer);
++  }
+ 
+-    startRecording() {
+-        this.isRecording = true;
+-        this.codeEditorRecorder.record();
+-        this.audioRecorder.record();
+-        this.timer.run();
+-        this.process = new Promise((resolve) => this.stopRecordingResolver = resolve);
+-        this.recordingStartTime = Date.now() + 300;
+-        commands.executeCommand('setContext', 'inCodioRecording', true);
+-    }
++  startRecording() {
++    this.isRecording = true;
++    this.codeEditorRecorder.record();
++    this.audioRecorder.record();
++    this.timer.run();
++    this.process = new Promise((resolve) => (this.stopRecordingResolver = resolve));
++    this.recordingStartTime = Date.now() + 300;
++    commands.executeCommand('setContext', 'inCodioRecording', true);
++  }
+ 
+-    async setRecordingDevice() : Promise<boolean> {
+-        return this.audioRecorder.setDevice();
+-    }
++  async setRecordingDevice(): Promise<boolean> {
++    return this.audioRecorder.setDevice();
++  }
+ 
+-    async stopRecording() {
+-        await this.audioRecorder.stopRecording();
+-        this.codeEditorRecorder.stopRecording();
+-        this.timer.stop();
+-        this.recordingLength = Date.now() - this.recordingStartTime;
+-        this.stopRecordingResolver();
+-        this.isRecording = false;
+-        commands.executeCommand('setContext', 'inCodioRecording', false);
+-    }
++  async stopRecording() {
++    await this.audioRecorder.stopRecording();
++    this.codeEditorRecorder.stopRecording();
++    this.timer.stop();
++    this.recordingLength = Date.now() - this.recordingStartTime;
++    this.stopRecordingResolver();
++    this.isRecording = false;
++    commands.executeCommand('setContext', 'inCodioRecording', false);
++  }
+ 
+-    async saveRecording() {
+-        try {
+-            const codioTimelineContent = this.codeEditorRecorder.getTimelineContent(this.recordingStartTime, this.workspaceRoot);
+-            const codioJsonContent = {...codioTimelineContent, codioLength: this.recordingLength };
+-            const metadataJsonContent = {length: this.recordingLength, name: this.codioName, version: CODIO_FORMAT_VERSION};
+-            await FSManager.saveRecordingToFile(codioJsonContent, metadataJsonContent, codioJsonContent.codioEditors,  this.codioPath, this.destinationFolder);
+-            this.recordingSavedObservers.forEach(obs => obs());
+-        } catch(e) {
+-            console.log('Saving recording failed', e);
+-        }
++  async saveRecording() {
++    try {
++      const codioTimelineContent = this.codeEditorRecorder.getTimelineContent(
++        this.recordingStartTime,
++        this.workspaceRoot,
++      );
++      const codioJsonContent = { ...codioTimelineContent, codioLength: this.recordingLength };
++      const metadataJsonContent = { length: this.recordingLength, name: this.codioName, version: CODIO_FORMAT_VERSION };
++      await FSManager.saveRecordingToFile(
++        codioJsonContent,
++        metadataJsonContent,
++        codioJsonContent.codioEditors,
++        this.codioPath,
++        this.destinationFolder,
++      );
++      this.recordingSavedObservers.forEach((obs) => obs());
++    } catch (e) {
++      console.log('Saving recording failed', e);
+     }
+-}
+\ No newline at end of file
++  }
++}
+diff --git a/vscode/src/sdk.ts b/vscode/src/sdk.ts
+index b84c42d..1b5a740 100644
+--- a/vscode/src/sdk.ts
++++ b/vscode/src/sdk.ts
+@@ -1,39 +1,20 @@
+-import * as codioCommands from "./commands/index";
+-import Player from "./player/Player";
+-import Recorder from "./recorder/Recorder";
+-import FSManager from "./filesystem/FSManager";
+-import { Uri } from "vscode";
++import * as codioCommands from './commands/index';
++import Player from './player/Player';
++import Recorder from './recorder/Recorder';
++import FSManager from './filesystem/FSManager';
++import { Uri } from 'vscode';
+ 
+-export function createSdk(
+-  player: Player,
+-  recorder: Recorder,
+-  fsManager: FSManager
+-) {
+-  const recordCodio = (
+-    destination: Uri,
+-    workspaceRoot?: Uri,
+-    getCodioName?: () => Promise<string>
+-  ) => {
++export function createSdk(player: Player, recorder: Recorder, fsManager: FSManager) {
++  const recordCodio = (destination: Uri, workspaceRoot?: Uri, getCodioName?: () => Promise<string>) => {
+     if (!destination) {
+-      throw new Error(
+-        "recordCodio: destination is required when using codio is a package."
+-      );
++      throw new Error('recordCodio: destination is required when using codio is a package.');
+     }
+-    codioCommands.recordCodio(
+-      fsManager,
+-      player,
+-      recorder,
+-      destination,
+-      workspaceRoot,
+-      getCodioName
+-    );
++    codioCommands.recordCodio(fsManager, player, recorder, destination, workspaceRoot, getCodioName);
+   };
+ 
+   const playCodio = (source: Uri, workspaceUri?: Uri) => {
+     if (!source) {
+-      throw new Error(
+-        "playCodio: source is required when using codio is a package."
+-      );
++      throw new Error('playCodio: source is required when using codio is a package.');
+     }
+     codioCommands.playCodio(fsManager, player, recorder, source, workspaceUri);
+   };
+diff --git a/vscode/src/test/extension.test.ts b/vscode/src/test/extension.test.ts
+index a7a297f..11e1bfe 100644
+--- a/vscode/src/test/extension.test.ts
++++ b/vscode/src/test/extension.test.ts
+@@ -12,11 +12,10 @@ import * as assert from 'assert';
+ // import * as myExtension from '../extension';
+ 
+ // Defines a Mocha test suite to group tests of similar kind together
+-suite("Extension Tests", function () {
+-
+-    // Defines a Mocha unit test
+-    test("Something 1", function() {
+-        assert.equal(-1, [1, 2, 3].indexOf(5));
+-        assert.equal(-1, [1, 2, 3].indexOf(0));
+-    });
+-});
+\ No newline at end of file
++suite('Extension Tests', function () {
++  // Defines a Mocha unit test
++  test('Something 1', function () {
++    assert.equal(-1, [1, 2, 3].indexOf(5));
++    assert.equal(-1, [1, 2, 3].indexOf(0));
++  });
++});
+diff --git a/vscode/src/test/index.ts b/vscode/src/test/index.ts
+index 9fa2ea0..895f8a1 100644
+--- a/vscode/src/test/index.ts
++++ b/vscode/src/test/index.ts
+@@ -15,8 +15,8 @@ import * as testRunner from 'vscode/lib/testrunner';
+ // You can directly control Mocha options by uncommenting the following lines
+ // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
+ testRunner.configure({
+-    ui: 'tdd', 		// the TDD UI is being used in extension.test.ts (suite, test, etc.)
+-    useColors: true // colored output from test results
++  ui: 'tdd', // the TDD UI is being used in extension.test.ts (suite, test, etc.)
++  useColors: true, // colored output from test results
+ });
+ 
+-module.exports = testRunner;
+\ No newline at end of file
++module.exports = testRunner;
+diff --git a/vscode/src/types/module.d.ts b/vscode/src/types/module.d.ts
+index 8484105..b1ba7cd 100644
+--- a/vscode/src/types/module.d.ts
++++ b/vscode/src/types/module.d.ts
+@@ -7,14 +7,14 @@ declare interface CodioEvent {
+ }
+ 
+ declare interface CodioSerializedEvent {
+-    type: string,
+-    data: {
+-        path?: string | undefined,
+-        time: numbebr
+-    }
++  type: string;
++  data: {
++    path?: string | undefined;
++    time: numbebr;
++  };
+ }
+ declare interface CodioTextEvent extends CodioEvent {
+-  type: "text";
++  type: 'text';
+   data: {
+     uri: Uri;
+     changes: TextDocumentContentChangeEvent[];
+@@ -23,33 +23,33 @@ declare interface CodioTextEvent extends CodioEvent {
+ }
+ 
+ declare interface CodioSerializedTextEvent extends CodioSerializedEvent {
+-    type: "text";
+-    data: {
+-      path: string;
+-      changes: TextDocumentContentChangeEvent[];
+-      time: number;
+-    };
+-  }
++  type: 'text';
++  data: {
++    path: string;
++    changes: TextDocumentContentChangeEvent[];
++    time: number;
++  };
++}
+ 
+ declare interface CodioVisibleRangeEvent extends CodioEvent {
+-    type: "visibleRange";
+-    data: {
+-      uri: Uri;
+-      time: number;
+-      visibleRange: Range;
+-    };
++  type: 'visibleRange';
++  data: {
++    uri: Uri;
++    time: number;
++    visibleRange: Range;
++  };
+ }
+ 
+ declare interface CodioSerializedVisibleRangeEvent extends CodioSerializedEvent {
+-    type: "visibleRange";
+-    data: {
+-      path: string;
+-      time: number;
+-      visibleRange: Range;
+-    };
++  type: 'visibleRange';
++  data: {
++    path: string;
++    time: number;
++    visibleRange: Range;
++  };
+ }
+ declare interface CodioSelectionEvent extends CodioEvent {
+-  type: "selection";
++  type: 'selection';
+   data: {
+     uri: Uri;
+     selections: Selection[];
+@@ -58,16 +58,16 @@ declare interface CodioSelectionEvent extends CodioEvent {
+ }
+ 
+ declare interface CodioSerializedSelectionEvent extends CodioSerializedEvent {
+-    type: "selection";
+-    data: {
+-      path: string;
+-      selections: Selection[];
+-      time: number;
+-    };
++  type: 'selection';
++  data: {
++    path: string;
++    selections: Selection[];
++    time: number;
++  };
+ }
+ 
+ declare interface CodioExecutionEvent extends CodioEvent {
+-  type: "exec";
++  type: 'exec';
+   data: {
+     executionOutput: string;
+     time: number;
+@@ -75,7 +75,7 @@ declare interface CodioExecutionEvent extends CodioEvent {
+ }
+ 
+ declare interface CodioSerializedExecutionEvent extends CodioSerializedEvent {
+-  type: "exec";
++  type: 'exec';
+   data: {
+     executionOutput: string;
+     time: number;
+@@ -83,7 +83,7 @@ declare interface CodioSerializedExecutionEvent extends CodioSerializedEvent {
+ }
+ 
+ declare interface CodioChangeActiveEditorEvent extends CodioEvent {
+-  type: "editor";
++  type: 'editor';
+   data: {
+     uri: Uri;
+     time: number;
+@@ -95,24 +95,26 @@ declare interface CodioChangeActiveEditorEvent extends CodioEvent {
+   };
+ }
+ 
+-declare interface CodioSerializedChangeActiveEditorEvent implements CodioSerializedEvent {
+-    type: "editor";
+-    data: {
+-      path: string;
+-      time: number;
+-      isInitial: boolean;
+-      content: string;
+-      viewColumn: ViewColumn;
+-      visibleRange: [{
+-          line: number
+-          character: number
+-        },
+-        {
+-          line: number
+-          character: number
+-      }]
+-      selections: Selection[];
+-    };
++declare interface CodioSerializedChangeActiveEditorEvent {
++  type: 'editor';
++  data: {
++    path: string;
++    time: number;
++    isInitial: boolean;
++    content: string;
++    viewColumn: ViewColumn;
++    visibleRange: [
++      {
++        line: number;
++        character: number;
++      },
++      {
++        line: number;
++        character: number;
++      },
++    ];
++    selections: Selection[];
++  };
+ }
+ 
+ declare interface CodioFile {
+@@ -129,4 +131,4 @@ declare interface CodioSerializedFile {
+   lastActionCount: number;
+ }
+ 
+-declare type CodioFrame = Array<CodioFile>
++declare type CodioFrame = Array<CodioFile>;
+diff --git a/vscode/src/user_interface/Viewers.ts b/vscode/src/user_interface/Viewers.ts
+index b460872..f687603 100644
+--- a/vscode/src/user_interface/Viewers.ts
++++ b/vscode/src/user_interface/Viewers.ts
+@@ -1,72 +1,82 @@
+ import * as vscode from 'vscode';
+ import FSManager from '../filesystem/FSManager';
+-import {PLAY_CODIO, RECORD_CODIO_AND_ADD_TO_PROJECT} from '../consts/command_names';
++import { PLAY_CODIO, RECORD_CODIO_AND_ADD_TO_PROJECT } from '../consts/command_names';
+ import { join } from 'path';
+ 
+ export async function registerTreeViews(fsManager: FSManager, extensionPath: string) {
+-    const codioTreeDataProvider = new CodiosDataProvider(fsManager, extensionPath);
+-    vscode.window.createTreeView("codioMessages", {treeDataProvider: codioTreeDataProvider});
+-    fsManager.onCodiosChanged(() => codioTreeDataProvider.refresh());
+-    vscode.workspace.onDidChangeWorkspaceFolders(() => codioTreeDataProvider.refresh());
++  const codioTreeDataProvider = new CodiosDataProvider(fsManager, extensionPath);
++  vscode.window.createTreeView('codioMessages', { treeDataProvider: codioTreeDataProvider });
++  fsManager.onCodiosChanged(() => codioTreeDataProvider.refresh());
++  vscode.workspace.onDidChangeWorkspaceFolders(() => codioTreeDataProvider.refresh());
+ }
+ 
+ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+-    codios: Array<any>;
+-    fsManager: FSManager;
+-    private extensionPath: string;
++  codios: Array<any>;
++  fsManager: FSManager;
++  private extensionPath: string;
+ 
+-    _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined> = new vscode.EventEmitter<vscode.TreeItem | undefined>();
+-    onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined> = this._onDidChangeTreeData.event;
++  _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined> = new vscode.EventEmitter<
++    vscode.TreeItem | undefined
++  >();
++  onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined> = this._onDidChangeTreeData.event;
+ 
+-    refresh(): void {
+-		this._onDidChangeTreeData.fire(undefined);
+-    }
++  refresh(): void {
++    this._onDidChangeTreeData.fire(undefined);
++  }
+ 
+-    constructor(fsManager, extensionPath) {
+-        this.fsManager = fsManager;
+-        this.extensionPath = extensionPath;
+-    }
++  constructor(fsManager, extensionPath) {
++    this.fsManager = fsManager;
++    this.extensionPath = extensionPath;
++  }
+ 
+-    getTreeItem(element) : vscode.TreeItem {
+-        return element;
+-    }
+-
+-    async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]>  {
+-        if (element) {
+-            return [element];
+-        } else {
+-           const allCodios = await this.fsManager.getAllCodiosMetadata();
+-           if (allCodios.length > 0) {
+-               return allCodios.map(codio => {
+-                   const codioItem = new vscode.TreeItem(codio.name);
+-                   codioItem.iconPath = {dark: join(this.extensionPath, "media/icon-small.svg"), light: join(this.extensionPath, "media/icon-small-light.svg")};
+-                   codioItem.command =  {command: PLAY_CODIO, title: "Play Codio", arguments: [codio.uri, codio.workspaceRoot]};
+-                   codioItem.contextValue = "codio";
+-                   return codioItem;
+-               });
+-           } else {
+-            const recordCodioItem = new vscode.TreeItem("Record Codio");
+-            recordCodioItem.iconPath = {dark: join(this.extensionPath, "media/microphone.svg"), light: join(this.extensionPath, "media/microphone-light.svg")};
+-            recordCodioItem.command =  {command: RECORD_CODIO_AND_ADD_TO_PROJECT, title: "Record Codio and Add to Project", arguments: []};
+-            recordCodioItem.contextValue = "codio";
+-            return [recordCodioItem];
+-           }
+-        }
++  getTreeItem(element): vscode.TreeItem {
++    return element;
++  }
+ 
++  async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
++    if (element) {
++      return [element];
++    } else {
++      const allCodios = await this.fsManager.getAllCodiosMetadata();
++      if (allCodios.length > 0) {
++        return allCodios.map((codio) => {
++          const codioItem = new vscode.TreeItem(codio.name);
++          codioItem.iconPath = {
++            dark: join(this.extensionPath, 'media/icon-small.svg'),
++            light: join(this.extensionPath, 'media/icon-small-light.svg'),
++          };
++          codioItem.command = { command: PLAY_CODIO, title: 'Play Codio', arguments: [codio.uri, codio.workspaceRoot] };
++          codioItem.contextValue = 'codio';
++          return codioItem;
++        });
++      } else {
++        const recordCodioItem = new vscode.TreeItem('Record Codio');
++        recordCodioItem.iconPath = {
++          dark: join(this.extensionPath, 'media/microphone.svg'),
++          light: join(this.extensionPath, 'media/microphone-light.svg'),
++        };
++        recordCodioItem.command = {
++          command: RECORD_CODIO_AND_ADD_TO_PROJECT,
++          title: 'Record Codio and Add to Project',
++          arguments: [],
++        };
++        recordCodioItem.contextValue = 'codio';
++        return [recordCodioItem];
++      }
+     }
++  }
+ }
+ 
+-
+ export const cursorStyle = vscode.window.createTextEditorDecorationType({
+-    backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
+-    borderColor: new vscode.ThemeColor('editorCursor.foreground'),
+-    dark: {
+-      color: 'rgb(81,80,82)',
+-    },
+-    light: {
+-      // used for light colored themes
+-      color: 'rgb(255, 255, 255)',
+-    },
+-    borderStyle: 'solid',
+-    borderWidth: '1px',
+-  });
++  backgroundColor: new vscode.ThemeColor('editorCursor.foreground'),
++  borderColor: new vscode.ThemeColor('editorCursor.foreground'),
++  dark: {
++    color: 'rgb(81,80,82)',
++  },
++  light: {
++    // used for light colored themes
++    color: 'rgb(255, 255, 255)',
++  },
++  borderStyle: 'solid',
++  borderWidth: '1px',
++});
+diff --git a/vscode/src/user_interface/messages.ts b/vscode/src/user_interface/messages.ts
+index cb5bb66..a94bf81 100644
+--- a/vscode/src/user_interface/messages.ts
++++ b/vscode/src/user_interface/messages.ts
+@@ -1,35 +1,32 @@
+-import { window, ProgressLocation } from "vscode";
+-import Player from "../player/Player";
+-import Recorder from "../recorder/Recorder";
+-import { finishRecording } from "../commands";
++import { window, ProgressLocation } from 'vscode';
++import Player from '../player/Player';
++import Recorder from '../recorder/Recorder';
++import { finishRecording } from '../commands';
+ 
+-export const showCodioNameInputBox = async () =>
+-  await window.showInputBox({ prompt: "Give your codio a name:" });
++export const showCodioNameInputBox = async () => await window.showInputBox({ prompt: 'Give your codio a name:' });
+ 
+ export const showPlayFromInputBox = async (player) =>
+   await window.showInputBox({
+-    prompt: `Choose when to start from in seconds. Full Length is ${
+-      player.codioLength / 1000
+-    }`,
++    prompt: `Choose when to start from in seconds. Full Length is ${player.codioLength / 1000}`,
+   });
+ 
+ export const MESSAGES = {
+-  startingToRecord: "Starting to record",
+-  abortRecording: "Aborted Recording.",
+-  savingRecording: "Saving recording...",
+-  recordingSaved: "Recording saved.",
+-  cantPlayWhileRecording: "Cant play Codio while recording",
+-  codioStart: "Codio is about to start..",
+-  stopCodio: "Stopping current codio..",
+-  codioPaused: "Paused Paused.",
+-  alreadyPlaying: "You already have a Codio playing.",
++  startingToRecord: 'Starting to record',
++  abortRecording: 'Aborted Recording.',
++  savingRecording: 'Saving recording...',
++  recordingSaved: 'Recording saved.',
++  cantPlayWhileRecording: 'Cant play Codio while recording',
++  codioStart: 'Codio is about to start..',
++  stopCodio: 'Stopping current codio..',
++  codioPaused: 'Paused Paused.',
++  alreadyPlaying: 'You already have a Codio playing.',
+   invalidNumber: `Number is invalid`,
+   noActiveCodio: "You don't have an active Codio",
+-  windowsNotSupported: "Unfortunately, Codio Format does not work on Windows.",
++  windowsNotSupported: 'Unfortunately, Codio Format does not work on Windows.',
+   ffmpegNotAvailable: `Looks like you haven't installed ffmpeg, which is required for Codio to work.
+      You can install it with brew: "brew install ffmpeg"`,
+-  noRecordingDeviceAvailable: "Codio Could not find an audio recording device",
+-  noActiveWorkspace: "You need to have an active workspace to record a Codio"
++  noRecordingDeviceAvailable: 'Codio Could not find an audio recording device',
++  noActiveWorkspace: 'You need to have an active workspace to record a Codio',
+ };
+ 
+ class UIController {
+@@ -50,7 +47,7 @@ class UIController {
+       window.withProgress(
+         {
+           location: ProgressLocation.Notification,
+-          title: "Playing Codio",
++          title: 'Playing Codio',
+           cancellable: true,
+         },
+         async (progress, token) => {
+@@ -69,7 +66,7 @@ class UIController {
+             lastPercentage = percentage;
+           });
+           await player.process;
+-        }
++        },
+       );
+     }
+   }
+@@ -79,7 +76,7 @@ class UIController {
+       window.withProgress(
+         {
+           location: ProgressLocation.Notification,
+-          title: "Recording Codio. ",
++          title: 'Recording Codio. ',
+           cancellable: true,
+         },
+         async (progress, token) => {
+@@ -88,7 +85,7 @@ class UIController {
+             progress.report({ message: `${currentTime}` });
+           });
+           await recorder.process;
+-        }
++        },
+       );
+     }
+   }
+diff --git a/vscode/src/utils.ts b/vscode/src/utils.ts
+index e8321a6..42bb0c1 100644
+--- a/vscode/src/utils.ts
++++ b/vscode/src/utils.ts
+@@ -1,8 +1,8 @@
+-import * as vscode from "vscode";
+-import { exec } from "child_process";
+-import * as fs from  "fs";
+-import * as util from  "util";
+-import { platform } from "os";
++import * as vscode from 'vscode';
++import { exec } from 'child_process';
++import * as fs from 'fs';
++import * as util from 'util';
++import { platform } from 'os';
+ //filesystem
+ export const createReadStream = fs.createReadStream;
+ export const promiseExec = util.promisify(exec);
+@@ -13,47 +13,48 @@ export const unlink = util.promisify(fs.unlink);
+ export const mkdir = util.promisify(fs.mkdir);
+ export const exists = util.promisify(fs.exists);
+ 
+-export const isWindows = platform() === "win32";
+-export const isMacOs = platform() === "darwin";
++export const isWindows = platform() === 'win32';
++export const isMacOs = platform() === 'darwin';
+ 
+-export const uriSeperator = "/";
++export const uriSeperator = '/';
+ //ffmpeg
+ export const checkForFfmpeg = async () => {
+-    return new Promise(res => {
+-        exec("ffmpeg -h", (error) => {
+-            res(!error);
+-        });
++  return new Promise((res) => {
++    exec('ffmpeg -h', (error) => {
++      res(!error);
+     });
++  });
+ };
+ 
+ //editor
+ export async function overrideEditorText(editor: vscode.TextEditor, newText: string) {
+-    let invalidRange = new vscode.Range(0, 0, editor.document.lineCount /*intentionally missing the '-1' */, 0);
+-    let fullRange = editor.document.validateRange(invalidRange);
+-    await editor.edit(edit => edit.replace(fullRange, newText));
++  const invalidRange = new vscode.Range(0, 0, editor.document.lineCount /*intentionally missing the '-1' */, 0);
++  const fullRange = editor.document.validateRange(invalidRange);
++  await editor.edit((edit) => edit.replace(fullRange, newText));
+ }
+ 
+-export function getTextEditor(path: string) : vscode.TextEditor{
+-    return vscode.window.visibleTextEditors.find(
+-        editor => editor.document.uri.path === path
+-      );
++export function getTextEditor(path: string): vscode.TextEditor {
++  return vscode.window.visibleTextEditors.find((editor) => editor.document.uri.path === path);
+ }
+ //strings
+ export function replaceRange(s: string, start: number, end: number, substitute: string): string {
+-    return s.substring(0, start) + substitute + s.substring(end);
++  return s.substring(0, start) + substitute + s.substring(end);
+ }
+ 
+-export function nthIndex(str, pat, n): number{
+-    let L= str.length, i= -1;
+-    while(n-- && i++<L){
+-        i= str.indexOf(pat, i);
+-        if (i < 0) { break; }
++export function nthIndex(str, pat, n): number {
++  const L = str.length;
++  let i = -1;
++  while (n-- && i++ < L) {
++    i = str.indexOf(pat, i);
++    if (i < 0) {
++      break;
+     }
+-    return i;
++  }
++  return i;
+ }
+ 
+ export async function asyncForEach(array, callback) {
+-    for (let index = 0; index < array.length; index++) {
+-      await callback(array[index], index, array);
+-    }
+-}
+\ No newline at end of file
++  for (let index = 0; index < array.length; index++) {
++    await callback(array[index], index, array);
++  }
++}
