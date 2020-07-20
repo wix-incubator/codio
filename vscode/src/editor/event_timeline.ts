@@ -36,18 +36,20 @@ export function createTimelineWithAbsoluteTimes(
 }
 
 export function runThroughTimeline(timeline: Array<CodioEvent>, setCurrentActionTimer: Function) {
-    try {
-        const currentEventIndex = 0;
-        const now = Date.now();
-        let sleepTime = timeline[currentEventIndex].data.time - now;
-        const event = timeline[currentEventIndex];
-        setCurrentActionTimer(setTimeout(() => {
-            dispatchEvent(event);
-            if (timeline.length !== 1) {
-                runThroughTimeline(timeline.slice(1), setCurrentActionTimer);
-            }
-        }, Math.max(sleepTime, 0)));
-    } catch(e) {
-        console.log("timeline error", e);
-    }
+  try {
+    const currentEventIndex = 0;
+    const now = Date.now();
+    let sleepTime = timeline[currentEventIndex].data.time - now;
+    const event = timeline[currentEventIndex];
+    setCurrentActionTimer(
+      setTimeout(async () => {
+        await dispatchEvent(event);
+        if (timeline.length !== 1) {
+          runThroughTimeline(timeline.slice(1), setCurrentActionTimer);
+        }
+      }, Math.max(sleepTime, 0)),
+    );
+  } catch (e) {
+    console.log('timeline error', e);
+  }
 }

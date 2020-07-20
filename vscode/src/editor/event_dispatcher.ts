@@ -6,7 +6,7 @@ import { isTextEvent, isSelectionEvent, isVisibleRangeEvent, isExecutionEvent, i
 export default async function dispatchEvent(event: CodioEvent) {
   try {
     if (isTextEvent(event)) {
-      dispatchTextEvent(event);
+      await dispatchTextEvent(event);
     } else if (isSelectionEvent(event)) {
       dispatchSelectionEvent(event);
     } else if (isVisibleRangeEvent(event)) {
@@ -14,14 +14,14 @@ export default async function dispatchEvent(event: CodioEvent) {
     } else if (isExecutionEvent(event)) {
       dispatchExecutionEvent(event);
     } else if (isEditorEvent(event)) {
-      dispatchEditorEvent(event);
+      await dispatchEditorEvent(event);
     }
   } catch (e) {
     console.log('Failed to dispatch codio action', e);
   }
 }
 
-function dispatchTextEvent(event: CodioTextEvent) {
+async function dispatchTextEvent(event: CodioTextEvent) {
   const actions = event.data.changes;
   const edit = new vscode.WorkspaceEdit();
   actions.forEach((action) => {
@@ -31,7 +31,7 @@ function dispatchTextEvent(event: CodioTextEvent) {
       edit.replace(event.data.uri, action.range, action.value);
     }
   });
-  vscode.workspace.applyEdit(edit);
+  await vscode.workspace.applyEdit(edit);
 }
 
 function dispatchSelectionEvent(event: CodioSelectionEvent) {
