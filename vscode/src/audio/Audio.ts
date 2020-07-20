@@ -11,10 +11,20 @@ export default class AudioHandler {
         this.audioFilePath = path;
     }
 
-    async setDevice() : Promise<boolean> {
+    async setDevice(prompt: (items: string[]) => Promise<string | undefined>) : Promise<boolean> {
         if (isWindows || isMacOs) {
             const deviceList: any = await getDeviceList();
-            this.audioInputDevice = deviceList?.audioDevices[0].name;
+            const audioDevices = deviceList?.audioDevices;
+            if (audioDevices?.length) {
+                if (audioDevices.length > 1) {
+                    const deviceName = await prompt(audioDevices.map(device => device.name));
+                    if (deviceName) {
+                        this.audioInputDevice = deviceName;
+                    }
+                } else {
+                    this.audioInputDevice = audioDevices[0].name;
+                }
+            }
             if (!this.audioInputDevice) {
                 return false;
             } else {

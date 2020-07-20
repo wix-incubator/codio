@@ -35,14 +35,14 @@ export function runThroughTimeline(timeline: Array<CodioEvent>, setCurrentAction
     try {
         const currentEventIndex = 0;
         const now = Date.now();
-        const timeToPerform = timeline[currentEventIndex].data.time - now;
+        let sleepTime = timeline[currentEventIndex].data.time - now;
         const event = timeline[currentEventIndex];
         setCurrentActionTimer(setTimeout(() => {
             dispatchEvent(event);
             if (timeline.length !== 1) {
                 runThroughTimeline(timeline.slice(1), setCurrentActionTimer);
             }
-        }, timeToPerform));
+        }, Math.max(sleepTime, 0)));
     } catch(e) {
         console.log("timeline error", e);
     }

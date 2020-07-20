@@ -1,6 +1,7 @@
 import {
   UI,
   MESSAGES,
+  showChooseAudioDevice,
 } from "../user_interface/messages";
 import Recorder from "../recorder/Recorder";
 import Player from "../player/Player";
@@ -31,13 +32,13 @@ export default async function recordCodio(
       const codioId = uuid.v4();
       const path = await fsManager.createTempCodioFolder(codioId);
       await recorder.loadCodio(path, codioName, destUri, workspaceRoot);
-      const isDeviceAvailable = await recorder.setRecordingDevice();
+      const isDeviceAvailable = await recorder.setRecordingDevice(showChooseAudioDevice);
       if (!isDeviceAvailable) {
         UI.showMessage(MESSAGES.noRecordingDeviceAvailable);
       } else {
         UI.showMessage(MESSAGES.startingToRecord);
         recorder.startRecording();
         UI.showRecorderProgressBar(recorder);
-      } 
+      }
     }
 }

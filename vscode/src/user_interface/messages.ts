@@ -6,6 +6,12 @@ import { finishRecording } from "../commands";
 export const showCodioNameInputBox = async () =>
   await window.showInputBox({ prompt: "Give your codio a name:" });
 
+  export const showChooseAudioDevice = async (items: string[]) : Promise<string | undefined> => {
+    const audioDevice = await window.showQuickPick(items, {placeHolder: 'Choose an Audio Device to record from'});
+    return audioDevice;
+  };
+
+
 export const showPlayFromInputBox = async (player) =>
   await window.showInputBox({
     prompt: `Choose when to start from in seconds. Full Length is ${
