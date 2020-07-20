@@ -1,3 +1,8 @@
+## [0.1.14]
+- Fixed flaky text insertion when typing fast
+- Added ability to choose audio recording device when there are multiple options
+- Support for custom cursor color
+
 ## [0.1.13]
 - Added icons to each codio in the codio viewer, improved docs with gifs
 
