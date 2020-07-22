@@ -1,8 +1,6 @@
 import { removeSelection } from '../editor/event_dispatcher';
 import { createFrame, applyFrame } from '../editor/frame';
 import deserializeEvents from '../editor/deserialize';
-import { window } from 'vscode';
-import { overrideEditorText } from '../utils';
 import {
   createTimelineWithAbsoluteTimes,
   cutTimelineFrom,
@@ -11,7 +9,11 @@ import {
   createRelativeTimeline,
 } from '../editor/event_timeline';
 import deserializeFrame from '../editor/frame/deserialize_frame';
-import { getInitialFilePathAndContentFromFrame } from '../editor/frame/create_frame';
+import {
+  getInteracterContent,
+  addInteracterContentToFrame,
+  getCurrentFrameWithInteracterContent,
+} from './InteracterContentHandler';
 export default class CodeEditorPlayer {
   currentActionTimer: any;
   events: Array<CodioEvent>;
@@ -28,24 +30,17 @@ export default class CodeEditorPlayer {
     runThroughTimeline(timeline, (timer) => (this.currentActionTimer = timer));
   }
 
-  //todo: moveToFrame should use create+applyFrame when time is 0
-  async moveToFrame(time: number, interacterMode = false) {
-    if (time === 0) {
-      const { uri, content } = getInitialFilePathAndContentFromFrame(this.initialFrame);
-      await window.showTextDocument(uri);
-      await overrideEditorText(window.activeTextEditor, content);
-    } else {
-      const initialToCurrentFrameActions = cutTimelineUntil(this.events, time);
-      let interacterContent, finalFrame;
-      if (interacterMode) {
-        const interacterContent = getInteracterContent(this.initialFrame);
-      }
-      const frame = createFrame(this.initialFrame, initialToCurrentFrameActions);
-      if (interacterMode) {
-        finalFrame = addInteracterContentToFrame(frame, interacterContent);
-      }
-      await applyFrame(finalFrame || frame);
+  async moveToFrame(time: number, interacterMode = true) {
+    const initialToCurrentFrameActions = cutTimelineUntil(this.events, time);
+    let interacterContent, finalFrame;
+    if (interacterMode) {
+      interacterContent = getInteracterContent(getCurrentFrameWithInteracterContent(this.initialFrame));
     }
+    const frame = createFrame(this.initialFrame, initialToCurrentFrameActions);
+    if (interacterMode) {
+      finalFrame = addInteracterContentToFrame(frame, interacterContent);
+    }
+    await applyFrame(finalFrame || frame);
   }
 
   getTimeline(relativeTimeToStart: number) {
