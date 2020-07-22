@@ -1,8 +1,7 @@
 import { removeSelection } from '../editor/event_dispatcher';
 import { createFrame, applyFrame } from '../editor/frame';
 import deserializeEvents from '../editor/deserialize';
-import { Uri, window } from 'vscode';
-import { join } from 'path';
+import { window } from 'vscode';
 import { overrideEditorText } from '../utils';
 import {
   createTimelineWithAbsoluteTimes,
@@ -30,17 +29,22 @@ export default class CodeEditorPlayer {
   }
 
   //todo: moveToFrame should use create+applyFrame when time is 0
-  async moveToFrame(time: number) {
+  async moveToFrame(time: number, interacterMode = false) {
     if (time === 0) {
       const { uri, content } = getInitialFilePathAndContentFromFrame(this.initialFrame);
       await window.showTextDocument(uri);
       await overrideEditorText(window.activeTextEditor, content);
     } else {
       const initialToCurrentFrameActions = cutTimelineUntil(this.events, time);
-      // const interacterContent = getInteracterContent(this.tutorial);
+      let interacterContent, finalFrame;
+      if (interacterMode) {
+        const interacterContent = getInteracterContent(this.initialFrame);
+      }
       const frame = createFrame(this.initialFrame, initialToCurrentFrameActions);
-      // const finalFrame = addInteracterContentToFrame(frame, interacterContent);
-      await applyFrame(frame);
+      if (interacterMode) {
+        finalFrame = addInteracterContentToFrame(frame, interacterContent);
+      }
+      await applyFrame(finalFrame || frame);
     }
   }
 
