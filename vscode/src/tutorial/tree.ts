@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import { join } from 'path';
 import { progressToEmoji, stepTypeToIcon, stepTypeToEmoji } from './consts';
+import { calculateTutorialProgress } from './tutorial';
 
 const exampleTutorial = {
   tutorial: {
@@ -72,11 +73,29 @@ const exampleTutorial = {
           status: 'watched' as const
         }, 
         "3": {
-          status: 'skipped' as const
+          status: 'done' as const
         },
         "4": {
           status: 'done' as const
-        } 
+        },
+        "5": {
+          status: 'done' as const
+        },
+        "6": {
+          status: 'done' as const
+        },
+        "7": {
+          status: 'done' as const
+        },
+        "8": {
+          status: 'done' as const
+        },
+        "9": {
+          status: 'done' as const
+        },
+        "10": {
+          status: 'done' as const
+        },
     } ,
     progressByChapterId: {
       "1": {
@@ -122,10 +141,14 @@ class StepTreeItem extends vscode.TreeItem {
   }
 }
 
+const createProgressMessage = (percent: number) => percent === 100 ? `🏆 You are Done! Amazing job! 🏆`: `${percent}% 🥬${'_'.repeat((100 - percent) / 5)}🐢${'_'.repeat((100 - (100 - percent)) / 5)}`
+
 const createTreeItems = (store: TutorialStore, extensionPath: string) : Array<ChapterTreeItem|vscode.TreeItem> => {
+  const totalProgressPercent = calculateTutorialProgress(store)
+  const progressMessage = createProgressMessage(totalProgressPercent);
   return [
     new vscode.TreeItem('React Native From Scratch', vscode.TreeItemCollapsibleState.None),
-    new vscode.TreeItem('23% 🥬_____________🐢__________', vscode.TreeItemCollapsibleState.None),
+    new vscode.TreeItem(progressMessage, vscode.TreeItemCollapsibleState.None),
     ...store.tutorial.chapters.map(chapterId => {
       const stepTreeItems = store.tutorial.chaptersById[chapterId].steps.map(stepId => {
         const step = store.tutorial.stepsById[stepId]

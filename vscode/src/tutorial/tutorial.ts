@@ -43,10 +43,11 @@ export const updateProgress = async () => {
 
 const isStepDone = (status: ProgressStatus) => status === "done" || status === "watched"
 
-const calculateChapterProgress = (store: TutorialStore, chapterId: string) => {
-    const stepIds = store.tutorial.chaptersById[chapterId].steps
-    const totalDoneSteps = stepIds.reduce((doneSteps, stepId) => isStepDone(store.progress.progressByStepId[stepId]?.status) ? doneSteps + 1 : doneSteps  ,0)
-    return Math.floor(stepIds.length / totalDoneSteps * 100)
+export const calculateTutorialProgress = (store: TutorialStore): number => {
+    const stepIds = Object.keys(store.tutorial.stepsById);
+    const totalStepIds = stepIds.length;
+    const totalDoneSteps = stepIds.reduce((doneSteps, stepId) => isStepDone(store.progress.progressByStepId[stepId]?.status) ? doneSteps + 1 : doneSteps  ,0) 
+    return Math.floor( totalDoneSteps / totalStepIds * 100)
 }
 
 const getStep = (store: TutorialStore, id: string): TutorialStep => store.tutorial.stepsById[id]

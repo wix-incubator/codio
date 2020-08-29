@@ -21,7 +21,7 @@ type TutorialProgress = {
     progressByChapterId: {
         [key: string]: {
             status?: ProgressStatus
-            precent?: number
+            percent?: number
         }
     }
 }
