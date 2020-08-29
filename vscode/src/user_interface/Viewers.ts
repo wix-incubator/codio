@@ -50,7 +50,7 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
           return codioItem;
         });
       } else {
-        const recordCodioItem = new vscode.TreeItem('Record Codio');
+        const recordCodioItem = new vscode.TreeItem('[4️⃣6️⃣%]Record Codio');
         recordCodioItem.iconPath = {
           dark: join(this.extensionPath, 'media/microphone.svg'),
           light: join(this.extensionPath, 'media/microphone-light.svg'),

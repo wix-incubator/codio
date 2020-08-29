@@ -34,6 +34,7 @@
     ],
     "activationEvents": [
         "onView:codioMessages",
+        "onView:tutorial",
         "onCommand:codio.recordCodio",
         "onCommand:codio.recordCodioAndAddToProject",
         "onCommand:codio.finishRecording",
@@ -193,8 +194,23 @@
                     "id": "codioMessages",
                     "name": "Codios"
                 }
+            ],
+            "tutorial": [
+                {
+                    "id": "tutorial",
+                    "name": "Learn"
+                }
             ]
-        }
+        },
+        "viewsContainers": {
+            "activitybar": [
+              {
+                "id": "tutorial",
+                "title": "Tutorial",
+                "icon": "media/microphone.svg"
+              }
+            ]
+          }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

@@ -8,6 +8,7 @@ import * as COMMAND_NAMES from './consts/command_names';
 import * as codioCommands from './commands/index';
 import { createSdk } from './sdk';
 import { getWorkspaceUriAndCodioDestinationUri } from './filesystem/workspace';
+import { registerTutorialTreeView } from './tutorial/tree';
 
 const fsManager = new FSManager();
 const player = new Player();
@@ -31,6 +32,7 @@ export async function activate(context: ExtensionContext) {
   await fsManager.createExtensionFolders();
   UI.shouldDisplayMessages = true;
   registerTreeViews(fsManager, context.extensionPath);
+  registerTutorialTreeView(context.extensionPath)
 
   const recordCodioDisposable = commands.registerCommand(
     COMMAND_NAMES.RECORD_CODIO,
