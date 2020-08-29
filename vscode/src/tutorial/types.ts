@@ -27,6 +27,7 @@ type TutorialProgress = {
 }
 
 type Tutorial = {
+    title: string
     chapters : Array<string>,
     chaptersById: {
         [key: string]: TutorialChapter

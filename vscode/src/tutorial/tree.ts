@@ -1,114 +1,25 @@
 import * as vscode from 'vscode'
+import { progressToEmoji, stepTypeToEmoji } from './consts';
+import { calculateTutorialProgress, createTutorialStore, getTutorialFolderRelativePattern } from './tutorial';
 import { join } from 'path';
-import { progressToEmoji, stepTypeToIcon, stepTypeToEmoji } from './consts';
-import { calculateTutorialProgress } from './tutorial';
 
-const exampleTutorial = {
-  tutorial: {
-    chapters : ["1","2","3"],
-    chaptersById: {
-        "1": {
-          title: 'Intro, How it works and JS Basics',
-          steps: ["1","2", "3"]
-        },
-        "2": {
-          title: "Data Structures",
-          steps: ["4","5", "6", "7"]
-        },
-        "3": {
-          title: 'Working with Servers',
-          steps: ["8", "9", "10"]
-      }
-    },
-    stepsById: {
-        "1": {
-          type: 'codio' as const,
-          name: 'How this works',
-        }, 
-        "2": {
-          type: 'md' as const,
-          name: 'Js basics',
-        }, 
-        "3": {
-          type: 'codio' as const,
-          name: 'const, var, let',
-        }, 
-        "4": {
-          type: 'test' as const,
-          name: 'Promise: playground',
-        }, 
-        "5": {
-          type: 'comment' as const,
-          name: 'Async await',
-        }, 
-        "6": {
-          type: 'codio' as const,
-          name: 'React',
-        }, 
-        "7": {
-          type: 'codio' as const,
-          name: 'Observe',
-        }, 
-        "8": {
-          type: 'test' as const,
-          name: 'That is why it',
-        }, 
-        "9": {
-          type: 'codio' as const,
-          name: 'Meet Yael',
-        }, 
-        "10": {
-          type: 'md' as const,
-          name: 'React',
-        }
-    },
-    version: 1
-  },
-  progress: {
-    progressByStepId: {
-        "1": {
-          status: 'done' as const
-        }, 
-        "2": {
-          status: 'watched' as const
-        }, 
-        "3": {
-          status: 'done' as const
-        },
-        "4": {
-          status: 'done' as const
-        },
-        "5": {
-          status: 'done' as const
-        },
-        "6": {
-          status: 'done' as const
-        },
-        "7": {
-          status: 'done' as const
-        },
-        "8": {
-          status: 'done' as const
-        },
-        "9": {
-          status: 'done' as const
-        },
-        "10": {
-          status: 'done' as const
-        },
-    } ,
-    progressByChapterId: {
-      "1": {
-        status: 'done' as const
-      }
-    }
-  }
+const updateTutorial = async (treeView: vscode.TreeView<ChapterTreeItem|vscode.TreeItem>, dataProvider: TutorialDataProvider) => {
+  const tutorialStore = await createTutorialStore()
+  dataProvider.refresh(tutorialStore)
+  //@ts-ignore
+  treeView.title = getTreeViewTitle(tutorialStore);
 }
 
+const getTreeViewTitle = (store: TutorialStore) => `${store.tutorial.title} :`
 export const registerTutorialTreeView = async ( extensionPath: string) => {
-  const tutorialDataProvider = new TutorialDataProvider(extensionPath);
-  vscode.window.createTreeView('tutorial', { treeDataProvider: tutorialDataProvider });
-  vscode.workspace.onDidChangeWorkspaceFolders(() => tutorialDataProvider.refresh());
+  const tutorialStore = await createTutorialStore()
+  const tutorialDataProvider = new TutorialDataProvider(tutorialStore, extensionPath);
+  const treeView = vscode.window.createTreeView('tutorial', { treeDataProvider: tutorialDataProvider});
+  //@ts-ignore
+  treeView.title = getTreeViewTitle(tutorialStore);
+  const fileSystemWatcher = vscode.workspace.createFileSystemWatcher(getTutorialFolderRelativePattern())
+  vscode.workspace.onDidChangeWorkspaceFolders(() => updateTutorial(treeView, tutorialDataProvider));
+  fileSystemWatcher.onDidChange(() => updateTutorial(treeView, tutorialDataProvider));
 }
 
 class ChapterTreeItem extends vscode.TreeItem {
@@ -147,7 +58,6 @@ const createTreeItems = (store: TutorialStore, extensionPath: string) : Array<Ch
   const totalProgressPercent = calculateTutorialProgress(store)
   const progressMessage = createProgressMessage(totalProgressPercent);
   return [
-    new vscode.TreeItem('React Native From Scratch', vscode.TreeItemCollapsibleState.None),
     new vscode.TreeItem(progressMessage, vscode.TreeItemCollapsibleState.None),
     ...store.tutorial.chapters.map(chapterId => {
       const stepTreeItems = store.tutorial.chaptersById[chapterId].steps.map(stepId => {
@@ -161,17 +71,19 @@ const createTreeItems = (store: TutorialStore, extensionPath: string) : Array<Ch
 
 export class TutorialDataProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     private extensionPath: string;
-  
+    store: TutorialStore | undefined;
     _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined> = new vscode.EventEmitter<
       vscode.TreeItem | undefined
     >();
     onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined> = this._onDidChangeTreeData.event;
   
-    refresh(): void {
+    refresh(store): void {
+      this.store = store;
       this._onDidChangeTreeData.fire(undefined);
     }
   
-    constructor(extensionPath) {
+    constructor(store,  extensionPath) {
+      this.store = store
       this.extensionPath = extensionPath;
     }
   
@@ -179,10 +91,14 @@ export class TutorialDataProvider implements vscode.TreeDataProvider<vscode.Tree
       return element;
     }
 
-    async getChildren(element?: ChapterTreeItem | StepTreeItem | vscode.TreeItem | undefined): Promise<Array<ChapterTreeItem|vscode.TreeItem> | StepTreeItem[] | undefined> {
+    getChildren(element?: ChapterTreeItem | StepTreeItem | vscode.TreeItem | undefined): Array<ChapterTreeItem|vscode.TreeItem> | StepTreeItem[] | undefined {
       if (element === undefined) {
-        return createTreeItems(exampleTutorial, this.extensionPath);
-      } 
+        if (this.store) {
+          return createTreeItems(this.store, this.extensionPath);
+        } else {
+          return undefined
+        }
+      }  
       if (element instanceof ChapterTreeItem)
         return element.steps
     }

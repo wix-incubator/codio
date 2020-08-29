@@ -1,4 +1,4 @@
-import { workspace, Uri } from "vscode"
+import {RelativePattern, workspace, Uri } from "vscode"
 import { join } from "path";
 import { getFileContent } from "../utils";
 import { MAIN_FOLDER, TUTORIAL_FILE, PROGRESS_FILE, CODIOS_FOLDER_NAME, MARKDOWN_FOLDER_NAME, TESTS_FOLDER_NAME, COMMENTS_FOLDER_NAME } from "./consts";
@@ -14,6 +14,7 @@ const getMarkdownPath =  name => join(getTutorialFolderPath()!, MARKDOWN_FOLDER_
 const getTestPath = name => join(getTutorialFolderPath()!, TESTS_FOLDER_NAME, name)
 const getCommentPath = name => join(getTutorialFolderPath()!, COMMENTS_FOLDER_NAME, name)
 
+export const getTutorialFolderRelativePattern = () => new RelativePattern(getTutorialFolderPath(), "**/*")
 
 export const getTutorial = async () : Promise<Tutorial | undefined>=> {
     const tutorialFolderPath = getTutorialFolderPath()
@@ -32,9 +33,13 @@ export const getProgress = async () : Promise<TutorialProgress | undefined>=> {
 }
 
 export const createTutorialStore = async () : Promise<TutorialStore | undefined>=> {
-    const [progress, tutorial] = await Promise.all([getProgress(), getTutorial()])
-    //@TODO: Validate that loaded tutorial conforms to the tutorial datastructure
-    if (progress && tutorial) return { progress, tutorial}
+    try {
+        const [progress, tutorial] = await Promise.all([getProgress(), getTutorial()])
+        //@TODO: Validate that loaded tutorial conforms to the tutorial datastructure
+        if (progress && tutorial) return { progress, tutorial}
+    } catch {
+        return undefined;
+    }
 }
 
 export const updateProgress = async () => {
@@ -42,6 +47,10 @@ export const updateProgress = async () => {
 }
 
 const isStepDone = (status: ProgressStatus) => status === "done" || status === "watched"
+
+export const markSkippedAsUndone = () => {
+    //@TODO: handle skipped and undone logic
+}
 
 export const calculateTutorialProgress = (store: TutorialStore): number => {
     const stepIds = Object.keys(store.tutorial.stepsById);
