@@ -202,11 +202,17 @@
                 }
             ]
         },
+        "viewsWelcome": [
+            {
+              "view": "tutorial",
+              "contents": "No Explorable Tutorial Found. \n[learn more](https://www.eladbogo.com/).\n[Add Dependency](command:nodeDependencies.addEntry)"
+            }
+          ],
         "viewsContainers": {
             "activitybar": [
               {
                 "id": "tutorial",
-                "title": "Tutorial",
+                "title": "",
                 "icon": "media/microphone.svg"
               }
             ]
