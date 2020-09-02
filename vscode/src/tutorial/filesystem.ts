@@ -9,6 +9,8 @@ import {
   MARKDOWN_FOLDER_NAME,
   TESTS_FOLDER_NAME,
   COMMENTS_FOLDER_NAME,
+  TOUR_FOLDER_NAME,
+  QUIZ_FOLDER_NAME,
 } from './consts';
 import { getFileContent } from '../utils';
 
@@ -27,6 +29,9 @@ const getCodioPath = (name: string) => join(getTutorialFolderPath()!, CODIOS_FOL
 const getMarkdownPath = (name: string) => join(getTutorialFolderPath()!, MARKDOWN_FOLDER_NAME, name + '.md');
 const getTestPath = (name: string) => join(getTutorialFolderPath()!, TESTS_FOLDER_NAME, name);
 const getCommentPath = (name: string) => join(getTutorialFolderPath()!, COMMENTS_FOLDER_NAME, name + '.json');
+const getTourPath = (name: string) => join(getTutorialFolderPath()!, TOUR_FOLDER_NAME, name + '.tour');
+const getQuizPath = (name: string) => join(getTutorialFolderPath()!, QUIZ_FOLDER_NAME, name + '.json');
+
 const getTempTestStatusPath = (stepId: string): string =>
   join(getTutorialFolderPath()!, TESTS_FOLDER_NAME, `./tmp/${stepId}.txt`);
 
@@ -68,6 +73,11 @@ export const getStepUri = (step: TutorialStep): Uri => {
         break;
       case 'comment':
         stepPath = getCommentPath(step.name);
+      case 'tour': 
+        stepPath = getTourPath(step.name);
+        break;
+      case 'quiz':
+        stepPath = getQuizPath(step.name);
         break;
       default:
         throw new Error(`Step Type invalid. Got stepType: ${step.type}`);

@@ -54,7 +54,12 @@ const updateChapterProgress = () => {
 const isStepDone = (stepId: StepId) =>
   tutorialStore.progress.progressByStepId[stepId]?.status === PROGRESS_STATUS.done ||
   tutorialStore.progress.progressByStepId[stepId]?.status === PROGRESS_STATUS.watched;
-  
+
+export const getStepWithId = (stepId: StepId) => ({
+  ...tutorialStore.tutorial.stepsById[stepId],
+  id: stepId
+})
+
 const isChapterDone = (chapterId: ChapterId) =>
   tutorialStore.progress.progressByChapterId[chapterId]?.status === PROGRESS_STATUS.done ||
   tutorialStore.progress.progressByChapterId[chapterId]?.status === PROGRESS_STATUS.watched;

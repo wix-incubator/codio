@@ -1,8 +1,10 @@
 import { commands, Uri, Command, Task, TaskGroup, tasks, ShellExecution, TaskRevealKind, TaskPanelKind } from 'vscode';
 import { TUTORIAL_COMMAND_NAMES } from './consts';
 import { PLAY_CODIO } from '../consts/command_names';
-import { markStepDone } from './store';
+import { markStepDone, getStepWithId } from './store';
 import { getStepUri, getWorkspaceFolder, getTempTestStatus, cleanTempTestStatus } from './filesystem';
+import { getFileContent } from '../utils';
+import { showQuiz } from './quiz';
 
 export const createStepCommand = (stepId: string, step: TutorialStep): Command | undefined => {
   switch (step.type) {
@@ -20,10 +22,22 @@ export const createStepCommand = (stepId: string, step: TutorialStep): Command |
         title: 'Run Challenge',
         arguments: [stepId, getStepUri(step)],
       };
+    case 'tour':
+      return {
+        command: TUTORIAL_COMMAND_NAMES.tourStepPress,
+        title: 'Run Tour',
+        arguments: [stepId, getStepUri(step)]
+      }
     case 'comment':
       return {
         command: TUTORIAL_COMMAND_NAMES.commentStepPress,
         title: 'View Step',
+        arguments: [stepId, getStepUri(step)],
+      };
+    case 'quiz':
+      return {
+        command: TUTORIAL_COMMAND_NAMES.quizStepPress,
+        title: 'Take Quiz',
         arguments: [stepId, getStepUri(step)],
       };
   }
@@ -70,7 +84,16 @@ export const registerTutorialCommands = () => {
     });
   });
 
-  commands.registerCommand(TUTORIAL_COMMAND_NAMES.commentStepPress, (stepId: string) => {
+  commands.registerCommand(TUTORIAL_COMMAND_NAMES.quizStepPress, async (stepId: string, quizUri: Uri) => {
+    const quiz = await getFileContent(quizUri.fsPath)
+    const stepWithId = getStepWithId(stepId)
+    showQuiz(quiz, stepWithId)
+    // markStepDone(stepId);
+  });
+  commands.registerCommand(TUTORIAL_COMMAND_NAMES.tourStepPress, async (stepId: string, tourUri: Uri) => {
+    const tour = await getFileContent(tourUri.fsPath)
+    
+    commands.executeCommand('codetour.startTour', tour, 1, getWorkspaceFolder().uri.fsPath, false, false);
     markStepDone(stepId);
   });
 };

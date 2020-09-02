@@ -1,7 +1,14 @@
-type StepType = 'codio' | 'md' | 'test' | 'comment'
+type StepType = 'codio' | 'md' | 'test' | 'comment' | 'tour' | 'quiz'
 type ProgressStatus = 'done' | 'skipped' | 'watched' | 'locked' | 'undone'
 
 type TutorialStep = {
+    type: StepType,
+    name: string,
+    path?: string
+}
+
+type TutorialStepWithId = {
+    id: StepId,
     type: StepType,
     name: string,
     path?: string
@@ -44,3 +51,12 @@ type TutorialStore = {
     tutorial: Tutorial,
     progress: TutorialProgress
 }
+
+type Quiz = Array<{
+    question: string
+    answers: Array<{
+        answer: string
+        onSelectedMessage: string
+    } | string>
+    correctAnswerIdx: number
+}>

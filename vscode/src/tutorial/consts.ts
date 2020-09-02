@@ -3,6 +3,8 @@ export const TUTORIAL_COMMAND_NAMES = {
     mdStepPress: 'mdStepPress',
     commentStepPress: 'commentStepPress',
     testStepPress: 'testStepPress',
+    tourStepPress: 'tourStepPress',
+    quizStepPress: 'quizStepPress'
 }
 
 export const PROGRESS_STATUS = {
@@ -20,6 +22,8 @@ export const CODIOS_FOLDER_NAME = 'codios';
 export const MARKDOWN_FOLDER_NAME = 'markdown';
 export const TESTS_FOLDER_NAME = 'tests';
 export const COMMENTS_FOLDER_NAME = 'comments';
+export const TOUR_FOLDER_NAME = 'tours';
+export const QUIZ_FOLDER_NAME = 'quiz';
 export const TREE_VIEW_ID = 'tutorial';
 
 export const progressToEmoji = {
@@ -35,6 +39,8 @@ export const stepTypeToEmoji = {
     comment : "💬",
     md : "📖",
     test : "🌡",
+    tour : "🗺",
+    quiz: "🤔"
 }
 
 export const stepTypeToIcon = {

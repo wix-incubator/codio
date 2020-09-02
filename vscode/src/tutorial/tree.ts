@@ -70,7 +70,7 @@ class StepTreeItem extends vscode.TreeItem {
 const createProgressMessage = (percent: number) =>
   percent === 100
     ? `🏆 You are Done! Amazing job! 🏆`
-    : `${percent}% 🥬${'_'.repeat((100 - percent) / 5)}🐢${'_'.repeat((100 - (100 - percent)) / 5)}`;
+    : `${percent}%📱${'_'.repeat((100 - percent) / 5)}🏃‍♂️${'_'.repeat((100 - (100 - percent)) / 5)}`;
 
 const createTreeItems = (store: TutorialStore, extensionPath: string): Array<ChapterTreeItem | vscode.TreeItem> => {
   const totalProgressPercent = calculateTutorialProgress(store);
