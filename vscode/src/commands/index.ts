@@ -1,6 +1,7 @@
 import executeFile from './executeFile';
 import pauseOrResume from './pauseOrResume';
 import playCodio from './playCodio';
+import playCodioTask from './playCodioTask';
 import { forward, rewind } from './rewindAndForward';
 import playFrom from './playFrom';
 import resumeCodio from './resumeCodio';
@@ -12,6 +13,7 @@ export {
   executeFile,
   pauseOrResume,
   playCodio,
+  playCodioTask,
   forward,
   rewind,
   playFrom,

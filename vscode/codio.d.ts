@@ -1,6 +1,7 @@
 export declare const recordCodio: (destination: Uri, workspaceRoot?: Uri, getCodioName?: () => Promise<string>) => void;
 export declare const finishRecording: () => Promise<void>;
 export declare const playCodio: (source: Uri, workspaceUri?: Uri) => void;
+export declare const playCodioTask: (source: Uri, workspaceUri?: Uri) => void;
 export declare const pauseCodio: () => void;
 export declare const pauseOrResume: () => void;
 export declare const resumeCodio: () => void;

@@ -17,6 +17,7 @@ const {
   recordCodio,
   finishRecording,
   playCodio,
+  playCodioTask,
   pauseCodio,
   pauseOrResume,
   resumeCodio,
@@ -25,7 +26,18 @@ const {
   forward,
 } = createSdk(player, recorder, fsManager);
 
-export { recordCodio, finishRecording, playCodio, pauseCodio, pauseOrResume, resumeCodio, playFrom, rewind, forward };
+export {
+  recordCodio,
+  finishRecording,
+  playCodio,
+  playCodioTask,
+  pauseCodio,
+  pauseOrResume,
+  resumeCodio,
+  playFrom,
+  rewind,
+  forward,
+};
 
 export async function activate(context: ExtensionContext) {
   await fsManager.createExtensionFolders();
@@ -60,6 +72,13 @@ export async function activate(context: ExtensionContext) {
     },
   );
 
+  const playCodioTaskDisposable = commands.registerCommand(
+    COMMAND_NAMES.PLAY_CODIO_TASK,
+    async (source: Uri, workspaceUri?: Uri) => {
+      codioCommands.playCodioTask(fsManager, player, recorder, source, workspaceUri);
+    },
+  );
+
   const pauseCodioDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_CODIO, () => {
     codioCommands.pauseCodio(player);
   });
@@ -91,6 +110,7 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(recordCodioDisposable);
   context.subscriptions.push(finishRecordingDisposable);
   context.subscriptions.push(playCodioDisposable);
+  context.subscriptions.push(playCodioTaskDisposable);
   context.subscriptions.push(pauseCodioDisposable);
   context.subscriptions.push(resumeCodioDisposable);
   context.subscriptions.push(playFromDisposable);
