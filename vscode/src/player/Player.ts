@@ -59,6 +59,11 @@ export default class Player {
   }
 
   play(actions: Array<any>, timeToStart: number) {
+    if (this.isPlaying) {
+      this.codeEditorPlayer.pause();
+      this.audioPlayer.pause();
+      this.timer.stop();
+    }
     this.codioStartTime = Date.now();
     this.codeEditorPlayer.play(actions, this.codioStartTime);
     this.audioPlayer.play(timeToStart);
