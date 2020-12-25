@@ -35,12 +35,13 @@ export function createTimelineWithAbsoluteTimes(
   });
 }
 
-export function runThroughTimeline(timeline: Array<CodioEvent>, setCurrentActionTimer: Function) {
+export function runThroughTimeline(timeline: Array<CodioEvent> = [], setCurrentActionTimer: Function) {
+  if (!timeline.length) {
+    return;
+  }
   try {
-    const currentEventIndex = 0;
-    const now = Date.now();
-    let sleepTime = timeline[currentEventIndex].data.time - now;
-    const event = timeline[currentEventIndex];
+    const event = timeline[0];
+    let sleepTime = event.data.time - Date.now();
     setCurrentActionTimer(
       setTimeout(async () => {
         await dispatchEvent(event);
