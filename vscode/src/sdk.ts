@@ -19,6 +19,10 @@ export function createSdk(player: Player, recorder: Recorder, fsManager: FSManag
     codioCommands.playCodio(fsManager, player, recorder, source, workspaceUri);
   };
 
+  const playCodioTask = async (source: Uri, workspaceUri?: Uri) => {
+    codioCommands.playCodioTask(fsManager, player, recorder, source, workspaceUri);
+  };
+
   const finishRecording = () => codioCommands.finishRecording(recorder);
   const pauseCodio = () => codioCommands.pauseCodio(player);
   const pauseOrResume = () => codioCommands.pauseOrResume(player);
@@ -31,6 +35,7 @@ export function createSdk(player: Player, recorder: Recorder, fsManager: FSManag
     recordCodio,
     finishRecording,
     playCodio,
+    playCodioTask,
     pauseCodio,
     pauseOrResume,
     resumeCodio,
