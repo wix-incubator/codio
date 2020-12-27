@@ -46,7 +46,7 @@ export default class AudioHandler {
   }
 
   play(time) {
-    this.currentAudioProcess = exec(`ffplay -nodisp -ss ${time} ${this.audioFilePath}`);
+    this.currentAudioProcess = exec(`ffplay -hide_banner -nodisp -nostats -autoexit -ss ${time} ${this.audioFilePath}`);
   }
 
   async pause() {
@@ -54,15 +54,54 @@ export default class AudioHandler {
   }
 
   stopAudioProcess() {
+    const proc = this.currentAudioProcess;
     if (isWindows) {
-      return new Promise((res, rej) => {
-        const taskKill = spawn('taskkill', ['/pid', this.currentAudioProcess.pid.toString(), '/f', '/t']);
-        taskKill.stdout.on('data', () => res());
-        taskKill.stderr.on('data', (data) => rej(data));
-        taskKill.on('close', () => res());
-      });
+      if (this.isRecording()) {
+        process.once('exit', this.taskKill);
+
+        const p = new Promise<string | void>((res, rej) => {
+          proc.once('exit', (code, signal) => {
+            if (this.exitWin32Process(code, signal)) {
+              res();
+            } else {
+              rej('stopAudioProcess exitWin32Process Error');
+            }
+          });
+          proc.once('error', (err) => {
+            process.removeListener('exit', this.taskKill);
+            this.taskKill();
+            rej(err.message);
+          });
+        });
+
+        this.quitRecording();
+
+        return p;
+      }
     } else {
-      this.currentAudioProcess.kill();
+      proc.kill();
     }
+  }
+
+  isRecording() {
+    return this.currentAudioProcess.stdin.writable;
+  }
+
+  quitRecording() {
+    // ffmpeg CLI waits for 'q' input to exit if duration argument not given.
+    this.currentAudioProcess.stdin.write('q');
+  }
+
+  exitWin32Process(code: number, signal: string) {
+    process.removeListener('exit', this.taskKill);
+    if (code || signal) {
+      this.taskKill();
+      return false;
+    }
+    return true;
+  }
+
+  taskKill() {
+    spawn('taskkill', ['/pid', this.currentAudioProcess.pid.toString(), '/f', '/t']);
   }
 }
