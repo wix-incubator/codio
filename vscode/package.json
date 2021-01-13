@@ -231,6 +231,7 @@
     },
     "dependencies": {
         "cross-zip": "^3.0.0",
+        "subtitles-parser-vtt": "rbrisita/subtitles-parser#semver:~0.0.9",
         "uuid": "^7.0.3"
     }
 }

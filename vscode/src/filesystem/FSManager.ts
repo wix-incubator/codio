@@ -50,6 +50,14 @@ export default class FSManager {
     return join(codioPath, 'audio.mp3');
   }
 
+  /**
+   * Return the path to the subtitles file.
+   * @param codioPath Path to unzipped codio.
+   */
+  static subtitlesPath(codioPath): string {
+    return join(codioPath, 'subtitles.srt');
+  }
+
   static workspacePath(codioPath) {
     return join(codioPath, 'workspace');
   }
