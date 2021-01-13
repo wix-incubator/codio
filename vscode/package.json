@@ -16,7 +16,7 @@
     "bugs": {
         "url": "https://github.com/wix-incubator/codio"
     },
-    "version": "0.1.14",
+    "version": "0.2.0",
     "license": "MIT",
     "publisher": "Wix",
     "icon": "media/icon.png",
@@ -231,6 +231,7 @@
     },
     "dependencies": {
         "cross-zip": "^3.0.0",
+        "subtitles-parser-vtt": "rbrisita/subtitles-parser#semver:~0.0.9",
         "uuid": "^7.0.3"
     }
 }
