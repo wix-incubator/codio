@@ -62,3 +62,6 @@ It exposes the following API for other extensions to use:
 `pauseOrResume(): void` - Pauses or resumes the current codio session.
 
 > Note: We aim to expose more functionality in the future - such as dealing with user input mid-recording, support for execution and more. Please feel free to open an issue!
+
+## Attribution
+Icons backward, play, pause, and forward are from [IcoMoon](https://icomoon.io/app/#/select).

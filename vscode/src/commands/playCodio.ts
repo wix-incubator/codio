@@ -3,7 +3,7 @@ import { UI, MESSAGES } from '../user_interface/messages';
 import Player from '../player/Player';
 import Recorder from '../recorder/Recorder';
 import FSManager from '../filesystem/FSManager';
-import { checkForFfmpeg } from '../utils';
+import { checkForFfmpeg, isTreeItem } from '../utils';
 
 export default async function playCodio(
   fsManager: FSManager,
@@ -12,6 +12,10 @@ export default async function playCodio(
   codioUri?: Uri,
   workspaceUri?: Uri,
 ) {
+  if (isTreeItem(codioUri)) {
+    codioUri = codioUri['command']?.arguments[0];
+  }
+
   try {
     const hasFfmpeg = await checkForFfmpeg();
     if (!hasFfmpeg) {
