@@ -6,7 +6,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
-import { getWorkspaceRootAndCodiosFolderIfExists } from './workspace';
+import { getWorkspaceRootAndCodiosFolder } from './workspace';
 
 const homedir = require('os').homedir();
 const userOS = os.platform();
@@ -93,6 +93,13 @@ export default class FSManager {
     } else {
       fs.renameSync(codioPath, join(codiosFolder, uuid()));
     }
+    this.update();
+  }
+
+  /**
+   * Alert subscribers that the configuration has changed.
+   */
+  static update(): void {
     onCodiosChangedSubscribers.forEach((func) => func());
   }
 
@@ -220,33 +227,80 @@ export default class FSManager {
     );
   }
 
-  async getCodiosMetadata(folder = codiosFolder, workspaceRoot?: vscode.Uri): Promise<Array<any>> {
+  /**
+   * Get codios found in given folder.
+   * @param folder Folder containing codios to get.
+   * @param workspaceRoot Optional URI for the root of the workspace.
+   * @returns An array of codios found.
+   */
+  private async getCodios(folder = codiosFolder, workspaceRoot?: vscode.Uri): Promise<Codio[]> {
+    const codios: Codio[] = [];
+
     try {
-      const codiosMetaData = [];
       const directories = await this.getCodiosUnzippedFromCodioFolder(folder);
       await Promise.all(
         directories.map(async (dir) => {
-          const metaData = await this.getCodioMetaDataContent(dir);
-          const codioUri = vscode.Uri.file(dir);
-          codiosMetaData.push({ ...metaData, uri: codioUri, workspaceRoot });
+          codios.push({
+            ...(await this.getMetaData(dir)),
+            uri: vscode.Uri.file(dir),
+            workspaceRoot
+          });
         }),
       );
-      return codiosMetaData;
+
+      // Order codios by name.
+      codios.sort((a: Metadata, b: Metadata) => {
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+
+        if (nameA < nameB) {
+          return -1;
+        } else if (nameA > nameB) {
+          return 1;
+        }
+
+        return 0;
+      });
     } catch (e) {
-      console.log(`getCodiosMetaData failed`, e);
+      console.log(`getCodios failed`, e);
     }
+
+    return codios;
   }
 
-  async getAllCodiosMetadata() {
-    const workspaceFolders = getWorkspaceRootAndCodiosFolderIfExists();
-    const workspaceCodios = workspaceFolders
-      ? await this.getCodiosMetadata(workspaceFolders.workspaceCodiosFolder, workspaceFolders.workspaceRootUri)
+  /**
+   * Get workspace and library codio array.
+   * @returns Array containing workspace and library codios.
+   */
+  async getAllCodiosMetadata(): Promise<Codio[]> {
+    return [...(await this.getWorkspaceCodios()), ...(await this.getLibraryCodios())];
+  }
+
+  /**
+   * Get workspace codio array.
+   * @returns Array containing workspace codios.
+   */
+  async getWorkspaceCodios(): Promise<Codio[]> {
+    const workspaceFolders = getWorkspaceRootAndCodiosFolder();
+    return workspaceFolders
+      ? await this.getCodios(workspaceFolders.workspaceCodiosFolder, workspaceFolders.workspaceRootUri)
       : [];
-    const libraryCodios = await this.getCodiosMetadata();
-    return { workspaceCodios, libraryCodios };
   }
 
-  async getCodioMetaDataContent(codioFolderPath) {
+  /**
+   * Get library codio array.
+   * @returns Array containing library codios.
+   */
+  async getLibraryCodios(): Promise<Codio[]> {
+    return await this.getCodios();
+  }
+
+  /**
+   * Get metadata file data.
+   * @param codioFolderPath Path to codio zip file containing metadata file.
+   * @returns Metadata object.
+   */
+  private async getMetaData(codioFolderPath): Promise<Metadata> {
     try {
       const metaData = await readFile(join(codioFolderPath, CODIO_META_FILE));
       return JSON.parse(metaData.toString());
@@ -284,8 +338,6 @@ export default class FSManager {
   }
 
   async chooseCodio(): Promise<{ path: string; workspaceRoot?: vscode.Uri } | undefined> {
-    const { workspaceCodios, libraryCodios } = await fsManager.getAllCodiosMetadata();
-    const codios = [...workspaceCodios, ...libraryCodios]
-    return this.choose(codios);
+    return this.choose(await this.getAllCodiosMetadata());
   }
 }

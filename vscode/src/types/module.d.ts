@@ -1,3 +1,14 @@
+declare interface Metadata {
+  length: number;
+  name: string;
+  version: string;
+}
+
+declare interface Codio extends Metadata {
+  uri: Uri;
+  workspaceRoot?: Uri;
+}
+
 declare interface CodioEvent {
   type: string;
   data: {

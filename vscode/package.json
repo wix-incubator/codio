@@ -16,7 +16,7 @@
     "bugs": {
         "url": "https://github.com/wix-incubator/codio"
     },
-    "version": "0.2.0",
+    "version": "0.3.0",
     "license": "MIT",
     "publisher": "Wix",
     "icon": "media/icon.png",
@@ -69,8 +69,8 @@
                 "title": "Record Codio and Add to Project",
                 "category": "Codio",
                 "icon": {
-                    "light": "media/microphone-light.svg",
-                    "dark": "media/microphone.svg"
+                    "light": "media/light/microphone.svg",
+                    "dark": "media/dark/microphone.svg"
                 }
             },
             {
@@ -78,8 +78,8 @@
                 "category": "Codio",
                 "title": "Record Codio",
                 "icon": {
-                    "light": "media/microphone-light.svg",
-                    "dark": "media/microphone.svg"
+                    "light": "media/light/microphone.svg",
+                    "dark": "media/dark/microphone.svg"
                 }
             },
             {
@@ -87,8 +87,8 @@
                 "category": "Codio",
                 "title": "Save Recording",
                 "icon": {
-                    "light": "media/save-light.svg",
-                    "dark": "media/save.svg"
+                    "light": "media/light/save.svg",
+                    "dark": "media/dark/save.svg"
                 }
             },
             {
@@ -99,7 +99,11 @@
             {
                 "command": "codio.playCodio",
                 "category": "Codio",
-                "title": "Play Codio"
+                "title": "Play Codio",
+                "icon": {
+                    "light": "./media/light/play.svg",
+                    "dark": "./media/dark/play.svg"
+                }
             },
             {
                 "command": "codio.playCodioTask",
@@ -111,14 +115,18 @@
                 "category": "Codio",
                 "title": "Pause Codio",
                 "icon": {
-                    "light": "./media/pause.svg",
-                    "dark": "./media/pause.svg"
+                    "light": "./media/light/circle_pause.svg",
+                    "dark": "./media/dark/circle_pause.svg"
                 }
             },
             {
                 "command": "codio.resumeCodio",
                 "category": "Codio",
-                "title": "Resume Codio"
+                "title": "Resume Codio",
+                "icon": {
+                    "light": "./media/light/circle_play.svg",
+                    "dark": "./media/dark/circle_play.svg"
+                }
             },
             {
                 "command": "codio.playFrom",
@@ -130,8 +138,8 @@
                 "category": "Codio",
                 "title": "Pause/Resume",
                 "icon": {
-                    "light": "./media/pauseOrResume-light.svg",
-                    "dark": "./media/pauseOrResume.svg"
+                    "light": "./media/light/pauseOrResume.svg",
+                    "dark": "./media/dark/pauseOrResume.svg"
                 }
             },
             {
@@ -139,8 +147,8 @@
                 "category": "Codio",
                 "title": "Forward 10 seconds",
                 "icon": {
-                    "light": "./media/forward-light.svg",
-                    "dark": "./media/forward.svg"
+                    "light": "./media/light/circle_forward.svg",
+                    "dark": "./media/dark/circle_forward.svg"
                 }
             },
             {
@@ -148,8 +156,8 @@
                 "category": "Codio",
                 "title": "Rewind 10 seconds",
                 "icon": {
-                    "light": "./media/rewind-light.svg",
-                    "dark": "./media/rewind.svg"
+                    "light": "./media/light/circle_backward.svg",
+                    "dark": "./media/dark/circle_backward.svg"
                 }
             },
             {
@@ -159,43 +167,43 @@
             }
         ],
         "menus": {
-            "editor/title": [
-                {
-                    "command": "codio.rewind",
-                    "when": "inCodioSession",
-                    "alt": "codio.rewind",
-                    "group": "navigation@1"
-                },
-                {
-                    "command": "codio.pauseOrResume",
-                    "when": "inCodioSession",
-                    "alt": "codio.pauseOrResume",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "codio.forward",
-                    "when": "inCodioSession",
-                    "alt": "codio.forward",
-                    "group": "navigation@3"
-                }
-            ],
             "view/item/context": [
                 {
-                    "command": "codio.pauseOrResume",
+                    "command": "codio.playCodio",
                     "when": "viewItem == codio",
-                    "group": "navigation"
+                    "group": "inline"
                 }
             ],
             "view/title": [
                 {
                     "command": "codio.recordCodioAndAddToProject",
-                    "when": "view == codioMessages && !inCodioRecording",
-                    "group": "navigation@1"
+                    "when": "!inCodioRecording && !inCodioSession && view == codioMessages",
+                    "group": "navigation"
                 },
                 {
                     "command": "codio.finishRecording",
-                    "when": "view == codioMessages && inCodioRecording",
+                    "when": "inCodioRecording && !inCodioSession && view == codioMessages",
+                    "group": "navigation"
+                },
+                {
+                    "command": "codio.rewind",
+                    "when": "inCodioSession && view == codioMessages",
                     "group": "navigation@1"
+                },
+                {
+                    "command": "codio.resumeCodio",
+                    "when": "inCodioSession && !isPlaying && view == codioMessages",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "codio.pauseCodio",
+                    "when": "inCodioSession && isPlaying && view == codioMessages",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "codio.forward",
+                    "when": "inCodioSession && view == codioMessages",
+                    "group": "navigation@3"
                 }
             ]
         },
@@ -206,7 +214,13 @@
                     "name": "Codios"
                 }
             ]
-        }
+        },
+        "viewsWelcome": [
+            {
+              "view": "codioMessages",
+              "contents": "No codios found."
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
