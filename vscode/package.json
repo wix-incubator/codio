@@ -16,7 +16,7 @@
     "bugs": {
         "url": "https://github.com/wix-incubator/codio"
     },
-    "version": "0.3.0",
+    "version": "0.4.0",
     "license": "MIT",
     "publisher": "Wix",
     "icon": "media/icon.png",
@@ -40,6 +40,7 @@
         "onCommand:codio.trimEnd",
         "onCommand:codio.playCodio",
         "onCommand:codio.playCodioTask",
+        "onCommand:codio.stopCodio",
         "onCommand:codio.pauseRecording",
         "onCommand:codio.resumeCodio",
         "onCommand:codio.playFrom",
@@ -109,6 +110,11 @@
                 "command": "codio.playCodioTask",
                 "category": "Codio",
                 "title": "Play Codio from Task"
+            },
+            {
+                "command": "codio.stopCodio",
+                "category": "Codio",
+                "title": "Stop Codio"
             },
             {
                 "command": "codio.pauseCodio",

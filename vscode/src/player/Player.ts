@@ -102,16 +102,26 @@ export default class Player {
   }
 
   /**
+   * Stop the currently playing codio.
+   */
+  stop(): void {
+    if (this.isPlaying) {
+      this.pause();
+    }
+    this.closeCodio();
+  }
+
+  /**
    * Pause all media types: Editor, Audio, Subtitles, and Timeline.
    */
-  pauseMedia() {
+  private pauseMedia(): void {
     this.codeEditorPlayer.pause();
     this.audioPlayer.pause();
     this.subtitlesPlayer.pause();
     this.timer.stop();
   }
 
-  pause() {
+  pause(): void {
     this.lastStoppedTime = Date.now();
     this.pauseMedia();
     this.relativeActiveTime = this.relativeActiveTime + (this.lastStoppedTime - this.codioStartTime);

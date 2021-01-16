@@ -42,6 +42,7 @@ export {
 export async function activate(context: ExtensionContext) {
   await fsManager.createExtensionFolders();
   UI.shouldDisplayMessages = true;
+  UI.createStatusBar(context);
   registerTreeViews(fsManager, context.extensionPath);
 
   const recordCodioDisposable = commands.registerCommand(
@@ -79,6 +80,10 @@ export async function activate(context: ExtensionContext) {
     },
   );
 
+  const stopCodioDisposable = commands.registerCommand(COMMAND_NAMES.STOP_CODIO, () => {
+    player.stop();
+  });
+
   const pauseCodioDisposable = commands.registerCommand(COMMAND_NAMES.PAUSE_CODIO, () => {
     codioCommands.pauseCodio(player);
   });
@@ -115,6 +120,7 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(finishRecordingDisposable);
   context.subscriptions.push(playCodioDisposable);
   context.subscriptions.push(playCodioTaskDisposable);
+  context.subscriptions.push(stopCodioDisposable);
   context.subscriptions.push(pauseCodioDisposable);
   context.subscriptions.push(resumeCodioDisposable);
   context.subscriptions.push(playFromDisposable);
