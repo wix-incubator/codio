@@ -11,17 +11,23 @@ const createWorkspaceCodiosFolder = async (workspaceUri: Uri) => {
 };
 
 export const getWorkspaceUriAndCodioDestinationUri = async () => {
+  let workspaceUri = null;
+  let codioUri = null;
+  let getCodioName = null;
+
   if (workspace.workspaceFolders) {
     const name = await showCodioNameInputBox();
     if (name) {
-      const workspaceUri = workspace.workspaceFolders[0].uri;
+      workspaceUri = workspace.workspaceFolders[0].uri;
       const codioWorkspaceFolderPath = await createWorkspaceCodiosFolder(workspaceUri);
-      const codioUri = Uri.file(join(codioWorkspaceFolderPath, `${name.split(' ').join('_')}.codio`));
-      return { workspaceUri, codioUri, getCodioName: async () => name };
+      codioUri = Uri.file(join(codioWorkspaceFolderPath, `${name.split(' ').join('_')}.codio`));
+      getCodioName = async () => name;
     }
   } else {
     UI.showMessage(MESSAGES.noActiveWorkspace);
   }
+
+  return { workspaceUri, codioUri, getCodioName };
 };
 
 export const getWorkspaceRootAndCodiosFolderIfExists = ():
