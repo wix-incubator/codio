@@ -5,11 +5,10 @@ import { finishRecording } from '../commands';
 
 export const showCodioNameInputBox = async () => await window.showInputBox({ prompt: 'Give your codio a name:' });
 
-  export const showChooseAudioDevice = async (items: string[]) : Promise<string | undefined> => {
-    const audioDevice = await window.showQuickPick(items, {placeHolder: 'Choose an Audio Device to record from'});
-    return audioDevice;
-  };
-
+export const showChooseAudioDevice = async (items: string[]): Promise<string | undefined> => {
+  const audioDevice = await window.showQuickPick(items, { placeHolder: 'Choose an Audio Device to record from' });
+  return audioDevice;
+};
 
 export const showPlayFromInputBox = async (player) =>
   await window.showInputBox({
@@ -31,6 +30,7 @@ export const MESSAGES = {
   windowsNotSupported: 'Unfortunately, Codio Format does not work on Windows.',
   ffmpegNotAvailable: `Looks like you haven't installed ffmpeg, which is required for Codio to work.
      You can install it with brew: "brew install ffmpeg"`,
+  emptyCodioNameInvalid: 'No name, No Codio',
   noRecordingDeviceAvailable: 'Codio Could not find an audio recording device',
   noActiveWorkspace: 'You need to have an active workspace to record a Codio',
 };

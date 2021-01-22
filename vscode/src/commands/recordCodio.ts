@@ -1,13 +1,9 @@
-import {
-  UI,
-  MESSAGES,
-  showChooseAudioDevice,
-} from "../user_interface/messages";
-import Recorder from "../recorder/Recorder";
-import Player from "../player/Player";
-import FSManager from "../filesystem/FSManager";
-import { Uri } from "vscode";
-import { checkForFfmpeg } from "../utils";
+import { UI, MESSAGES, showChooseAudioDevice } from '../user_interface/messages';
+import Recorder from '../recorder/Recorder';
+import Player from '../player/Player';
+import FSManager from '../filesystem/FSManager';
+import { Uri } from 'vscode';
+import { checkForFfmpeg } from '../utils';
 
 export default async function recordCodio(
   fsManager: FSManager,
@@ -34,6 +30,7 @@ export default async function recordCodio(
 
   codioName = codioName?.trim();
   if (!codioName) {
+    UI.showMessage(MESSAGES.emptyCodioNameInvalid);
     return;
   }
 
