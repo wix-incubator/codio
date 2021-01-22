@@ -108,11 +108,14 @@ export default class Player {
   }
 
   forward(s) {
-    //@TODO: Handle case when Codio is less then 10 seconds before the end.
     if (this.isPlaying) {
       this.pause();
     }
-    this.playFrom(this.relativeActiveTime + s * 1000);
+    let timeToForward = this.relativeActiveTime + s * 1000;
+    if (timeToForward > this.codioLength) {
+      timeToForward = this.codioLength;
+    }
+    this.playFrom(timeToForward);
   }
 
   async playFrom(relativeTimeToStart: number) {
