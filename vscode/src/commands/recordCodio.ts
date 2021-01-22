@@ -20,25 +20,34 @@ export default async function recordCodio(
   const hasFfmpeg = await checkForFfmpeg();
   if (!hasFfmpeg) {
     UI.showMessage(MESSAGES.ffmpegNotAvailable);
-  } else {
-    if (player.isPlaying) {
-      player.closeCodio();
-    }
-    let codioName = '';
-    if (getCodioName) {
-      codioName = await getCodioName();
-    }
-    const uuid = require('uuid');
-    const codioId = uuid.v4();
-    const path = await fsManager.createTempCodioFolder(codioId);
-    await recorder.loadCodio(path, codioName, destUri, workspaceRoot);
-    const isDeviceAvailable = await recorder.setRecordingDevice(showChooseAudioDevice);
-    if (!isDeviceAvailable) {
-      UI.showMessage(MESSAGES.noRecordingDeviceAvailable);
-    } else {
-      UI.showMessage(MESSAGES.startingToRecord);
-      recorder.startRecording();
-      UI.showRecorderProgressBar(recorder);
-    }
+    return;
   }
+
+  if (player.isPlaying) {
+    player.closeCodio();
+  }
+
+  let codioName = '';
+  if (getCodioName) {
+    codioName = await getCodioName();
+  }
+
+  codioName = codioName?.trim();
+  if (!codioName) {
+    return;
+  }
+
+  const uuid = require('uuid');
+  const codioId = uuid.v4();
+  const path = await fsManager.createTempCodioFolder(codioId);
+  await recorder.loadCodio(path, codioName, destUri, workspaceRoot);
+  const isDeviceAvailable = await recorder.setRecordingDevice(showChooseAudioDevice);
+  if (!isDeviceAvailable) {
+    UI.showMessage(MESSAGES.noRecordingDeviceAvailable);
+    return;
+  }
+
+  UI.showMessage(MESSAGES.startingToRecord);
+  recorder.startRecording();
+  UI.showRecorderProgressBar(recorder);
 }
