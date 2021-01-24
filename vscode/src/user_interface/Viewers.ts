@@ -74,4 +74,6 @@ export const cursorStyle = vscode.window.createTextEditorDecorationType({
   light: {
     backgroundColor: vscode.workspace.getConfiguration('codio').get<string>('cursorColorLightTheme'),
   },
+  borderStyle: 'solid',
+  borderWidth: '1px',
 });
