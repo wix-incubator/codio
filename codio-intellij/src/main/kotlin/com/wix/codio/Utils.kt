@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.wix.codio.codioEvents.CodioEvent
 import com.wix.codio.codioEvents.CodioPosition
+import com.wix.codio.toolwindow.CodioFFMpegAlert
 
 class Utils {
     companion object {
@@ -50,6 +51,19 @@ class Utils {
             if (position.line > 0) lineOffset++
             return lineOffset + position.character
 
+        }
+
+        fun checkFFMPEG(project: Project?): Boolean {
+            val exist = "ffmpeg -version".runAsCommand()
+            if (exist == null) {
+                val isOk = CodioFFMpegAlert(project).showAndGet()
+                if (isOk) {
+                    //                        should progress appear
+                    "brew install ffmpeg".runAsCommand()
+                    //                        progress Should disappears
+                } else return true
+            }
+            return false
         }
     }
 }
