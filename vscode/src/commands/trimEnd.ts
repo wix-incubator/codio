@@ -15,13 +15,40 @@ function addTemporaryExtension(file): string {
   return path.join(directory, `${cleanFile}.tmp.${extension}`);
 }
 
-function trimAudioFileEnd(file: string, end: number) {
+function trimAudioFile(file: string, end: number) {
   const temporaryFile = addTemporaryExtension(file);
 
   // ffmpeg does not support editting files in place so we create a temporary copy and then switch the two
   execSync(`ffmpeg -i ${file} -ss 0 -to ${end} ${temporaryFile} -y`);
   fs.unlinkSync(file);
   fs.copyFileSync(temporaryFile, file);
+  fs.unlinkSync(temporaryFile);
+}
+
+function trimCodioFile(codioPath: string, end: number) {
+  const jsonPath = path.join(codioPath, 'codio.json');
+  const json = require(jsonPath);
+
+  for (let i = 0; i < json.events.length; i++) {
+    const event = json.events[i];
+
+    if (event.data.time > end) {
+      json.events.length = i + 1;
+      json.codioLength = event.data.time;
+      break;
+    }
+  }
+
+  fs.writeFileSync(jsonPath, JSON.stringify(json), 'utf8');
+}
+
+function trimMetaFile(codioPath: string, end: number) {
+  const jsonPath = path.join(codioPath, 'meta.json');
+  const json = require(jsonPath);
+
+  json.length = end;
+
+  fs.writeFileSync(jsonPath, JSON.stringify(json), 'utf8');
 }
 
 export default async function trimEnd(player: Player) {
@@ -38,7 +65,9 @@ export default async function trimEnd(player: Player) {
 
     const endTimeInSeconds = Math.round(player.relativeActiveTime / SECOND_IN_MS);
 
-    trimAudioFileEnd(player.audioPlayer.audioFilePath, endTimeInSeconds);
+    trimAudioFile(player.audioPlayer.audioFilePath, endTimeInSeconds);
+    trimCodioFile(player.codioPath, player.relativeActiveTime);
+    trimMetaFile(player.codioPath, player.relativeActiveTime);
   } catch (e) {
     console.log('Trimming file failed', e);
   }
