@@ -34,36 +34,55 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
   }
 
   async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
-    if (element) {
-      return [element];
-    } else {
-      const allCodios = await this.fsManager.getAllCodiosMetadata();
-      if (allCodios.length > 0) {
-        return allCodios.map((codio) => {
-          const codioItem = new vscode.TreeItem(codio.name);
-          codioItem.iconPath = {
-            dark: join(this.extensionPath, 'media/icon-small.svg'),
-            light: join(this.extensionPath, 'media/icon-small-light.svg'),
-          };
-          codioItem.command = { command: PLAY_CODIO, title: 'Play Codio', arguments: [codio.uri, codio.workspaceRoot] };
-          codioItem.contextValue = 'codio';
-          return codioItem;
-        });
-      } else {
-        const recordCodioItem = new vscode.TreeItem('Record Codio');
-        recordCodioItem.iconPath = {
-          dark: join(this.extensionPath, 'media/microphone.svg'),
-          light: join(this.extensionPath, 'media/microphone-light.svg'),
-        };
-        recordCodioItem.command = {
-          command: RECORD_CODIO_AND_ADD_TO_PROJECT,
-          title: 'Record Codio and Add to Project',
-          arguments: [],
-        };
-        recordCodioItem.contextValue = 'codio';
-        return [recordCodioItem];
-      }
+    const { workspaceCodios, libraryCodios } = await this.fsManager.getAllCodiosMetadata();
+    const allCodios = [...workspaceCodios, ...libraryCodios];
+
+    if (!allCodios) {
+      return [new RecordActionItem(this.extensionPath)];
     }
+
+    if (!element) {
+      return [
+        new vscode.TreeItem('Workspace Codios', vscode.TreeItemCollapsibleState.Collapsed),
+        new vscode.TreeItem('Library Codios', vscode.TreeItemCollapsibleState.Collapsed),
+      ];
+    }
+
+    if (element.label === 'Workspace Codios') {
+      return workspaceCodios.map((codio) => new CodioItem(codio, this.extensionPath));
+    }
+
+    if (element.label === 'Library Codios') {
+      return libraryCodios.map((codio) => new CodioItem(codio, this.extensionPath));
+    }
+  }
+}
+
+class RecordActionItem extends vscode.TreeItem {
+  constructor(extensionPath: string) {
+    super('Record Codio');
+    this.iconPath = {
+      dark: join(extensionPath, 'media/microphone.svg'),
+      light: join(extensionPath, 'media/microphone-light.svg'),
+    };
+    this.command = {
+      command: RECORD_CODIO_AND_ADD_TO_PROJECT,
+      title: 'Record Codio and Add to Project',
+      arguments: [],
+    };
+    this.contextValue = 'codio';
+  } 
+}
+
+class CodioItem extends vscode.TreeItem {
+  constructor(codio: { name: string; uri: string; workspaceRoot: string }, extensionPath: string) {
+    super(codio.name);
+    this.iconPath = {
+      dark: join(extensionPath, 'media/icon-small.svg'),
+      light: join(extensionPath, 'media/icon-small-light.svg'),
+    };
+    this.command = { command: PLAY_CODIO, title: 'Play Codio', arguments: [codio.uri, codio.workspaceRoot] };
+    this.contextValue = 'codio';
   }
 }
 
