@@ -13,6 +13,8 @@ export const unlink = util.promisify(fs.unlink);
 export const mkdir = util.promisify(fs.mkdir);
 export const exists = util.promisify(fs.exists);
 
+export const getFileContent = (path: string) => readFile(path).then(content => JSON.parse(content.toString()))
+
 export const isWindows = platform() === 'win32';
 export const isMacOs = platform() === 'darwin';
 

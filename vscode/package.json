@@ -34,6 +34,7 @@
     ],
     "activationEvents": [
         "onView:codioMessages",
+        "onView:tutorial",
         "onCommand:codio.recordCodio",
         "onCommand:codio.recordCodioAndAddToProject",
         "onCommand:codio.finishRecording",
@@ -199,8 +200,29 @@
                     "id": "codioMessages",
                     "name": "Codios"
                 }
+            ],
+            "tutorial": [
+                {
+                    "id": "tutorial",
+                    "name": "Learn"
+                }
             ]
-        }
+        },
+        "viewsWelcome": [
+            {
+              "view": "tutorial",
+              "contents": "No Explorable Tutorial Found. \n[learn more](https://www.eladbogo.com/).\n[Add Dependency](command:nodeDependencies.addEntry)"
+            }
+          ],
+        "viewsContainers": {
+            "activitybar": [
+              {
+                "id": "tutorial",
+                "title": "",
+                "icon": "media/microphone.svg"
+              }
+            ]
+          }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
