@@ -7,7 +7,7 @@ import FSManager from './filesystem/FSManager';
 import * as COMMAND_NAMES from './consts/command_names';
 import * as codioCommands from './commands/index';
 import { createSdk } from './sdk';
-import { getWorkspaceUriAndCodioDestinationUri } from './filesystem/workspace';
+import { getWorkspaceUriAndCodioDestinationUri, CODIO_FOLDER, LIBRARY_FOLDER } from './filesystem/workspace';
 
 const fsManager = new FSManager();
 const player = new Player();
@@ -46,15 +46,18 @@ export async function activate(context: ExtensionContext) {
 
   const recordCodioDisposable = commands.registerCommand(
     COMMAND_NAMES.RECORD_CODIO,
-    async (destination?: Uri, workspaceRoot?: Uri) => {
-      codioCommands.recordCodio(fsManager, player, recorder, destination, workspaceRoot, showCodioNameInputBox);
+    async () => {
+      const { workspaceUri, codioUri, getCodioName } = await getWorkspaceUriAndCodioDestinationUri(CODIO_FOLDER)
+      if (workspaceUri && codioUri && getCodioName) {
+        codioCommands.recordCodio(fsManager, player, recorder, codioUri, workspaceUri, getCodioName);
+      }
     },
   );
 
   const recordCodioAndAddToProjectDisposable = commands.registerCommand(
     COMMAND_NAMES.RECORD_CODIO_AND_ADD_TO_PROJECT,
     async () => {
-      const { workspaceUri, codioUri, getCodioName } = await getWorkspaceUriAndCodioDestinationUri();
+      const { workspaceUri, codioUri, getCodioName } = await getWorkspaceUriAndCodioDestinationUri(CODIO_FOLDER);
       if (workspaceUri && codioUri && getCodioName) {
         codioCommands.recordCodio(fsManager, player, recorder, codioUri, workspaceUri, getCodioName);
       }
@@ -108,6 +111,7 @@ export async function activate(context: ExtensionContext) {
   });
 
   context.subscriptions.push(recordCodioDisposable);
+  context.subscriptions.push(recordCodioAndAddToProjectDisposable);
   context.subscriptions.push(finishRecordingDisposable);
   context.subscriptions.push(playCodioDisposable);
   context.subscriptions.push(playCodioTaskDisposable);

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import FSManager from '../filesystem/FSManager';
-import { PLAY_CODIO, RECORD_CODIO_AND_ADD_TO_PROJECT } from '../consts/command_names';
+import { PLAY_CODIO, RECORD_CODIO_AND_ADD_TO_PROJECT, RECORD_CODIO } from '../consts/command_names';
 import { join } from 'path';
 
 export async function registerTreeViews(fsManager: FSManager, extensionPath: string) {
@@ -35,11 +35,6 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
 
   async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
     const { workspaceCodios, libraryCodios } = await this.fsManager.getAllCodiosMetadata();
-    const allCodios = [...workspaceCodios, ...libraryCodios];
-
-    if (!allCodios) {
-      return [new RecordActionItem(this.extensionPath)];
-    }
 
     if (!element) {
       return [
@@ -49,27 +44,47 @@ export class CodiosDataProvider implements vscode.TreeDataProvider<vscode.TreeIt
     }
 
     if (element.label === 'Workspace Codios') {
-      return workspaceCodios.map((codio) => new CodioItem(codio, this.extensionPath));
+      if (workspaceCodios.length) {
+        return workspaceCodios.map((codio) => new CodioItem(codio, this.extensionPath));
+      } else {
+        return [RecordActionItem.recordAndToProject(this.extensionPath)];
+      }
     }
 
     if (element.label === 'Library Codios') {
-      return libraryCodios.map((codio) => new CodioItem(codio, this.extensionPath));
+      if (libraryCodios.length) {
+        return libraryCodios.map((codio) => new CodioItem(codio, this.extensionPath));
+      } else {
+        return [RecordActionItem.record(this.extensionPath)];
+      }
     }
   }
 }
 
 class RecordActionItem extends vscode.TreeItem {
-  constructor(extensionPath: string) {
+  static recordAndToProject(extensionPath: string): RecordActionItem  {
+    return new RecordActionItem({
+      command: RECORD_CODIO_AND_ADD_TO_PROJECT,
+      title: 'Record Codio and Add to Project',
+      arguments: [],
+    }, extensionPath);
+  }
+
+  static record(extensionPath: string): RecordActionItem  {
+    return new RecordActionItem({
+      command: RECORD_CODIO,
+      title: 'Record Codio',
+      arguments: [],
+    }, extensionPath);
+  }
+
+  constructor(command: vscode.Command, extensionPath: string) {
     super('Record Codio');
     this.iconPath = {
       dark: join(extensionPath, 'media/microphone.svg'),
       light: join(extensionPath, 'media/microphone-light.svg'),
     };
-    this.command = {
-      command: RECORD_CODIO_AND_ADD_TO_PROJECT,
-      title: 'Record Codio and Add to Project',
-      arguments: [],
-    };
+    this.command = command;
     this.contextValue = 'codio';
   } 
 }

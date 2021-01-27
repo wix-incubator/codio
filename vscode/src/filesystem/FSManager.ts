@@ -6,7 +6,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
-import { getWorkspaceRootAndCodiosFolderIfExists } from './workspace';
+import { getWorkspaceRootAndCodiosFolderIfExists, CODIO_FOLDER, LIBRARY_FOLDER } from './workspace';
 
 const homedir = require('os').homedir();
 const userOS = os.platform();
@@ -230,11 +230,15 @@ export default class FSManager {
   }
 
   async getAllCodiosMetadata() {
-    const workspaceFolders = getWorkspaceRootAndCodiosFolderIfExists();
+    const workspaceFolders = getWorkspaceRootAndCodiosFolderIfExists(CODIO_FOLDER);
     const workspaceCodios = workspaceFolders
       ? await this.getCodiosMetadata(workspaceFolders.workspaceCodiosFolder, workspaceFolders.workspaceRootUri)
       : [];
-    const libraryCodios = await this.getCodiosMetadata();
+
+   const libraryFolders = getWorkspaceRootAndCodiosFolderIfExists(LIBRARY_FOLDER);
+   const libraryCodios = libraryFolders
+        ? await this.getCodiosMetadata(libraryFolders.workspaceCodiosFolder)
+        : []  
     return { workspaceCodios, libraryCodios };
   }
 
