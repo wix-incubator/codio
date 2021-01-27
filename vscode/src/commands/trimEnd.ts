@@ -33,7 +33,7 @@ function trimCodioFile(codioPath: string, end: number) {
     const event = json.events[i];
 
     if (event.data.time > end) {
-      json.events.length = i + 1;
+      json.events.length = i;
       json.codioLength = event.data.time;
       break;
     }
