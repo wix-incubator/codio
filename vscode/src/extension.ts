@@ -107,6 +107,10 @@ export async function activate(context: ExtensionContext) {
     codioCommands.executeFile(recorder);
   });
 
+  const trimStart = commands.registerCommand(COMMAND_NAMES.TRIM_START, async () => {
+    codioCommands.trimStart(player);
+  });
+
   context.subscriptions.push(recordCodioDisposable);
   context.subscriptions.push(finishRecordingDisposable);
   context.subscriptions.push(playCodioDisposable);
@@ -118,6 +122,7 @@ export async function activate(context: ExtensionContext) {
   context.subscriptions.push(rewindDisposable);
   context.subscriptions.push(forwardDisposable);
   context.subscriptions.push(pauseOrResumeDisposable);
+  context.subscriptions.push(trimStart);
 }
 
 export function deactivate() {
