@@ -12,7 +12,7 @@ enum State {
 }
 
 export default class AudioHandler {
-  private audioFilePath;
+  audioFilePath: string;
   private currentAudioProcess: ChildProcess;
   private audioInputDevice: string;
   private state: State;

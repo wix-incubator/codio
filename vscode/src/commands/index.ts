@@ -8,6 +8,7 @@ import resumeCodio from './resumeCodio';
 import pauseCodio from './pauseCodio';
 import finishRecording from './finishRecording';
 import recordCodio from './recordCodio';
+import trimEnd from './trimEnd';
 
 export {
   executeFile,
@@ -21,4 +22,5 @@ export {
   pauseCodio,
   finishRecording,
   recordCodio,
+  trimEnd,
 };

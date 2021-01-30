@@ -37,6 +37,7 @@
         "onCommand:codio.recordCodio",
         "onCommand:codio.recordCodioAndAddToProject",
         "onCommand:codio.finishRecording",
+        "onCommand:codio.trimEnd",
         "onCommand:codio.playCodio",
         "onCommand:codio.playCodioTask",
         "onCommand:codio.pauseRecording",
@@ -89,6 +90,11 @@
                     "light": "media/save-light.svg",
                     "dark": "media/save.svg"
                 }
+            },
+            {
+                "command": "codio.trimEnd",
+                "category": "Codio",
+                "title": "Trim End"
             },
             {
                 "command": "codio.playCodio",
