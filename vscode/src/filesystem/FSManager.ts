@@ -231,12 +231,11 @@ export default class FSManager {
 
   async getAllCodiosMetadata() {
     const workspaceFolders = getWorkspaceRootAndCodiosFolderIfExists();
-    const codioWorkspaceCodios = workspaceFolders
+    const workspaceCodios = workspaceFolders
       ? await this.getCodiosMetadata(workspaceFolders.workspaceCodiosFolder, workspaceFolders.workspaceRootUri)
       : [];
     const libraryCodios = await this.getCodiosMetadata();
-    const allCodios = [...codioWorkspaceCodios, ...libraryCodios];
-    return allCodios;
+    return { workspaceCodios, libraryCodios };
   }
 
   async getCodioMetaDataContent(codioFolderPath) {
@@ -277,7 +276,8 @@ export default class FSManager {
   }
 
   async chooseCodio(): Promise<{ path: string; workspaceRoot?: vscode.Uri } | undefined> {
-    const codios = await this.getAllCodiosMetadata();
+    const { workspaceCodios, libraryCodios } = await fsManager.getAllCodiosMetadata();
+    const codios = [...workspaceCodios, ...libraryCodios]
     return this.choose(codios);
   }
 }
