@@ -7,10 +7,10 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.IconLoader
-import com.wix.codio.Audio
 import com.wix.codio.Player
-import com.wix.codio.recorder.Recorder
+import com.wix.codio.Utils
 import com.wix.codio.fileSystem.FileSystemManager
+import com.wix.codio.recorder.Recorder
 import com.wix.codio.recorder.RecorderException
 import com.wix.codio.toolwindow.CodioNameDialog
 import com.wix.codio.userInterface.Messages
@@ -30,18 +30,20 @@ class CodioRecordOrSaveAction : AnAction() {
             CodioNotifier(project).showTempBaloon(Messages.recordingSaved, 2000)
         } else if (!Recorder.instance.isRecording) {
             try {
-                val doc = getOpenDoc(e, project)
-                val codioName = CodioNameDialog(project).selectCodioName() ?: return
+                Utils.checkFFMPEGAvailability(project, Runnable {
+                    val doc = getOpenDoc(e, project)
+                    val codioName = CodioNameDialog(project).selectCodioName() ?: return@Runnable
 
-                if (Player.instance.isPlaying) {
-                    CodioNotifier(project).showTempBaloon(Messages.cantRecordWhilePlaying, 2000)
-                    return
-                }
-                val codioId = UUID.randomUUID().toString()
-                val fileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
-                fileSystemHandler.createCodioProjectFolderInHomeDirIfNeeded(codioId)
-                Recorder.instance.record(e, fileSystemHandler, codioId, codioName, doc)
-                CodioNotifier(project).showRecording()
+                    if (Player.instance.isPlaying) {
+                        CodioNotifier(project).showTempBaloon(Messages.cantRecordWhilePlaying, 2000)
+                        return@Runnable
+                    }
+                    val codioId = UUID.randomUUID().toString()
+                    val fileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
+                    fileSystemHandler.createCodioProjectFolderInHomeDirIfNeeded(codioId)
+                    Recorder.instance.record(e, fileSystemHandler, codioId, codioName, doc)
+                    CodioNotifier(project).showRecording()
+                })
             } catch (ex: Exception) {
                 CodioNotifier(project).showTempBaloon("Failure: ${ex.message}", 2000)
                 return
@@ -51,13 +53,13 @@ class CodioRecordOrSaveAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
 
-        e.presentation.setEnabled(!Player.instance.isPlaying)
+        e.presentation.isEnabled = !Player.instance.isPlaying
 
         if (Recorder.instance.isRecording) {
-            e.presentation.setIcon(IconLoader.getIcon("/ui/save.svg"))
+            e.presentation.icon = IconLoader.getIcon("/ui/save.svg")
             e.presentation.text = "Save Current Recording"
         } else {
-            e.presentation.setIcon(IconLoader.getIcon("/ui/record.svg"))
+            e.presentation.icon = IconLoader.getIcon("/ui/record.svg")
             e.presentation.text = "Record Codio"
         }
     }
@@ -70,7 +72,7 @@ class CodioRecordOrSaveAction : AnAction() {
                 doc != null -> doc
                 else -> editor!!.document
             }
-        } catch (ex: Exception){
+        } catch (ex: Exception) {
             throw RecorderException("No open files found!\nClick record after you open a file")
         }
     }
