@@ -30,19 +30,20 @@ class CodioRecordOrSaveAction : AnAction() {
             CodioNotifier(project).showTempBaloon(Messages.recordingSaved, 2000)
         } else if (!Recorder.instance.isRecording) {
             try {
-                if (Utils.checkFFMPEG(project)) return
-                val doc = getOpenDoc(e, project)
-                val codioName = CodioNameDialog(project).selectCodioName() ?: return
+                Utils.checkFFMPEGAvailability(project, Runnable {
+                    val doc = getOpenDoc(e, project)
+                    val codioName = CodioNameDialog(project).selectCodioName() ?: return@Runnable
 
-                if (Player.instance.isPlaying) {
-                    CodioNotifier(project).showTempBaloon(Messages.cantRecordWhilePlaying, 2000)
-                    return
-                }
-                val codioId = UUID.randomUUID().toString()
-                val fileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
-                fileSystemHandler.createCodioProjectFolderInHomeDirIfNeeded(codioId)
-                Recorder.instance.record(e, fileSystemHandler, codioId, codioName, doc)
-                CodioNotifier(project).showRecording()
+                    if (Player.instance.isPlaying) {
+                        CodioNotifier(project).showTempBaloon(Messages.cantRecordWhilePlaying, 2000)
+                        return@Runnable
+                    }
+                    val codioId = UUID.randomUUID().toString()
+                    val fileSystemHandler = FileSystemManager.getProjectFileSystemHandler(project)
+                    fileSystemHandler.createCodioProjectFolderInHomeDirIfNeeded(codioId)
+                    Recorder.instance.record(e, fileSystemHandler, codioId, codioName, doc)
+                    CodioNotifier(project).showRecording()
+                })
             } catch (ex: Exception) {
                 CodioNotifier(project).showTempBaloon("Failure: ${ex.message}", 2000)
                 return

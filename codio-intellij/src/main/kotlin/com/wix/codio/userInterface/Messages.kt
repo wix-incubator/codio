@@ -15,6 +15,8 @@ class Messages {
         val tutorialPause = "Paused codio."
         val ffmpegNotInstalled = "Seems like you don't have ffmpeg. run `brew install ffmpeg` from your terminal and try again"
         val ffmpegIsNeededTitle = "FFMPEG is needed"
-        val ffmpegIsNeededMessage = "Do you agree to install FFMPEG?"
+        val ffmpegIsNeededMessage = "Do you agree to install FFMPEG? It may take a couple of minutes."
+        val ffmpegStart = "FFMPEG started loading"
+        val ffmpegFinish = "FFMPEG is downloaded success"
     }
 }

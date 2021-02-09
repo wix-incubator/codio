@@ -2,17 +2,11 @@ package com.wix.codio
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
-import com.sun.org.apache.xpath.internal.operations.Bool
-import com.wix.codio.CodioProgressTimer
-import com.wix.codio.CodioProgressTimerOnFinishObserver
-import com.wix.codio.CodioTimeline
-import com.wix.codio.actions.CodioNotifier
 import com.wix.codio.codioEvents.CodioEvent
 import com.wix.codio.codioEvents.CodioEventsDispatcher
 import com.wix.codio.fileSystem.CodioProjectFileSystemHandler
 import com.wix.codio.fileSystem.FileSystemManager
 import com.wix.codio.toolwindow.CodioToolWindowPanel
-import com.wix.codio.userInterface.Messages
 import frame.CodioFrame
 import frame.CodioFrameDocument
 import userInterface.SelectionRenderer
@@ -76,14 +70,15 @@ open class Player {
     }
 
     private fun play(timeline: ArrayList<CodioEvent>, relativeTimeToStart: Long) {
-        if (Utils.checkFFMPEG(null)) return
-        isPlaying = true
-        absoluteStartTime = Instant.now().toEpochMilli()
-        val timeline = CodioTimeline.createTimelineWithAbsoluteTime(timeline, absoluteStartTime)
-        this.runThroughCodioEvents(timeline)
-        val timeInSeconds = timeInSeconds(relativeTimeToStart).toInt()
-        Audio.instance.play(audioPath!!, timeInSeconds)
-        progressTimer?.run(timeInSeconds)
+        Utils.checkFFMPEGAvailability(null, Runnable {
+            isPlaying = true
+            absoluteStartTime = Instant.now().toEpochMilli()
+            val timeline = CodioTimeline.createTimelineWithAbsoluteTime(timeline, absoluteStartTime)
+            this.runThroughCodioEvents(timeline)
+            val timeInSeconds = timeInSeconds(relativeTimeToStart).toInt()
+            Audio.instance.play(audioPath!!, timeInSeconds)
+            progressTimer?.run(timeInSeconds)
+        })
     }
 
     fun pause() {
@@ -142,6 +137,7 @@ open class Player {
         codioRelativeActiveTime = relativeTimeToStart
         val relevantRelativeTimeline = codioTimeline!!.getTimelineFrom(relativeTimeToStart)
         play(relevantRelativeTimeline, relativeTimeToStart)
+
     }
 
     fun moveToframe(milis: Long) {

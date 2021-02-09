@@ -10,9 +10,11 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.wix.codio.codioEvents.CodioEvent
+import com.wix.codio.actions.CodioNotifier
 import com.wix.codio.codioEvents.CodioPosition
 import com.wix.codio.toolwindow.CodioFFMpegAlert
+import com.wix.codio.userInterface.Messages
+import java.util.*
 
 class Utils {
     companion object {
@@ -41,10 +43,10 @@ class Utils {
                     currentEditor = EditorUtil.getEditorEx(fileEditor)
 
                 }
-           return currentEditor
+            return currentEditor
         }
 
-        fun findOffsetFromPosition(position: CodioPosition, text: String) :Int {
+        fun findOffsetFromPosition(position: CodioPosition, text: String): Int {
             val lines = text.lines()
             val contentTillLine = lines.subList(0, position.line).joinToString("\n")
             var lineOffset = contentTillLine.length
@@ -53,17 +55,29 @@ class Utils {
 
         }
 
-        fun checkFFMPEG(project: Project?): Boolean {
+        fun checkFFMPEGAvailability(project: Project?, runIsSuccess: Runnable? = null): Boolean {
             val exist = "ffmpeg -version".runAsCommand()
             if (exist == null) {
                 val isOk = CodioFFMpegAlert(project).showAndGet()
                 if (isOk) {
-                    //                        should progress appear
-                    "brew install ffmpeg".runAsCommand()
-                    //                        progress Should disappears
-                } else return true
+                    installFFMPEG(project, runIsSuccess)
+                }
+                return false
             }
-            return false
+            runIsSuccess?.run()
+            return true
+        }
+
+        private fun installFFMPEG(project: Project?, runIsSuccess: Runnable?) {
+            CodioNotifier(project).showTempBaloon(Messages.ffmpegStart)
+            // todo dirty trick in order not to block UI
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    "brew install ffmpeg".runAsCommand()
+                    CodioNotifier(project).showTempBaloon(Messages.ffmpegFinish)
+                    runIsSuccess?.run()
+                }
+            }, 50)
         }
     }
 }
