@@ -4,6 +4,9 @@ import FSManager from '../filesystem/FSManager';
 import { commands } from 'vscode';
 import AudioHandler from '../audio/Audio';
 
+const IS_PLAYING = "isPlaying";
+const IN_CODIO_SESSION = "inCodioSession";
+
 export default class Player {
   isPlaying = false;
   codioPath: string;
@@ -52,10 +55,20 @@ export default class Player {
       this.process = new Promise((resolve) => (this.closeCodioResolver = resolve));
       await this.codeEditorPlayer.moveToFrame(0);
       this.play(this.codeEditorPlayer.events, this.relativeActiveTime);
-      commands.executeCommand('setContext', 'inCodioSession', true);
+      this.updateContext(IN_CODIO_SESSION, true);
     } catch (e) {
       console.log('startCodio failed', e);
     }
+  }
+
+  /**
+   * Update given context to given value and update manager.
+   * @param context String representing context to update.
+   * @param value Value to set given context string to.
+   */
+  private updateContext(context: string, value: any): void {
+    commands.executeCommand('setContext', context, value);
+    FSManager.update();
   }
 
   play(actions: Array<any>, timeToStart: number) {
@@ -69,6 +82,7 @@ export default class Player {
     this.audioPlayer.play(timeToStart);
     this.timer.run(timeToStart);
     this.isPlaying = true;
+    this.updateContext(IS_PLAYING, this.isPlaying);
   }
 
   pause() {
@@ -78,6 +92,7 @@ export default class Player {
     this.timer.stop();
     this.relativeActiveTime = this.relativeActiveTime + (this.lastStoppedTime - this.codioStartTime);
     this.isPlaying = false;
+    this.updateContext(IS_PLAYING, this.isPlaying);
   }
 
   resume() {
@@ -89,7 +104,7 @@ export default class Player {
     this.timer.stop();
     this.audioPlayer.pause();
     this.closeCodioResolver();
-    commands.executeCommand('setContext', 'inCodioSession', false);
+    this.updateContext(IN_CODIO_SESSION, false);
   }
 
   onTimerUpdate(observer) {
