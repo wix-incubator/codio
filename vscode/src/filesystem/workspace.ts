@@ -30,10 +30,10 @@ export const getWorkspaceUriAndCodioDestinationUri = async () => {
   return { workspaceUri, codioUri, getCodioName };
 };
 
-export const getWorkspaceRootAndCodiosFolderIfExists = ():
+export const getWorkspaceRootAndCodiosFolder = ():
   | { workspaceRootUri: Uri; workspaceCodiosFolder: string }
   | undefined => {
-  const workspaceRootUri = workspace.workspaceFolders && workspace.workspaceFolders[0].uri;
+  const workspaceRootUri = workspace.workspaceFolders[0]?.uri;
   if (workspaceRootUri) {
     const workspaceCodiosFolder = join(workspaceRootUri.fsPath, '.codio');
     if (existsSync(workspaceCodiosFolder)) {

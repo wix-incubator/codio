@@ -1,5 +1,6 @@
 export const PLAY_CODIO = 'codio.playCodio';
 export const PLAY_CODIO_TASK = 'codio.playCodioTask';
+export const STOP_CODIO = 'codio.stopCodio';
 export const RECORD_CODIO = 'codio.recordCodio';
 export const FINISH_RECORDING = 'codio.finishRecording';
 export const PAUSE_CODIO = 'codio.pauseCodio';

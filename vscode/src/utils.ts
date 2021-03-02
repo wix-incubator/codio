@@ -58,3 +58,12 @@ export async function asyncForEach(array, callback) {
     await callback(array[index], index, array);
   }
 }
+
+/**
+ * Check if given object is a tree item.
+ * @param obj Object to check properties on.
+ * @returns Return true if given object is a tree item; false otherwise.
+ */
+export function isTreeItem(obj = {}): boolean {
+  return 'contextValue' in obj || 'command' in obj;
+}
