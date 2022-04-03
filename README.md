@@ -12,6 +12,8 @@ Create interactive tutorials, code messages and embedded documentation with a me
 
 ##### Check out the [demo video](https://youtu.be/XC2liN3OhA8) and [follow](https://twitter.com/eladbogo) for updates
 
+> Note: Codio is currently not actively maintained, but there is an active fork [here](https://github.com/rbrisita/codio-sui).
+
   - [Getting Started With VSCode](./vscode/README.md)
   - [About](#about)
   - [Why?](#why)
